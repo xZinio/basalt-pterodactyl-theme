@@ -19,7 +19,7 @@ import {
 import { Slot, View, useThemeSettings, type ServerListItem, type ServerListModel, type ViewProps } from '@pterodactyl/sdk/theme';
 import { usePlayers, usePreferences, useServerMeta, useUpdatePreferences, type Folder } from '../../lib/api';
 import { useLocalState } from '../../lib/local';
-import { stateFill } from '../../lib/server';
+import { consoleDestination, serverDestination, stateFill, useServerDashboard } from '../../lib/server';
 import type { ThemeSettings } from '../../theme-types';
 import { DashboardDataContext } from './data';
 import { FolderDialog, FolderRow, ManageDialog, OpenFolderBar } from './Folders';
@@ -59,6 +59,7 @@ function ServerTile({
 }) {
     const { server } = item;
     const params = { id: item.identifier };
+    const consoleLink = consoleDestination(item.identifier, useServerDashboard());
 
     return (
         <li
@@ -77,7 +78,7 @@ function ServerTile({
             )}
             <Slot name='dashboard.serverRow.before' data={server} />
             <PanelLink
-                destination={{ extension: 'basalt', screen: 'overview', params }}
+                destination={serverDestination(item.identifier)}
                 aria-label={item.name}
                 className='relative block flex-1 p-4 pr-6 pb-3 text-foreground no-underline'
             >
@@ -87,7 +88,7 @@ function ServerTile({
                 <Slot name='dashboard.serverRow.metrics.after' data={server} />
             </div>
             <div className='relative mt-auto flex gap-1.5 px-4 pb-4 max-sm:hidden'>
-                <PanelLink destination={{ to: '/server/$id', params }} className={quickAction}>
+                <PanelLink destination={consoleLink} className={quickAction}>
                     <SquareTerminal className='size-3.5' aria-hidden />
                     Console
                 </PanelLink>
@@ -101,7 +102,7 @@ function ServerTile({
             </div>
 
             <div className='absolute top-3 right-6 flex items-center gap-1.5'>
-                <PanelLink destination={{ to: '/server/$id', params }} aria-label={`Open the console of ${item.name}`} className={cn(cornerButton, 'sm:hidden')}>
+                <PanelLink destination={consoleLink} aria-label={`Open the console of ${item.name}`} className={cn(cornerButton, 'sm:hidden')}>
                     <SquareTerminal className='size-[15px]' aria-hidden />
                 </PanelLink>
                 <DropdownMenu

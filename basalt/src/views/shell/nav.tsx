@@ -15,7 +15,6 @@ export const itemClass = (collapsed: boolean) =>
 
 /** Icons for the panel's own items, by area and item id, where its names differ from the look. */
 const serverIcons: Record<string, string> = {
-    index: 'square-terminal',
     files: 'folder',
     databases: 'database',
     schedules: 'calendar-clock',
@@ -31,6 +30,10 @@ export function iconFor(item: NavItem, area: 'server' | 'account' | 'admin'): st
     if (area === 'server' && item.extensionId === undefined && serverIcons[item.id]) return serverIcons[item.id];
     return item.icon ?? 'puzzle';
 }
+
+/** The server's first page: its dashboard while the dashboard is on, else its console. */
+export const serverIndexEntry = (dashboard: boolean) =>
+    dashboard ? { label: 'Dashboard', icon: 'layout-dashboard' } : { label: 'Console', icon: 'square-terminal' };
 
 /** One entry: an icon and its label, or the icon alone in the collapsed rail with the label as a tooltip. */
 function Entry({ icon, label, badge, collapsed }: { icon: string; label: string; badge?: ReactNode; collapsed: boolean }) {
@@ -91,16 +94,16 @@ export function AreaItems({
     items: readonly NavItem[];
     area: 'server' | 'account' | 'admin';
     collapsed: boolean;
-    rename?: (item: NavItem) => string;
+    rename?: (item: NavItem) => { label: string; icon: string } | undefined;
 }) {
     return (
         <Navigation items={items}>
             {(item, { badge }) => {
-                const label = rename?.(item) ?? item.label;
+                const entry = rename?.(item) ?? { label: item.label, icon: iconFor(item, area) };
                 return (
-                    <Tip collapsed={collapsed} label={label}>
+                    <Tip collapsed={collapsed} label={entry.label}>
                         <NavigationLink item={item} className={itemClass(collapsed)}>
-                            <Entry icon={iconFor(item, area)} label={label} badge={badge} collapsed={collapsed} />
+                            <Entry icon={entry.icon} label={entry.label} badge={badge} collapsed={collapsed} />
                         </NavigationLink>
                     </Tip>
                 );
@@ -136,15 +139,16 @@ export function Section({ title, collapsed, children, className }: { title?: str
 /** The panel's server items in two groups, the way they read: running the server, then its data. */
 const dataItems = new Set(['files', 'databases', 'schedules', 'backups']);
 
-/** This theme's server overview, which leads the server's items as its landing page. */
-const isOverview = (item: NavItem) => item.extensionId === 'basalt' && item.id === 'overview';
+/** This theme's console screen, which follows the server's first page, the dashboard. */
+const isConsoleScreen = (item: NavItem) => item.extensionId === 'basalt' && item.id === 'console';
 
 export function groupServerItems(items: readonly NavItem[]): { general: NavItem[]; data: NavItem[] } {
     const general: NavItem[] = [];
     const data: NavItem[] = [];
     for (const item of items) {
-        if (isOverview(item)) general.unshift(item);
-        else (item.extensionId === undefined && dataItems.has(item.id) ? data : general).push(item);
+        if (!isConsoleScreen(item)) (item.extensionId === undefined && dataItems.has(item.id) ? data : general).push(item);
     }
+    const consoleItem = items.find(isConsoleScreen);
+    if (consoleItem) general.splice(general.findIndex((item) => item.id === 'index' && item.extensionId === undefined) + 1, 0, consoleItem);
     return { general, data };
 }

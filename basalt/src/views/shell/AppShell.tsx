@@ -19,7 +19,8 @@ import { parseLinks } from '../../lib/links';
 import { usePrivacy } from '../../lib/privacy';
 import type { ThemeSettings } from '../../theme-types';
 import { SidebarServerSlot } from './context';
-import { AreaItems, ExternalItem, Section, SidebarLink, groupServerItems, itemClass } from './nav';
+import { useServerDashboard } from '../../lib/server';
+import { AreaItems, ExternalItem, Section, SidebarLink, groupServerItems, itemClass, serverIndexEntry } from './nav';
 import Shortcuts from './Shortcuts';
 import UserMenu from './UserMenu';
 
@@ -72,6 +73,7 @@ function Links({ where, rail }: { where: 'dashboard' | 'server'; rail: boolean }
 function AreaNavigation({ model, rail }: { model: AppLayoutModel; rail: boolean }) {
     const { area } = model;
     const account = useNavigation('account');
+    const serverDashboard = useServerDashboard();
 
     if (area.kind === 'server') {
         const { general, data } = groupServerItems(area.nav.items);
@@ -79,17 +81,17 @@ function AreaNavigation({ model, rail }: { model: AppLayoutModel; rail: boolean 
             <>
                 <Section title='General' collapsed={rail}>
                     <AreaSlot area={area} at='before' />
-                    <AreaItems items={general} area='server' collapsed={rail} rename={(item) => (item.id === 'index' && !item.extensionId ? 'Console' : item.label)} />
+                    <AreaItems items={general} area='server' collapsed={rail} rename={(item) => (item.id === 'index' && !item.extensionId ? serverIndexEntry(serverDashboard) : undefined)} />
                 </Section>
                 {data.length > 0 && (
-                    <Section title='Files and data' collapsed={rail} className='mt-4'>
+                    <Section title='Files and data' collapsed={rail} className='mt-0.5'>
                         <AreaItems items={data} area='server' collapsed={rail} />
                     </Section>
                 )}
                 <AreaSlot area={area} at='after' />
                 {area.adminLink && (
                     <>
-                        <div className='mx-3 my-3.5 border-t border-border' role='presentation' />
+                        <div className='mx-3 my-2.5 border-t border-border' role='presentation' />
                         <Tooltip placement='right' content='Open Admin Area' disabled={!rail}>
                             <NavigationLink item={area.adminLink} className={cn(itemClass(rail), 'data-[status=active]:bg-transparent before:hidden')}>
                                 <ExternalLink className='size-4 shrink-0' aria-hidden />
@@ -179,13 +181,13 @@ export default function AppShell({ model, className, children }: ViewProps<'layo
                     id='basalt-sidebar'
                     data-rail={rail || undefined}
                     className={cn(
-                        'group/sidebar glass fixed inset-y-0 left-0 z-50 flex w-72 flex-col border-r border-sidebar-border px-3 py-4 transition-transform duration-200',
+                        'group/sidebar glass fixed inset-y-0 left-0 z-50 flex w-72 flex-col overflow-y-auto border-r border-sidebar-border px-3 py-4 transition-transform duration-200 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden',
                         drawer ? 'translate-x-0' : '-translate-x-full',
                         'lg:sticky lg:top-0 lg:z-30 lg:h-dvh lg:shrink-0 lg:translate-x-0 lg:transition-[width]',
                         rail ? 'lg:w-[68px]' : 'lg:w-sidebar'
                     )}
                 >
-                    <div className={cn('flex h-10 shrink-0 items-center gap-2.5 px-2', rail && 'h-auto flex-col gap-3 px-0')}>
+                    <div className={cn('flex h-10 shrink-0 items-center gap-2.5 pl-2', rail && 'h-auto flex-col gap-3 pl-0')}>
                         <PanelLink
                             destination={{ to: '/' }}
                             aria-label={rail ? model.brand.name : undefined}
@@ -208,15 +210,16 @@ export default function AppShell({ model, className, children }: ViewProps<'layo
                         </button>
                     </div>
 
-                    <div ref={setServerSlot} className='mt-5 empty:hidden group-data-rail/sidebar:hidden' />
+                    <div ref={setServerSlot} className='mt-5 -mb-0.5 shrink-0 empty:hidden group-data-rail/sidebar:hidden' />
 
-                    <nav aria-label='Main' className='-mx-3 mt-4 flex min-h-0 flex-1 flex-col overflow-y-auto px-3 pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden'>
+                    {/* The whole sidebar scrolls when its items outgrow the window, the user menu last. */}
+                    <nav aria-label='Main' className='mt-4 flex shrink-0 flex-col'>
                         <Slot name='nav.items.before' compact={rail} />
                         <AreaNavigation model={model} rail={rail} />
                         <Slot name='nav.items.after' compact={rail} />
                     </nav>
 
-                    <div className='mt-3 shrink-0'>
+                    <div className='mt-auto shrink-0 pt-3'>
                         <UserMenu model={model} collapsed={rail} onShortcuts={() => setShortcuts(true)} />
                     </div>
                 </aside>

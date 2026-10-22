@@ -309,6 +309,16 @@
 }
 /* #endregion utilities */
 
+/* #region server pages */
+/*
+ * The engine keeps the console page mounted, hidden off the server's first page. With the server
+ * dashboard on, the console screen's path shows the console from that page, so it lifts the hiding.
+ */
+#main .hidden:has(.basalt-console-shown) {
+    display: block;
+}
+/* #endregion server pages */
+
 /* #region privacy: emails, addresses and IPs blur until hovered while the user's privacy mode is on */
 [data-basalt-privacy] [data-sensitive]:not(:hover, :focus-within) {
     filter: blur(5px);

@@ -1,4 +1,5 @@
 import { defineTheme, lazyView } from '@pterodactyl/sdk/theme';
+import { useServerDashboard } from './lib/server';
 import { skins } from './skins';
 import AuthLayout from './views/auth/AuthLayout';
 
@@ -27,9 +28,11 @@ export default defineTheme({
         'dashboard.serverCard': lazyView(() => import('./views/dashboard/ServerCard')),
 
         'server.power': lazyView(() => import('./views/server/Power')),
+        'server.stats': lazyView(() => import('./views/server/Stats')),
         'page.server.console': lazyView(() => import('./views/server/ConsolePage')),
     },
     setup({ screens }) {
-        screens.register('overview', () => import('./screens/ServerOverview'));
+        // Only while the server dashboard is on: it takes the server's first page, so the console moves here.
+        screens.register('console', () => import('./screens/ConsoleScreen'), { visible: useServerDashboard });
     },
 });

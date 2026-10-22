@@ -20,10 +20,11 @@
         "entry": "dist/client.js",
         "screens": [
             {
-                "id": "overview",
+                "id": "console",
                 "area": "server",
-                "path": "overview",
-                "nav": { "label": "Dashboard", "icon": "layout-dashboard", "order": -1000 }
+                "path": "console",
+                "nav": { "label": "Console", "icon": "square-terminal", "order": -1000 },
+                "when": { "runtime": true }
             }
         ]
     },
@@ -157,6 +158,13 @@
                 "help": "Show each server's egg banner behind its card. Set banners on the egg's admin page.",
                 "default": true,
                 "attribute": "data-basalt-server-art"
+            },
+            "serverDashboard": {
+                "type": "toggle",
+                "label": "Server dashboard",
+                "tab": "Server",
+                "help": "Open a server on a dashboard of its usage, details and shortcuts, with the console on a page of its own. Off, a server opens on its console.",
+                "default": true
             }
         }
     }

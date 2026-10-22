@@ -2,31 +2,31 @@ import type { LucideIcon } from 'lucide-react';
 import {
     Archive,
     CalendarClock,
-    Container,
     Database,
     Fingerprint,
     Folder,
-    Gauge,
     Hash,
     Info,
     KeyRound,
     MapPin,
     Network,
+    Package,
     Rocket,
     Server as ServerIcon,
     Settings,
     SquareTerminal,
-    User,
     Zap,
 } from 'lucide-react';
-import { PanelLink, ServerContentBlock, cn, useCurrentServer, useCurrentUser, type PanelDestination } from '@pterodactyl/sdk';
-import { View, useNavigation } from '@pterodactyl/sdk/theme';
-import Flag, { countryName } from '../components/Flag';
-import { usePlayers, useServerMeta } from '../lib/api';
-import { StatsPlacement } from '../views/shell/context';
-import ServerHeader from '../views/server/ServerHeader';
-import { Chip, CopyButton, FactRow, Facts, Pill, Section } from '../views/server/overview/parts';
+import { PanelLink, cn, useCurrentUser, type PanelDestination } from '@pterodactyl/sdk';
+import { View, useNavigation, type ServerConsoleModel } from '@pterodactyl/sdk/theme';
+import Flag, { countryName } from '../../components/Flag';
+import { usePlayers, useServerMeta } from '../../lib/api';
+import { consoleDestination } from '../../lib/server';
+import { StatsPlacement } from '../shell/context';
+import { Chip, CopyButton, FactRow, Facts, Pill, Section } from './overview/parts';
+import ServerHeader from './ServerHeader';
 
+/** The server's pages the dashboard links to, by the id of their navigation item. */
 const actions: readonly [id: string, label: string, icon: LucideIcon, to: string][] = [
     ['index', 'Console', SquareTerminal, '/server/$id'],
     ['files', 'Files', Folder, '/server/$id/files'],
@@ -40,39 +40,39 @@ const actions: readonly [id: string, label: string, icon: LucideIcon, to: string
 
 const plural = (count: number, one: string, many: string) => `${count} ${count === 1 ? one : many}`;
 
-/** The server's landing page: a banner, its live usage and graphs, its details and shortcuts to its pages. */
-export default function ServerOverview() {
-    const server = useCurrentServer();
+/**
+ * The server's dashboard: a banner, its live usage and graphs, its details and shortcuts to its
+ * pages. The console page places it on the server's first page while the dashboard setting is on.
+ */
+export default function Dashboard({ model }: { model: ServerConsoleModel }) {
     const user = useCurrentUser();
     const navigation = useNavigation('server');
-    const uuid = server?.attributes.uuid ?? '';
-    const meta = useServerMeta(uuid ? [uuid] : [])[uuid];
-    const players = usePlayers(meta?.minecraft ? [uuid] : [])[uuid];
+    const { attributes } = model.server;
+    const meta = useServerMeta([attributes.uuid])[attributes.uuid];
+    const players = usePlayers(meta?.minecraft ? [attributes.uuid] : [])[attributes.uuid];
 
-    if (!server) return null;
-
-    const { attributes } = server;
     const allowed = new Set(navigation.items.filter((item) => item.extensionId === undefined).map((item) => item.id));
     const params = { id: attributes.identifier };
     const sftp = `sftp://${attributes.sftp_details.ip}:${attributes.sftp_details.port}`;
     const sftpUser = `${user.username}.${attributes.identifier}`;
     const limits = attributes.feature_limits;
+    const destination = (id: string, to: string): PanelDestination =>
+        id === 'index' ? consoleDestination(attributes.identifier, true) : ({ to, params } as PanelDestination);
 
     return (
-        <ServerContentBlock title='Dashboard'>
-            <ServerHeader name={attributes.name} description={attributes.description} />
+        <>
+            <ServerHeader name={model.name} description={model.description} />
 
             <section
                 className={cn(
-                    'surface relative isolate flex min-h-48 items-end overflow-hidden p-7 pt-10',
+                    'surface relative flex min-h-48 items-end overflow-hidden',
                     !meta?.banner && 'bg-[radial-gradient(120%_140%_at_100%_0%,color-mix(in_oklab,var(--primary)_32%,transparent),transparent_60%),linear-gradient(135deg,var(--card),var(--popover))]'
                 )}
             >
-                {meta?.banner && <img src={meta.banner} alt='' className='absolute inset-0 -z-10 size-full object-cover' />}
-                <div className='absolute inset-0 -z-10 bg-linear-to-t from-black/70 via-black/25 to-transparent' />
-                <div className='min-w-0'>
-                    <h2 className='truncate text-[32px] leading-[1.1] font-bold text-white'>{attributes.name}</h2>
-                    <p className='mt-1 text-[15px] leading-[1.375] text-white/95'>
+                {meta?.banner && <img src={meta.banner} alt='' className='absolute inset-0 size-full object-cover' />}
+                <div className='relative grid min-w-0 gap-1 px-7 py-6'>
+                    <h2 className='truncate text-[32px] leading-[1.1] font-bold text-white'>{model.name}</h2>
+                    <p className='text-[15px] leading-[1.375] text-white opacity-80'>
                         <StatsPlacement.Provider value='summary'>
                             <View name='server.stats' />
                         </StatsPlacement.Provider>
@@ -110,10 +110,10 @@ export default function ServerOverview() {
                             <Chip>{attributes.uuid}</Chip>
                             <CopyButton text={attributes.uuid} label='Copy the server UUID' />
                         </FactRow>
-                        <FactRow icon={Container} label='Docker image'>
+                        <FactRow icon={Package} label='Docker image'>
                             <Chip>{attributes.docker_image}</Chip>
                         </FactRow>
-                        <FactRow icon={Gauge} label='Limits'>
+                        <FactRow icon={Database} label='Limits'>
                             <span className='flex flex-wrap justify-end gap-1.5'>
                                 <Pill>{plural(limits.databases ?? 0, 'database', 'databases')}</Pill>
                                 <Pill>{plural(limits.backups ?? 0, 'backup', 'backups')}</Pill>
@@ -125,13 +125,13 @@ export default function ServerOverview() {
 
                 <div className='flex min-w-0 flex-col gap-4'>
                     <Section icon={Zap} title='Quick actions'>
-                        <div className='grid grid-cols-2 gap-2.5 p-5 sm:grid-cols-3'>
+                        <div className='grid grid-cols-2 gap-2.5 px-5 pt-4 pb-5 sm:grid-cols-3'>
                             {actions
                                 .filter(([id]) => allowed.has(id))
                                 .map(([id, label, Icon, to]) => (
                                     <PanelLink
                                         key={id}
-                                        destination={{ to, params } as PanelDestination}
+                                        destination={destination(id, to)}
                                         className='flex min-w-0 items-center gap-2.5 rounded-md border border-border/80 bg-foreground/[0.03] px-3.5 py-3 text-sm leading-[1.5] font-semibold text-foreground no-underline transition-colors hover:border-primary/50 hover:bg-primary/10'
                                     >
                                         <Icon className='size-[18px] shrink-0 text-primary' aria-hidden />
@@ -147,7 +147,7 @@ export default function ServerOverview() {
                                 <Chip sensitive>{sftp}</Chip>
                                 <CopyButton text={sftp} label='Copy the SFTP address' />
                             </FactRow>
-                            <FactRow icon={User} label='Username'>
+                            <FactRow icon={Hash} label='Username'>
                                 <Chip>{sftpUser}</Chip>
                                 <CopyButton text={sftpUser} label='Copy the SFTP username' />
                             </FactRow>
@@ -155,6 +155,6 @@ export default function ServerOverview() {
                     </Section>
                 </div>
             </div>
-        </ServerContentBlock>
+        </>
     );
 }

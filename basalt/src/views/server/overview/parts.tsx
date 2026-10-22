@@ -47,7 +47,11 @@ export function Chip({ children, sensitive }: { children: ReactNode; sensitive?:
 export function CopyButton({ text, label }: { text: string; label: string }) {
     return (
         <CopyOnClick text={text}>
-            <button type='button' aria-label={label} className='inline-flex shrink-0 items-center border-0 bg-transparent p-1 text-muted-foreground transition-colors hover:text-foreground'>
+            <button
+                type='button'
+                aria-label={label}
+                className='inline-flex size-[26px] shrink-0 items-center justify-center rounded-[6px] border-0 bg-transparent text-muted-foreground transition-colors hover:bg-foreground/[0.06] hover:text-foreground'
+            >
                 <Copy className='size-3.5' aria-hidden />
             </button>
         </CopyOnClick>

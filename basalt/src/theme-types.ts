@@ -2,7 +2,7 @@
 import type { ExtensionConfig as SdkExtensionConfig, ExtensionConfigValue } from '@pterodactyl/sdk';
 
 export type ExtensionId = "basalt";
-export type ExtensionScreenId = "overview";
+export type ExtensionScreenId = "console";
 export type ExtensionPermission = never;
 export interface ExtensionConfig extends SdkExtensionConfig {
 
@@ -29,4 +29,5 @@ export interface ThemeSettings {
     readonly "announcementTitle": string;
     readonly "announcementButton": string;
     readonly "serverArt": boolean;
+    readonly "serverDashboard": boolean;
 }

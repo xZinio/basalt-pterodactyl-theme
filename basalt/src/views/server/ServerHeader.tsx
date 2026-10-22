@@ -15,7 +15,7 @@ export default function ServerHeader({
 }) {
     return (
         <div className={cn('mb-4 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between', className)}>
-            <div className='min-w-0'>
+            <div className='min-w-0 flex-1'>
                 <h1 className='line-clamp-1 font-header text-2xl leading-relaxed font-medium text-foreground'>{name}</h1>
                 {description && <p className='line-clamp-2 text-sm text-muted-foreground'>{description}</p>}
             </div>

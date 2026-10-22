@@ -1,6 +1,6 @@
 import { useContext, type ReactNode } from 'react';
 import type { LucideIcon } from 'lucide-react';
-import { Activity, Copy, Cpu, HardDrive, MemoryStick, Timer, Wifi } from 'lucide-react';
+import { Copy, Cpu, HardDrive, MemoryStick, Network, Timer, Zap } from 'lucide-react';
 import { CopyOnClick, bytesToString, cn } from '@pterodactyl/sdk';
 import type { ServerRunState, ServerStatMetric, ServerStatsModel, ViewProps } from '@pterodactyl/sdk/theme';
 import { StatsPlacement } from '../shell/context';
@@ -47,7 +47,7 @@ function UsageCard({
                     <span className='truncate text-[17px] leading-[1.375] font-bold text-foreground' data-sensitive={action ? '' : undefined}>
                         {value}
                     </span>
-                    {limit && <small className='shrink-0 text-xs font-semibold text-muted-foreground'>/ {limit}</small>}
+                    {limit && <small className='shrink-0 text-xs leading-[1.375] font-semibold text-muted-foreground'>/ {limit}</small>}
                     {action}
                 </p>
                 <p className='caption leading-[1.375]'>{label}</p>
@@ -89,13 +89,17 @@ function Cards({ model, className }: { model: ServerStatsModel; className?: stri
                 meter={model.disk}
             />
             <UsageCard
-                icon={Wifi}
+                icon={Network}
                 label='Address'
                 value={address}
                 action={
                     model.address && (
                         <CopyOnClick text={model.address}>
-                            <button type='button' aria-label='Copy the address' className='ml-auto inline-flex shrink-0 items-center self-center border-0 bg-transparent p-1 text-muted-foreground hover:text-foreground'>
+                            <button
+                                type='button'
+                                aria-label='Copy the address'
+                                className='ml-auto inline-flex size-[26px] shrink-0 items-center justify-center self-center rounded-[6px] border-0 bg-transparent text-muted-foreground transition-colors hover:bg-foreground/[0.06] hover:text-foreground'
+                            >
                                 <Copy className='size-3.5' aria-hidden />
                             </button>
                         </CopyOnClick>
@@ -124,7 +128,7 @@ export default function Stats({ model, Default, className }: ViewProps<'server.s
     if (placement === 'facts') {
         return (
             <>
-                <FactRow icon={Activity} label='Status'>
+                <FactRow icon={Zap} label='Status'>
                     {stateLabel(model.state)}
                 </FactRow>
                 <FactRow icon={Timer} label='Uptime'>
