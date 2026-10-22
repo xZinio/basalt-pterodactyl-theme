@@ -198,11 +198,11 @@ export default function AppShell({ model, className, children }: ViewProps<'layo
                         rail ? 'lg:w-[68px]' : 'lg:w-sidebar'
                     )}
                 >
-                    <div className={cn('flex h-10 shrink-0 items-center gap-2.5 pl-2', rail && 'h-auto flex-col gap-3 pl-0')}>
+                    <div className={cn('flex h-10 shrink-0 items-center gap-2.5 pl-2', rail && 'h-auto flex-col gap-2 pl-0')}>
                         <PanelLink
                             destination={{ to: '/' }}
                             aria-label={rail ? model.brand.name : undefined}
-                            className='flex min-w-0 flex-1 items-center gap-2.5 text-foreground no-underline'
+                            className={cn('flex h-10 min-w-0 items-center gap-2.5 text-foreground no-underline', rail ? 'flex-none' : 'flex-1')}
                         >
                             <Logo brand={model.brand} />
                             {!rail && <span className='truncate text-lg leading-[1.5] font-semibold'>{model.brand.name}</span>}

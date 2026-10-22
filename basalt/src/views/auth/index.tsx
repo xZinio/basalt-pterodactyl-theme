@@ -15,7 +15,7 @@ export function LoginPage({ model }: ViewProps<'page.auth.login'>) {
                 </PanelLink>
             }
         >
-            <TextField field={fields.username} label='Username or email' />
+            <TextField field={fields.username} label='Username or email' autoFocus />
             <TextField field={fields.password} label='Password' />
             {Captcha && <Captcha />}
             <Button type='submit' size='xlarge' disabled={!model.canSubmit} isLoading={model.submitting}>

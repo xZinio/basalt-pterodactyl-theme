@@ -271,7 +271,7 @@ export default function ServerList({ model, className }: ViewProps<'dashboard.se
         <DashboardDataContext.Provider value={{ meta, players }}>
             <div className={cn('@container flex flex-col gap-4', className)}>
                 <Announcement />
-                <div className='mt-2 flex flex-col gap-3 first:mt-0 sm:flex-row sm:items-center sm:justify-between'>
+                <div className='flex flex-col gap-4 sm:mt-2 sm:flex-row sm:items-center sm:justify-between sm:first:mt-0'>
                     <h1 className='text-3xl leading-9 font-semibold text-foreground'>Servers</h1>
                     {model.canViewOthers && (
                         <Switch
@@ -279,7 +279,7 @@ export default function ServerList({ model, className }: ViewProps<'dashboard.se
                             onChange={() => model.actions.setScope(others ? 'mine' : 'others')}
                             label={others ? "Showing others' servers" : 'Showing your servers'}
                             controlPosition='end'
-                            className='gap-4'
+                            className='gap-4 self-start sm:self-auto'
                         />
                     )}
                 </div>

@@ -92,8 +92,6 @@
     --layout-auth-width: 60rem;
     --layout-content-width: 100rem;
     --layout-sidebar-width: 16rem;
-    --layout-gutter: calc(var(--spacing) * 4);
-    --layout-page-spacing: calc(var(--spacing) * 6);
     --basalt-logo-height: 28px;
     --basalt-glass-blur: 14px;
 }
