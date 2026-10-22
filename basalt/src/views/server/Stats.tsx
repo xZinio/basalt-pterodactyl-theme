@@ -42,7 +42,7 @@ function UsageCard({
             <span className='flex w-16 shrink-0 items-center justify-center bg-primary/12 text-primary'>
                 <Icon className='size-5' aria-hidden />
             </span>
-            <div className='flex min-w-0 flex-1 flex-col justify-center py-3.5 pr-4 pl-4'>
+            <div className='grid min-w-0 flex-1 gap-0.5 px-4 py-3.5'>
                 <p className='flex min-w-0 items-baseline gap-1.5'>
                     <span className='truncate text-[17px] leading-[1.375] font-bold text-foreground' data-sensitive={action ? '' : undefined}>
                         {value}
@@ -52,7 +52,7 @@ function UsageCard({
                 </p>
                 <p className='caption leading-[1.375]'>{label}</p>
                 {meter && (
-                    <span className='mt-2 block h-1 overflow-hidden rounded-full bg-foreground/10'>
+                    <span className='mt-1.5 block h-1 overflow-hidden rounded-full bg-foreground/10'>
                         <span className={cn('block h-full rounded-full transition-[width] duration-500', tone)} style={{ width: `${percent(meter)}%` }} />
                     </span>
                 )}
@@ -66,7 +66,7 @@ function Cards({ model, className }: { model: ServerStatsModel; className?: stri
     const address = model.address ?? 'n/a';
 
     return (
-        <div className={cn('grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4', className)}>
+        <div className={cn('grid grid-cols-1 gap-4 @min-[461px]:grid-cols-2 @min-[821px]:grid-cols-4', className)}>
             <UsageCard
                 icon={Cpu}
                 label='CPU'

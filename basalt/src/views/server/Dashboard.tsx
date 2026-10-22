@@ -59,8 +59,9 @@ export default function Dashboard({ model }: { model: ServerConsoleModel }) {
     const destination = (id: string, to: string): PanelDestination =>
         id === 'index' ? consoleDestination(attributes.identifier, true) : ({ to, params } as PanelDestination);
 
+    // Its grids follow its own width: the stat tiles and the two columns of sections fold as it narrows.
     return (
-        <>
+        <div className='@container'>
             <ServerHeader name={model.name} description={model.description} />
 
             <section
@@ -87,7 +88,7 @@ export default function Dashboard({ model }: { model: ServerConsoleModel }) {
 
             <View name='server.graphs' className='mt-4' />
 
-            <div className='mt-4 grid grid-cols-1 items-start gap-4 xl:grid-cols-2'>
+            <div className='mt-4 grid grid-cols-1 items-start gap-4 @min-[701px]:grid-cols-2'>
                 <Section icon={Info} title='Server information'>
                     <Facts>
                         <StatsPlacement.Provider value='facts'>
@@ -125,7 +126,7 @@ export default function Dashboard({ model }: { model: ServerConsoleModel }) {
 
                 <div className='flex min-w-0 flex-col gap-4'>
                     <Section icon={Zap} title='Quick actions'>
-                        <div className='grid grid-cols-2 gap-2.5 px-5 pt-4 pb-5 sm:grid-cols-3'>
+                        <div className='grid grid-cols-[repeat(auto-fill,minmax(9.5rem,1fr))] gap-2.5 px-5 pt-4 pb-5'>
                             {actions
                                 .filter(([id]) => allowed.has(id))
                                 .map(([id, label, Icon, to]) => (
@@ -155,6 +156,6 @@ export default function Dashboard({ model }: { model: ServerConsoleModel }) {
                     </Section>
                 </div>
             </div>
-        </>
+        </div>
     );
 }

@@ -237,7 +237,7 @@ export default function AppShell({ model, className, children }: ViewProps<'layo
                         <Slot name='nav.items.after' compact={rail} />
                     </nav>
 
-                    <div className='mt-auto shrink-0 pt-3'>
+                    <div className='mt-auto shrink-0 pt-4'>
                         <UserMenu model={model} collapsed={rail} onShortcuts={() => setShortcuts(true)} />
                     </div>
                 </aside>

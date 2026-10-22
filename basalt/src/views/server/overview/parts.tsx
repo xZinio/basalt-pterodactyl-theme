@@ -28,7 +28,7 @@ export function FactRow({ icon: Icon, label, children }: { icon: LucideIcon; lab
                 <Icon className='size-[15px] shrink-0' aria-hidden />
                 {label}
             </span>
-            <span className='flex min-w-0 items-center justify-end gap-2 text-right text-sm leading-[1.5] text-foreground'>{children}</span>
+            <span className='flex min-w-0 items-center justify-end gap-1.5 text-right text-sm leading-[1.5] text-foreground'>{children}</span>
         </div>
     );
 }
