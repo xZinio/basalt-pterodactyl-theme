@@ -60,6 +60,19 @@ test('links each server card to the server and its console', () => {
     expect(links.some((href) => /^\/server\/[^/]+\/files/.test(href))).toBe(true);
 });
 
+test('adds the colour mode, accent and interface cards to the account page, keeping its slots', () => {
+    rendered = renderView('page.account.overview', {
+        themes,
+        fixture: 'default',
+        slots: { 'account.overview.after': () => <p>Account extension</p> },
+    });
+
+    expect(screen.getByRole('radio', { name: 'System' })).not.toBeNull();
+    expect(screen.getByRole('radiogroup', { name: 'Accent color' })).not.toBeNull();
+    expect(screen.getByRole('switch', { name: 'Privacy mode' })).not.toBeNull();
+    expect(screen.getByText('Account extension')).not.toBeNull();
+});
+
 test('keeps the engine field attributes on the sign-in form', () => {
     rendered = renderView('page.auth.login', { themes, fixture: 'invalid' });
 

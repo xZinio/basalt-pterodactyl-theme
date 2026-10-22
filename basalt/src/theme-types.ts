@@ -29,5 +29,7 @@ export interface ThemeSettings {
     readonly "announcementTitle": string;
     readonly "announcementButton": string;
     readonly "serverArt": boolean;
+    readonly "userAccent": boolean;
+    readonly "languagePicker": boolean;
     readonly "serverDashboard": boolean;
 }

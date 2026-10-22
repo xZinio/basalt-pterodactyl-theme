@@ -34,14 +34,14 @@ export interface Players {
 const empty: Preferences = { folders: [], favorites: [], order: [], accent: null };
 export const preferencesKey = ['basalt', 'preferences'] as const;
 
-/** The signed-in user's folders, favourites, card order and accent. */
-export function usePreferences(): Preferences {
+/** The signed-in user's folders, favourites, card order and accent; `loaded` once they have arrived. */
+export function usePreferences(): Preferences & { readonly loaded: boolean } {
     const { data } = useQuery({
         queryKey: preferencesKey,
         queryFn: async () => (await http.get<Preferences>(`${BASE}/preferences`)).data,
         staleTime: 5 * 60_000,
     });
-    return data ?? empty;
+    return { ...(data ?? empty), loaded: data !== undefined };
 }
 
 /** Saves part of the preferences; the change shows at once and is undone if the save fails. */
@@ -90,4 +90,34 @@ export function usePlayers(uuids: readonly string[]): Record<string, Players | n
         staleTime: 25_000,
     });
     return data ?? {};
+}
+
+export interface Languages {
+    /** The language the panel is shown in for the user. */
+    readonly language: string;
+    /** The panel's installed languages, each named in itself, by code. */
+    readonly languages: Readonly<Record<string, string>>;
+}
+
+const languageKey = ['basalt', 'language'] as const;
+
+export function useLanguages(): Languages | undefined {
+    return useQuery({
+        queryKey: languageKey,
+        queryFn: async () => (await http.get<Languages>(`${BASE}/language`)).data,
+        staleTime: 5 * 60_000,
+    }).data;
+}
+
+/** Saves the user's language; the panel follows its current user's language, so it switches at once. */
+export function useUpdateLanguage() {
+    const client = useQueryClient();
+
+    return useMutation({
+        mutationFn: async (language: string) => (await http.put<Languages>(`${BASE}/language`, { language })).data,
+        onSuccess: (data) => {
+            client.setQueryData(languageKey, data);
+            void client.invalidateQueries({ queryKey: ['account', 'current-user'] });
+        },
+    });
 }

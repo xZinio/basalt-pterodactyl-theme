@@ -2,6 +2,7 @@ import { EllipsisVertical, Eye, EyeOff, Keyboard, LifeBuoy, LogOut, Moon, Sun, U
 import { DropdownMenu, cn } from '@pterodactyl/sdk';
 import { useThemeSettings, type AppLayoutModel } from '@pterodactyl/sdk/theme';
 import UserAvatar from '../../components/UserAvatar';
+import { applyAccent } from '../../lib/accent';
 import { usePrivacy } from '../../lib/privacy';
 import type { ThemeSettings } from '../../theme-types';
 
@@ -67,7 +68,14 @@ export default function UserMenu({
             <DropdownMenu.Item icon={Keyboard} onClick={onShortcuts}>
                 Keyboard shortcuts
             </DropdownMenu.Item>
-            <DropdownMenu.Item icon={LogOut} onClick={model.signOut}>
+            {/* The next person to sign in on this browser starts from the panel's accent. */}
+            <DropdownMenu.Item
+                icon={LogOut}
+                onClick={() => {
+                    applyAccent(null);
+                    model.signOut();
+                }}
+            >
                 Sign out
             </DropdownMenu.Item>
         </DropdownMenu>

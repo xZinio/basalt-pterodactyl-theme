@@ -1,5 +1,6 @@
 import { lazy } from 'react';
 import { defineTheme, lazyView } from '@pterodactyl/sdk/theme';
+import { applyAccent, cachedAccent } from './lib/accent';
 import { useServerDashboard } from './lib/server';
 import { skins } from './skins';
 import AuthLayout from './views/auth/AuthLayout';
@@ -7,6 +8,12 @@ import AuthLayout from './views/auth/AuthLayout';
 const auth = () => import('./views/auth');
 const areas = () => import('./views/shell/AreaLayouts');
 const fields = () => import('./views/admin/Fields');
+
+// The user's personal accent, painted before the first render; the shell reconciles it with their preferences.
+if (typeof document !== 'undefined') {
+    const accent = cachedAccent();
+    if (accent) applyAccent(accent);
+}
 
 /**
  * Basalt. Every view except the sign-in layout loads with its route: the entry stays small, and
@@ -25,6 +32,9 @@ export default defineTheme({
         'layout.account': lazyView(areas, 'AreaLayout'),
         'layout.admin': lazyView(areas, 'AreaLayout'),
         'layout.server': lazyView(areas, 'ServerLayout'),
+
+        'page.account.overview': lazyView(() => import('./views/account/AccountPage')),
+        'account.avatar': lazyView(() => import('./views/account/Avatar')),
 
         'dashboard.serverList': lazyView(() => import('./views/dashboard/ServerList')),
         'dashboard.serverCard': lazyView(() => import('./views/dashboard/ServerCard')),

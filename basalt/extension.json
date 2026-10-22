@@ -159,6 +159,20 @@
                 "default": true,
                 "attribute": "data-basalt-server-art"
             },
+            "userAccent": {
+                "type": "toggle",
+                "label": "Personal accent colour",
+                "tab": "Account",
+                "help": "Let users pick their own accent colour on their account page. It changes the panel only for them.",
+                "default": true
+            },
+            "languagePicker": {
+                "type": "toggle",
+                "label": "Language picker",
+                "tab": "Account",
+                "help": "Let users choose, on their account page, which of the panel's installed languages it is shown in.",
+                "default": true
+            },
             "serverDashboard": {
                 "type": "toggle",
                 "label": "Server dashboard",

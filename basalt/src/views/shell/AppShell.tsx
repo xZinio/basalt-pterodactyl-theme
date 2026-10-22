@@ -14,6 +14,8 @@ import {
     type ViewProps,
 } from '@pterodactyl/sdk/theme';
 import BrandMark from '../../components/BrandMark';
+import { applyAccent } from '../../lib/accent';
+import { usePreferences } from '../../lib/api';
 import { useLocalState } from '../../lib/local';
 import { parseLinks } from '../../lib/links';
 import { usePrivacy } from '../../lib/privacy';
@@ -146,6 +148,15 @@ export default function AppShell({ model, className, children }: ViewProps<'layo
     const [serverSlot, setServerSlot] = useState<HTMLElement | null>(null);
     const { pathname } = usePanelLocation();
     usePrivacy();
+
+    const { userAccent } = useThemeSettings<ThemeSettings>();
+    const preferences = usePreferences();
+
+    // The user's personal accent, while administrators allow them; the panel's own until their preferences arrive.
+    useEffect(() => {
+        if (!userAccent) applyAccent(null);
+        else if (preferences.loaded) applyAccent(preferences.accent);
+    }, [userAccent, preferences.loaded, preferences.accent]);
 
     const rail = collapsed && desktop;
     const toggleSidebar = useCallback(() => setCollapsed(!collapsed), [collapsed, setCollapsed]);
