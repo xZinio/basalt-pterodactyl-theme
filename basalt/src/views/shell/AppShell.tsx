@@ -1,0 +1,232 @@
+import { useCallback, useEffect, useState } from 'react';
+import { ExternalLink, Menu, PanelLeftClose, PanelLeftOpen, X } from 'lucide-react';
+import { PanelLink, SpinnerOverlay, Tooltip, cn, usePanelLocation } from '@pterodactyl/sdk';
+import {
+    Main,
+    NavigationLink,
+    Slot,
+    View,
+    useNavigation,
+    useThemeSettings,
+    type AppArea,
+    type AppLayoutModel,
+    type LayoutBrand,
+    type ViewProps,
+} from '@pterodactyl/sdk/theme';
+import BrandMark from '../../components/BrandMark';
+import { useLocalState } from '../../lib/local';
+import { parseLinks } from '../../lib/links';
+import { usePrivacy } from '../../lib/privacy';
+import type { ThemeSettings } from '../../theme-types';
+import { SidebarServerSlot } from './context';
+import { AreaItems, ExternalItem, Section, SidebarLink, groupServerItems, itemClass } from './nav';
+import Shortcuts from './Shortcuts';
+import UserMenu from './UserMenu';
+
+const DESKTOP = '(min-width: 64rem)';
+
+function useDesktop(): boolean {
+    const [desktop, setDesktop] = useState(() => typeof window !== 'undefined' && window.matchMedia(DESKTOP).matches);
+    useEffect(() => {
+        const query = window.matchMedia(DESKTOP);
+        const update = () => setDesktop(query.matches);
+        query.addEventListener('change', update);
+        return () => query.removeEventListener('change', update);
+    }, []);
+    return desktop;
+}
+
+export function Logo({ brand, className }: { brand: LayoutBrand; className?: string }) {
+    return brand.logoUrl ? (
+        <img src={brand.logoUrl} alt='' className={cn('size-7 shrink-0 object-contain', className)} />
+    ) : (
+        <BrandMark className={cn('size-7 shrink-0', className)} />
+    );
+}
+
+const iconButton =
+    'inline-flex shrink-0 items-center justify-center rounded-md border-0 bg-transparent text-muted-foreground transition-colors hover:bg-foreground/[0.06] hover:text-foreground';
+
+/** The slots of the area's navigation, which its own layout would render if it drew the navigation. */
+function AreaSlot({ area, at }: { area: AppArea; at: 'before' | 'after' }) {
+    if (area.kind === 'server') return <Slot name={`server.navigation.${at}`} data={area.server} />;
+    if (area.kind === 'account') return <Slot name={`account.navigation.${at}`} />;
+    if (area.kind === 'admin') return <Slot name={`panel.navigation.${at}`} />;
+    return null;
+}
+
+function Links({ where, rail }: { where: 'dashboard' | 'server'; rail: boolean }) {
+    const { navLinks } = useThemeSettings<ThemeSettings>();
+    const links = parseLinks(navLinks).filter((link) => link.area === 'all' || link.area === where);
+
+    return links.length > 0 ? (
+        <Section title='Links' collapsed={rail} className='mt-4'>
+            {links.map((link) => (
+                <ExternalItem key={link.url + link.label} link={link} collapsed={rail} />
+            ))}
+        </Section>
+    ) : null;
+}
+
+/** The navigation of the area the user is in. */
+function AreaNavigation({ model, rail }: { model: AppLayoutModel; rail: boolean }) {
+    const { area } = model;
+    const account = useNavigation('account');
+
+    if (area.kind === 'server') {
+        const { general, data } = groupServerItems(area.nav.items);
+        return (
+            <>
+                <Section title='General' collapsed={rail}>
+                    <AreaSlot area={area} at='before' />
+                    <AreaItems items={general} area='server' collapsed={rail} rename={(item) => (item.id === 'index' && !item.extensionId ? 'Console' : item.label)} />
+                </Section>
+                {data.length > 0 && (
+                    <Section title='Files and data' collapsed={rail} className='mt-4'>
+                        <AreaItems items={data} area='server' collapsed={rail} />
+                    </Section>
+                )}
+                <AreaSlot area={area} at='after' />
+                {area.adminLink && (
+                    <>
+                        <div className='mx-3 my-3.5 border-t border-border' role='presentation' />
+                        <Tooltip placement='right' content='Open Admin Area' disabled={!rail}>
+                            <NavigationLink item={area.adminLink} className={cn(itemClass(rail), 'data-[status=active]:bg-transparent before:hidden')}>
+                                <ExternalLink className='size-4 shrink-0' aria-hidden />
+                                <span className={rail ? 'sr-only' : 'min-w-0 flex-1 truncate'}>Open Admin Area</span>
+                            </NavigationLink>
+                        </Tooltip>
+                    </>
+                )}
+                <Links where='server' rail={rail} />
+            </>
+        );
+    }
+
+    if (area.kind === 'admin') {
+        return (
+            <Section title='Administration' collapsed={rail}>
+                <AreaSlot area={area} at='before' />
+                <AreaItems items={area.nav.items} area='admin' collapsed={rail} />
+                <AreaSlot area={area} at='after' />
+            </Section>
+        );
+    }
+
+    const dashboard = model.links.find((link) => link.id === 'dashboard');
+    const admin = model.links.find((link) => link.id === 'admin');
+
+    return (
+        <>
+            <Section collapsed={rail}>
+                {dashboard && <SidebarLink destination={dashboard.destination} exact={dashboard.exact} icon='layers' label='Overview' collapsed={rail} />}
+                {admin && <SidebarLink destination={admin.destination} exact={admin.exact} icon='user-cog' label='Admin' collapsed={rail} />}
+            </Section>
+            <Section title='Account' collapsed={rail} className='mt-4'>
+                {area.kind === 'account' && <AreaSlot area={area} at='before' />}
+                <AreaItems items={area.kind === 'account' ? area.nav.items : account.items} area='account' collapsed={rail} />
+                {area.kind === 'account' && <AreaSlot area={area} at='after' />}
+            </Section>
+            <Links where='dashboard' rail={rail} />
+        </>
+    );
+}
+
+/**
+ * The frame of every signed-in page: a frosted sidebar with the area's navigation on large screens,
+ * a bar and a drawer below them, and the page in <Main>.
+ */
+export default function AppShell({ model, className, children }: ViewProps<'layout.app'>) {
+    const desktop = useDesktop();
+    const [collapsed, setCollapsed] = useLocalState('basalt.sidebar.collapsed', false);
+    const [drawer, setDrawer] = useState(false);
+    const [shortcuts, setShortcuts] = useState(false);
+    const [serverSlot, setServerSlot] = useState<HTMLElement | null>(null);
+    const { pathname } = usePanelLocation();
+    usePrivacy();
+
+    const rail = collapsed && desktop;
+    const toggleSidebar = useCallback(() => setCollapsed(!collapsed), [collapsed, setCollapsed]);
+
+    // A link in the drawer closes it when it navigates.
+    useEffect(() => setDrawer(false), [pathname]);
+
+    return (
+        <SidebarServerSlot.Provider value={serverSlot}>
+            <div className={cn('min-h-dvh lg:flex', className)}>
+                <SpinnerOverlay visible={model.signingOut} fixed />
+
+                <header className='sticky top-0 z-30 flex h-[57px] items-center gap-4 border-b border-border bg-sidebar px-3 lg:hidden'>
+                    <button
+                        type='button'
+                        aria-label='Open navigation'
+                        aria-controls='basalt-sidebar'
+                        aria-expanded={drawer}
+                        onClick={() => setDrawer(true)}
+                        className={cn(iconButton, 'size-10')}
+                    >
+                        <Menu className='size-5' aria-hidden />
+                    </button>
+                    <PanelLink destination={{ to: '/' }} className='flex min-w-0 items-center gap-2.5 text-foreground no-underline'>
+                        <Logo brand={model.brand} />
+                        <span className='truncate text-lg leading-[1.5] font-semibold'>{model.brand.name}</span>
+                    </PanelLink>
+                </header>
+
+                {drawer && <div className='fixed inset-0 z-40 bg-black/60 lg:hidden' onClick={() => setDrawer(false)} aria-hidden />}
+
+                <aside
+                    id='basalt-sidebar'
+                    data-rail={rail || undefined}
+                    className={cn(
+                        'group/sidebar glass fixed inset-y-0 left-0 z-50 flex w-72 flex-col border-r border-sidebar-border px-3 py-4 transition-transform duration-200',
+                        drawer ? 'translate-x-0' : '-translate-x-full',
+                        'lg:sticky lg:top-0 lg:z-30 lg:h-dvh lg:shrink-0 lg:translate-x-0 lg:transition-[width]',
+                        rail ? 'lg:w-[68px]' : 'lg:w-sidebar'
+                    )}
+                >
+                    <div className={cn('flex h-10 shrink-0 items-center gap-2.5 px-2', rail && 'h-auto flex-col gap-3 px-0')}>
+                        <PanelLink
+                            destination={{ to: '/' }}
+                            aria-label={rail ? model.brand.name : undefined}
+                            className='flex min-w-0 flex-1 items-center gap-2.5 text-foreground no-underline'
+                        >
+                            <Logo brand={model.brand} />
+                            {!rail && <span className='truncate text-lg leading-[1.5] font-semibold'>{model.brand.name}</span>}
+                        </PanelLink>
+                        <button
+                            type='button'
+                            aria-label={rail ? 'Expand sidebar' : 'Collapse sidebar'}
+                            title={rail ? 'Expand sidebar' : 'Collapse sidebar'}
+                            onClick={toggleSidebar}
+                            className={cn(iconButton, 'hidden size-8 lg:inline-flex')}
+                        >
+                            {rail ? <PanelLeftOpen className='size-[18px]' aria-hidden /> : <PanelLeftClose className='size-[18px]' aria-hidden />}
+                        </button>
+                        <button type='button' aria-label='Close navigation' onClick={() => setDrawer(false)} className={cn(iconButton, 'size-8 lg:hidden')}>
+                            <X className='size-[18px]' aria-hidden />
+                        </button>
+                    </div>
+
+                    <div ref={setServerSlot} className='mt-5 empty:hidden group-data-rail/sidebar:hidden' />
+
+                    <nav aria-label='Main' className='-mx-3 mt-4 flex min-h-0 flex-1 flex-col overflow-y-auto px-3 pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden'>
+                        <Slot name='nav.items.before' compact={rail} />
+                        <AreaNavigation model={model} rail={rail} />
+                        <Slot name='nav.items.after' compact={rail} />
+                    </nav>
+
+                    <div className='mt-3 shrink-0'>
+                        <UserMenu model={model} collapsed={rail} onShortcuts={() => setShortcuts(true)} />
+                    </div>
+                </aside>
+
+                <Main className='min-w-0 flex-1'>{children}</Main>
+
+                {/* The panel's server search: Cmd+/ (Ctrl+/) opens it; the trigger stays out of sight. */}
+                <View name='app.search' className='sr-only' />
+                <Shortcuts open={shortcuts} setOpen={setShortcuts} toggleSidebar={toggleSidebar} />
+            </div>
+        </SidebarServerSlot.Provider>
+    );
+}

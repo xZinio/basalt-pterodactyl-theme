@@ -1,0 +1,13 @@
+{
+    "name": "mock-wings",
+    "private": true,
+    "version": "1.0.0",
+    "description": "A stand-in for the Wings daemon that serves fixed data, so the panel's server pages render without real game servers.",
+    "type": "module",
+    "scripts": {
+        "start": "node server.mjs"
+    },
+    "dependencies": {
+        "ws": "^8.18.0"
+    }
+}

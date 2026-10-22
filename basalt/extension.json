@@ -1,0 +1,163 @@
+{
+    "$schema": "./node_modules/@pterodactyl/sdk/manifest.schema.json",
+    "id": "basalt",
+    "type": "theme",
+    "name": "Basalt",
+    "version": "1.0.0",
+    "description": "A graphite-dark panel theme: a glass sidebar, a split sign-in card, a card dashboard with folders and favourites, a server overview and a docked console.",
+    "author": "carlos",
+    "icon": "palette",
+    "requires": {
+        "panel": "^2.0.0-dev",
+        "sdk": ">=2.0.0-beta.6 <3.0",
+        "php": "^8.3"
+    },
+    "provider": "Basalt\\BasaltProvider",
+    "autoload": {
+        "Basalt\\": "app"
+    },
+    "ui": {
+        "entry": "dist/client.js",
+        "screens": [
+            {
+                "id": "overview",
+                "area": "server",
+                "path": "overview",
+                "nav": { "label": "Dashboard", "icon": "layout-dashboard", "order": -1000 }
+            }
+        ]
+    },
+    "theme": {
+        "extends": "classic",
+        "stylesheet": "dist/theme.css",
+        "schemes": ["dark", "light"],
+        "settings": {
+            "accent": {
+                "type": "color",
+                "label": "Accent colour",
+                "help": "Buttons, links, the active navigation item and focus rings.",
+                "default": "#228cf4",
+                "token": "--basalt-primary"
+            },
+            "logo": {
+                "type": "image",
+                "label": "Logo",
+                "help": "Shown beside the panel name in the sidebar and on the sign-in card. A square image looks best.",
+                "token": "--brand-logo"
+            },
+            "glass": {
+                "type": "toggle",
+                "label": "Frosted sidebar",
+                "help": "Blur what scrolls under the sidebar and the mobile bar.",
+                "default": true,
+                "attribute": "data-basalt-glass"
+            },
+            "density": {
+                "type": "select",
+                "label": "Density",
+                "options": { "comfortable": "Comfortable", "compact": "Compact" },
+                "default": "comfortable",
+                "attribute": "data-basalt-density"
+            },
+            "gravatar": {
+                "type": "toggle",
+                "label": "Gravatar pictures",
+                "help": "Show a user's Gravatar until they upload a picture. Loading it sends a hash of their email address to Gravatar.",
+                "default": true
+            },
+            "loginLayout": {
+                "type": "select",
+                "label": "Sign-in layout",
+                "tab": "Sign-in",
+                "options": { "banner": "Card with image banner", "simple": "Card only" },
+                "default": "banner",
+                "attribute": "data-basalt-login-layout"
+            },
+            "loginImage": {
+                "type": "image",
+                "label": "Sign-in image",
+                "tab": "Sign-in",
+                "help": "The picture beside the sign-in form. Without one, the banner uses the built-in artwork.",
+                "token": "--basalt-login-image"
+            },
+            "loginTagline": {
+                "type": "text",
+                "label": "Sign-in tagline",
+                "tab": "Sign-in",
+                "help": "The line under the panel name on the sign-in banner.",
+                "default": "Sign in to manage your servers.",
+                "maxLength": 120
+            },
+            "loginLinks": {
+                "type": "text",
+                "label": "Sign-in links",
+                "tab": "Sign-in",
+                "help": "Extra links under the sign-in form, as Label|URL pairs separated by commas, such as: Support|https://discord.gg/example, Status|https://status.example.com",
+                "default": "",
+                "maxLength": 600
+            },
+            "navLinks": {
+                "type": "text",
+                "label": "Sidebar links",
+                "tab": "Navigation",
+                "help": "A Links section in the sidebar, as Label|URL|icon|where entries separated by commas. The icon is any lucide name, such as message-circle, book-open or shopping-cart; where is all (the default), dashboard or server.",
+                "default": "",
+                "maxLength": 1000
+            },
+            "supportUrl": {
+                "type": "text",
+                "label": "Support link",
+                "tab": "Navigation",
+                "help": "Where Support in the user menu leads. Leave empty to hide it.",
+                "default": "",
+                "maxLength": 300
+            },
+            "navHeadings": {
+                "type": "toggle",
+                "label": "Section headings",
+                "tab": "Navigation",
+                "help": "Group sidebar items under small headings.",
+                "default": true,
+                "attribute": "data-basalt-nav-headings"
+            },
+            "welcome": {
+                "type": "toggle",
+                "label": "Welcome card",
+                "tab": "Dashboard",
+                "help": "Greet the user by name above their servers.",
+                "default": true
+            },
+            "announcement": {
+                "type": "text",
+                "label": "Announcement",
+                "tab": "Dashboard",
+                "help": "A notice at the top of the dashboard. Leave empty for none. **Double asterisks** make text bold.",
+                "default": "",
+                "maxLength": 500
+            },
+            "announcementTitle": {
+                "type": "text",
+                "label": "Announcement title",
+                "tab": "Dashboard",
+                "default": "",
+                "maxLength": 120
+            },
+            "announcementButton": {
+                "type": "text",
+                "label": "Announcement button",
+                "tab": "Dashboard",
+                "help": "An optional button on the announcement, as Label|URL.",
+                "default": "",
+                "maxLength": 300
+            },
+            "serverArt": {
+                "type": "toggle",
+                "label": "Server artwork",
+                "tab": "Dashboard",
+                "help": "Show each server's egg banner behind its card. Set banners on the egg's admin page.",
+                "default": true,
+                "attribute": "data-basalt-server-art"
+            }
+        }
+    }
+}

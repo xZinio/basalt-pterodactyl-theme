@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 800" preserveAspectRatio="xMidYMid slice">
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#23305a"/>
+      <stop offset="0.38" stop-color="#7b4b78"/>
+      <stop offset="0.62" stop-color="#e0805a"/>
+      <stop offset="0.78" stop-color="#f6c071"/>
+    </linearGradient>
+    <radialGradient id="sun" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#fff6d8"/>
+      <stop offset="0.25" stop-color="#ffe2a0" stop-opacity="0.95"/>
+      <stop offset="1" stop-color="#ffb46b" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="haze" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#f6c071" stop-opacity="0"/>
+      <stop offset="1" stop-color="#f3b07a" stop-opacity="0.55"/>
+    </linearGradient>
+    <linearGradient id="field" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#3e3a2c"/>
+      <stop offset="1" stop-color="#1b1d17"/>
+    </linearGradient>
+  </defs>
+  <rect width="960" height="800" fill="url(#sky)"/>
+  <g fill="#fff3d6" opacity="0.35">
+    <path d="M90 170c60-14 150-10 240 4-70 8-160 10-240-4z"/>
+    <path d="M520 120c90-18 210-14 330 6-100 10-220 12-330-6z"/>
+    <path d="M610 230c50-10 120-8 190 2-60 8-130 8-190-2z"/>
+  </g>
+  <circle cx="610" cy="470" r="230" fill="url(#sun)"/>
+  <circle cx="610" cy="470" r="44" fill="#fff4d6"/>
+  <path d="M0 455 70 418l60 22 80-58 95 64 70-30 85 46 90-62 100 70 70-34 95 48 70-30 75 34v262H0z" fill="#8b5a6e" opacity="0.55"/>
+  <path d="M0 500 110 452l80 34 120-70 110 72 90-40 130 66 110-58 90 44 120-52v352H0z" fill="#5a3f5a" opacity="0.8"/>
+  <rect y="440" width="960" height="160" fill="url(#haze)"/>
+  <path d="M0 560c120-26 260-34 420-30 180 4 340 24 540 12v258H0z" fill="url(#field)"/>
+  <g fill="#17140f">
+    <path d="M118 560c-4-48 6-92 14-120 8 28 16 70 12 120z"/>
+    <ellipse cx="131" cy="452" rx="34" ry="44"/>
+    <path d="M230 566c-3-40 4-70 10-90 6 20 12 50 8 90z"/>
+    <ellipse cx="240" cy="480" rx="26" ry="34"/>
+    <path d="M760 552c-3-50 6-96 12-126 8 30 15 76 11 126z"/>
+    <ellipse cx="771" cy="438" rx="38" ry="50"/>
+    <path d="M842 556c-2-36 4-64 9-82 5 18 10 46 7 82z"/>
+    <ellipse cx="850" cy="470" rx="24" ry="32"/>
+  </g>
+  <path d="M0 640c160-20 320-24 480-16s320 22 480 6v170H0z" fill="#11120e" opacity="0.65"/>
+</svg>

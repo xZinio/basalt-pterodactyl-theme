@@ -1,0 +1,334 @@
+/*
+ * Basalt: a graphite-dark theme for the Pterodactyl panel.
+ *
+ * The panel stylesheet with every class the panel uses comes first, then this theme's fonts,
+ * tokens and utilities. Plain Tailwind, no prefix. Settings on Admin > Themes write the
+ * --basalt-* tokens and data-basalt-* attributes used below before any CSS loads.
+ */
+@import '@pterodactyl/sdk/theme-entry.css';
+
+/* #region fonts: Poppins (SIL Open Font License 1.1, see fonts/OFL.txt) */
+@font-face {
+    font-family: 'Poppins';
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url('./fonts/poppins-latin-400-normal.woff2') format('woff2');
+    unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+    font-family: 'Poppins';
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url('./fonts/poppins-latin-ext-400-normal.woff2') format('woff2');
+    unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+    font-family: 'Poppins';
+    font-style: normal;
+    font-weight: 500;
+    font-display: swap;
+    src: url('./fonts/poppins-latin-500-normal.woff2') format('woff2');
+    unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+    font-family: 'Poppins';
+    font-style: normal;
+    font-weight: 500;
+    font-display: swap;
+    src: url('./fonts/poppins-latin-ext-500-normal.woff2') format('woff2');
+    unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+    font-family: 'Poppins';
+    font-style: normal;
+    font-weight: 600;
+    font-display: swap;
+    src: url('./fonts/poppins-latin-600-normal.woff2') format('woff2');
+    unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+    font-family: 'Poppins';
+    font-style: normal;
+    font-weight: 600;
+    font-display: swap;
+    src: url('./fonts/poppins-latin-ext-600-normal.woff2') format('woff2');
+    unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+    font-family: 'Poppins';
+    font-style: normal;
+    font-weight: 700;
+    font-display: swap;
+    src: url('./fonts/poppins-latin-700-normal.woff2') format('woff2');
+    unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+    font-family: 'Poppins';
+    font-style: normal;
+    font-weight: 700;
+    font-display: swap;
+    src: url('./fonts/poppins-latin-ext-700-normal.woff2') format('woff2');
+    unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* #endregion fonts */
+
+@theme {
+    --font-sans: 'Poppins', 'IBM Plex Sans', system-ui, sans-serif;
+    --font-header: 'Poppins', 'IBM Plex Sans', system-ui, sans-serif;
+
+    /* Soft, layered shadows: resting surfaces, raised surfaces (focused fields, menus) and overlays. */
+    --shadow-card: 0 1px 2px rgb(0 0 0 / 0.22), 0 2px 6px rgb(0 0 0 / 0.14);
+    --shadow-raised: 0 2px 4px rgb(0 0 0 / 0.24), 0 6px 14px rgb(0 0 0 / 0.16);
+    --shadow-overlay: 0 4px 10px rgb(0 0 0 / 0.26), 0 12px 28px rgb(0 0 0 / 0.2);
+    --shadow-md: var(--shadow-raised);
+}
+
+/* #region tokens */
+:root {
+    /* Settings write --basalt-* tokens; every role below falls back to the built-in palette. */
+    --radius: 10px;
+    --layout-auth-width: 60rem;
+    --layout-content-width: 100rem;
+    --layout-sidebar-width: 16rem;
+    --layout-gutter: calc(var(--spacing) * 4);
+    --layout-page-spacing: calc(var(--spacing) * 6);
+    --basalt-logo-height: 28px;
+    --basalt-glass-blur: 14px;
+}
+
+.dark {
+    --color-scheme: dark;
+    --theme-color: #1e1e20;
+
+    --background: var(--basalt-background, #1e1e20);
+    --foreground: #fafafa;
+    --card: var(--basalt-card, #252529);
+    --card-foreground: var(--foreground);
+    --popover: var(--basalt-raised, #2d2d30);
+    --popover-foreground: var(--foreground);
+    --primary: var(--basalt-primary, #228cf4);
+    --primary-foreground: #ffffff;
+    --secondary: var(--popover);
+    --secondary-foreground: var(--foreground);
+    --muted: var(--card);
+    --muted-foreground: #a1a1aa;
+    --accent: color-mix(in oklab, var(--primary) 82%, white);
+    --accent-foreground: #ffffff;
+    --destructive: #e5484d;
+    --destructive-foreground: #ffffff;
+    --border: var(--basalt-border, #3f3f46);
+    --input: var(--popover);
+    --input-border: var(--border);
+    --ring: var(--accent);
+    --sunken: color-mix(in oklab, var(--card) 80%, black);
+
+    --state-foreground: var(--background);
+    --success: #3fb37f;
+    --success-foreground: var(--state-foreground);
+    --warning: #f5c451;
+    --warning-foreground: var(--state-foreground);
+    --caution: #e5832b;
+    --caution-foreground: #ffffff;
+
+    --chart-1: var(--accent);
+    --chart-2: var(--warning);
+    --chart-3: var(--primary);
+    --chart-4: var(--success);
+    --chart-5: var(--destructive);
+
+    --sidebar: var(--basalt-sidebar, #1a1a1c);
+    --sidebar-foreground: var(--foreground);
+    --sidebar-primary: var(--primary);
+    --sidebar-primary-foreground: var(--primary-foreground);
+    --sidebar-accent: var(--popover);
+    --sidebar-accent-foreground: var(--foreground);
+    --sidebar-border: var(--border);
+    --sidebar-ring: var(--ring);
+
+    --selection: color-mix(in oklab, var(--primary) 40%, transparent);
+    --selection-foreground: var(--foreground);
+    --scrollbar-thumb: var(--border);
+    --scrollbar-thumb-fill: color-mix(in oklab, var(--muted-foreground) 35%, transparent);
+    --scrollbar-track: transparent;
+
+    --terminal-background: #161618;
+    --terminal-foreground: #d4d4d8;
+    --terminal-cursor: #d4d4d8;
+    --terminal-selection: color-mix(in oklab, var(--primary) 45%, #161618);
+    --terminal-selection-foreground: #fafafa;
+
+    --editor-background: #161618;
+    --editor-foreground: #d4d4d8;
+    --editor-caret: var(--accent);
+    --editor-selection: color-mix(in oklab, var(--primary) 40%, #161618);
+    --editor-border: var(--border);
+    --editor-muted: color-mix(in oklab, var(--muted-foreground) 80%, var(--foreground));
+    --editor-active-line: color-mix(in oklab, #161618 85%, #d4d4d8);
+    --editor-tooltip: var(--popover);
+    --editor-tooltip-border: var(--border);
+}
+
+.light {
+    --color-scheme: light;
+    --theme-color: #f4f4f5;
+
+    --background: #f4f4f5;
+    --foreground: #18181b;
+    --card: #ffffff;
+    --card-foreground: var(--foreground);
+    --popover: #f4f4f5;
+    --popover-foreground: var(--foreground);
+    --primary: var(--basalt-primary, #228cf4);
+    --primary-foreground: #ffffff;
+    --secondary: #e4e4e7;
+    --secondary-foreground: var(--foreground);
+    --muted: #f4f4f5;
+    --muted-foreground: #52525b;
+    --accent: color-mix(in oklab, var(--primary) 88%, black);
+    --accent-foreground: #ffffff;
+    --destructive: #d93036;
+    --destructive-foreground: #ffffff;
+    --border: #d4d4d8;
+    --input: #ffffff;
+    --input-border: var(--border);
+    --ring: var(--primary);
+    --sunken: #e4e4e7;
+
+    --state-foreground: #ffffff;
+    --success: #208a5c;
+    --success-foreground: var(--state-foreground);
+    --warning: #b7791f;
+    --warning-foreground: var(--state-foreground);
+    --caution: #c2410c;
+    --caution-foreground: #ffffff;
+
+    --chart-1: var(--primary);
+    --chart-2: var(--warning);
+    --chart-3: var(--primary);
+    --chart-4: var(--success);
+    --chart-5: var(--destructive);
+
+    --sidebar: #fafafa;
+    --sidebar-foreground: var(--foreground);
+    --sidebar-primary: var(--primary);
+    --sidebar-primary-foreground: var(--primary-foreground);
+    --sidebar-accent: #f4f4f5;
+    --sidebar-accent-foreground: var(--foreground);
+    --sidebar-border: var(--border);
+    --sidebar-ring: var(--ring);
+
+    --selection: color-mix(in oklab, var(--primary) 25%, transparent);
+    --selection-foreground: var(--foreground);
+    --scrollbar-thumb: #a1a1aa;
+    --scrollbar-thumb-fill: color-mix(in oklab, #71717a 35%, transparent);
+
+    /* The console and editor stay dark in both schemes. */
+    --terminal-background: #18181b;
+    --terminal-foreground: #d4d4d8;
+    --terminal-cursor: #d4d4d8;
+    --terminal-selection: color-mix(in oklab, var(--primary) 45%, #18181b);
+    --terminal-selection-foreground: #fafafa;
+    --editor-background: #18181b;
+    --editor-foreground: #d4d4d8;
+    --editor-caret: var(--primary);
+    --editor-selection: color-mix(in oklab, var(--primary) 40%, #18181b);
+    --editor-border: #3f3f46;
+    --editor-active-line: #222225;
+}
+/* #endregion tokens */
+
+/* #region base */
+@layer base {
+    body {
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+    }
+
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6 {
+        font-weight: 600;
+    }
+}
+/* #endregion base */
+
+/* #region utilities */
+/* A resting surface: the card fill, a soft hairline and the card shadow. */
+@utility surface {
+    background-color: var(--card);
+    border: 1px solid color-mix(in oklab, var(--border) 70%, transparent);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-card);
+}
+
+/* A short accent bar down the left of a surface: `accent-bar` with `--bar-inset` for its distance. */
+@utility accent-bar {
+    position: relative;
+
+    &::before {
+        content: '';
+        position: absolute;
+        left: var(--bar-inset, 1rem);
+        top: var(--bar-inset, 1rem);
+        bottom: var(--bar-inset, 1rem);
+        width: 4px;
+        border-radius: 9999px;
+        background-color: var(--primary);
+    }
+}
+
+/* Frosted glass over the page: the sidebar and floating bars. */
+@utility glass {
+    background-color: color-mix(in oklab, var(--sidebar) 70%, transparent);
+    backdrop-filter: blur(var(--basalt-glass-blur));
+}
+
+/* The picture half of the sign-in card: the uploaded image, or the built-in artwork, under a dark fade. */
+@utility auth-banner {
+    background-color: var(--primary);
+    background-image:
+        linear-gradient(0deg, rgb(0 0 0 / 0.55), rgb(0 0 0 / 0) 60%),
+        var(--basalt-login-image, url('./images/sign-in.svg'));
+    background-size: cover;
+    background-position: center;
+}
+
+/* Small uppercase captions: section headings, field captions. */
+@utility caption {
+    font-size: 11px;
+    line-height: 1.5;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--muted-foreground);
+}
+/* #endregion utilities */
+
+/* #region privacy: emails, addresses and IPs blur until hovered while the user's privacy mode is on */
+[data-basalt-privacy] [data-sensitive]:not(:hover, :focus-within) {
+    filter: blur(5px);
+    transition: filter 0.15s;
+}
+/* #endregion privacy */
+
+/* #region settings */
+/* "Card only" sign-in: no banner, so a narrower card. */
+[data-basalt-login-layout='simple'] {
+    --layout-auth-width: 30rem;
+}
+
+/* "Glass" off: solid sidebar and bars. */
+[data-basalt-glass='false'] {
+    --basalt-glass-blur: 0px;
+}
+
+/* Density. */
+[data-basalt-density='compact'] {
+    --spacing: 0.22rem;
+}
+/* #endregion settings */
