@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { FolderInput, FolderOpen, Server as ServerIcon, SquareTerminal, Star } from 'lucide-react';
+import { Folder as FolderIcon, FolderInput, Server as ServerIcon, SquareTerminal, Star } from 'lucide-react';
 import {
     DropdownMenu,
     Empty,
@@ -36,7 +36,7 @@ const quickAction =
     'inline-flex h-8 min-w-0 flex-1 items-center justify-center gap-1.5 rounded-md border border-border/80 bg-foreground/[0.04] px-2 text-xs leading-[1.5] font-medium text-muted-foreground no-underline backdrop-blur-[2px] transition-colors hover:bg-foreground/[0.08] hover:text-foreground';
 
 const cornerButton =
-    'inline-flex size-7 items-center justify-center rounded-md border-0 bg-transparent text-muted-foreground transition-[color,opacity] hover:text-foreground';
+    'inline-flex size-8 items-center justify-center rounded-md border-0 bg-transparent text-muted-foreground transition-[color,opacity] hover:text-foreground';
 
 function ServerTile({
     item,
@@ -73,27 +73,27 @@ function ServerTile({
                     src={art}
                     alt=''
                     loading='lazy'
-                    className='pointer-events-none absolute inset-y-0 right-0 h-full w-[68%] object-cover opacity-30 [mask-image:linear-gradient(to_right,transparent,black_55%)] in-data-[basalt-server-art=false]:hidden'
+                    className='pointer-events-none absolute inset-y-0 right-0 h-full w-[68%] object-cover opacity-[0.18] [mask-image:linear-gradient(to_right,transparent,black_70%)] in-data-[basalt-server-art=false]:hidden'
                 />
             )}
             <Slot name='dashboard.serverRow.before' data={server} />
             <PanelLink
                 destination={serverDestination(item.identifier)}
                 aria-label={item.name}
-                className='relative block flex-1 p-4 pr-6 pb-3 text-foreground no-underline'
+                className='relative block flex-1 p-4 pr-6 text-foreground no-underline'
             >
                 <View name='dashboard.serverCard' server={server} />
             </PanelLink>
             <div className='relative min-w-0 px-4 pb-4 empty:hidden'>
                 <Slot name='dashboard.serverRow.metrics.after' data={server} />
             </div>
-            <div className='relative mt-auto flex gap-1.5 px-4 pb-4 max-sm:hidden'>
+            <div className='relative -mt-2 flex gap-1.5 px-4 pb-4 max-sm:hidden'>
                 <PanelLink destination={consoleLink} className={quickAction}>
                     <SquareTerminal className='size-3.5' aria-hidden />
                     Console
                 </PanelLink>
                 <PanelLink destination={{ to: '/server/$id/files', params }} className={quickAction}>
-                    <FolderOpen className='size-3.5' aria-hidden />
+                    <FolderIcon className='size-3.5' aria-hidden />
                     Files
                 </PanelLink>
             </div>
@@ -101,7 +101,7 @@ function ServerTile({
                 <Slot name='dashboard.serverRow.after' data={server} />
             </div>
 
-            <div className='absolute top-3 right-6 flex items-center gap-1.5'>
+            <div className='absolute top-3 right-5 flex items-center gap-0.5'>
                 <PanelLink destination={consoleLink} aria-label={`Open the console of ${item.name}`} className={cn(cornerButton, 'sm:hidden')}>
                     <SquareTerminal className='size-[15px]' aria-hidden />
                 </PanelLink>
@@ -136,7 +136,7 @@ function ServerTile({
             <span
                 aria-hidden
                 className={cn(
-                    'absolute top-[9px] right-[9px] bottom-[9px] w-[5px] rounded-full',
+                    'absolute top-2 right-2 bottom-2 w-[5px] rounded-full',
                     item.state.kind === 'ready' ? stateFill(item.state.power) : item.state.kind === 'loading' ? 'bg-muted-foreground/40' : 'bg-warning'
                 )}
             />

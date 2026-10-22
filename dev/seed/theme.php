@@ -2,8 +2,8 @@
 
 /*
  * Configures Basalt on the development panel the way the demo shows it: a panel name, an
- * announcement, sidebar and sign-in links, and the demo user's folders and favourites.
- * Run after the theme is installed:
+ * announcement, sidebar and sign-in links, artwork for the eggs, the location's country, and the
+ * demo user's folders and favourites. Run after the theme is installed:
  *
  *   docker compose exec -T panel php /seed/theme.php
  */
@@ -14,6 +14,8 @@ use Illuminate\Contracts\Console\Kernel;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
 use Pterodactyl\Facades\Extensions;
+use Pterodactyl\Models\Egg;
+use Pterodactyl\Models\Location;
 use Pterodactyl\Models\User;
 
 chdir('/app');
@@ -28,10 +30,39 @@ $settings->setMany([
     'theme.announcementTitle' => 'Welcome to the Basalt demo',
     'theme.announcement' => 'You are signed in as an administrator, so you can try everything. Open **Admin → Themes** to change any setting of the theme.',
     'theme.announcementButton' => 'Open the settings|/panel/themes',
-    'theme.navLinks' => 'Discord|https://discord.gg/pterodactyl|message-circle, Store|https://example.com/store|shopping-cart|dashboard, Documentation|https://pterodactyl.io/project/introduction.html|book-open',
+    'theme.navLinks' => 'Discord|https://discord.gg/pterodactyl|message-circle, Store|https://example.com/store|shopping-cart|dashboard, Documentation|https://pterodactyl.io/project/introduction.html|book-open, Server status|https://status.example.com|activity|server',
     'theme.loginLinks' => 'Support|https://discord.gg/pterodactyl, Follow us|https://example.com',
     'theme.supportUrl' => 'https://discord.gg/pterodactyl',
 ]);
+
+// The eggs' card artwork (original drawings in ./art), served by the panel from public/dev-art.
+$art = '/app/public/dev-art';
+if (! is_dir($art)) {
+    mkdir($art, 0755, true);
+}
+foreach (glob('/seed/art/*.svg') as $file) {
+    copy($file, $art.'/'.basename($file));
+}
+foreach ([
+    'Paper' => 'blocks-sunset',
+    'Vanilla Minecraft' => 'blocks-day',
+    'Forge Minecraft' => 'blocks-night',
+    'Bungeecord' => 'blocks-dusk',
+    'Rust' => 'wasteland',
+    'Ark: Survival Evolved' => 'jungle',
+    'Garrys Mod' => 'construct',
+    'Teamspeak3 Server' => 'waves',
+] as $name => $file) {
+    $egg = Egg::query()->where('name', $name)->first();
+    if ($egg !== null) {
+        $settings->fields($egg)->set('banner', "/dev-art/{$file}.svg");
+    }
+}
+
+// The node's location is in the Netherlands, so the servers' dashboards show its flag.
+foreach (Location::query()->get() as $location) {
+    $settings->fields($location)->set('flag', 'nl');
+}
 
 $demo = User::query()->where('username', 'demo')->firstOrFail();
 $settings->forUser($demo)->setMany([

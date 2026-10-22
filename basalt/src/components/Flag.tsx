@@ -4,6 +4,9 @@ import { cn } from '@pterodactyl/sdk';
 // Flags of the countries hosting providers most often run nodes in (flag-icons, MIT; see flags/LICENSE.txt).
 const flags = import.meta.glob<string>('../flags/*.svg', { query: '?url', import: 'default', eager: true });
 
+/** The two-letter codes of the countries there is a flag for. */
+export const flagCodes: readonly string[] = Object.keys(flags).map((path) => path.slice(-6, -4));
+
 const regionNames = typeof Intl !== 'undefined' && 'DisplayNames' in Intl ? new Intl.DisplayNames(['en'], { type: 'region' }) : null;
 
 /** The English name of a two-letter country code, such as "Netherlands" for "nl". */

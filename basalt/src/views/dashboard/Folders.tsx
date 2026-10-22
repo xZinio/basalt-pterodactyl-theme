@@ -1,5 +1,5 @@
 import { useEffect, useId, useState } from 'react';
-import { ArrowLeft, ListChecks, Pencil, Plus, Trash2 } from 'lucide-react';
+import { ArrowLeft, Pencil, Plus, Shapes, Trash2 } from 'lucide-react';
 import { Button, Checkbox, Dialog, Input, Label, NamedIcon, cn } from '@pterodactyl/sdk';
 import type { ServerListItem } from '@pterodactyl/sdk/theme';
 import type { Folder } from '../../lib/api';
@@ -28,7 +28,7 @@ const dotFill = (item: ServerListItem | undefined) =>
     !item || item.state.kind === 'loading' ? 'bg-muted-foreground/50' : item.state.kind === 'ready' ? stateFill(item.state.power) : 'bg-warning';
 
 const toolButton =
-    'inline-flex size-[30px] items-center justify-center rounded-md border-0 bg-transparent text-muted-foreground transition-colors hover:bg-foreground/[0.08] hover:text-foreground';
+    'inline-flex size-7 items-center justify-center rounded-md border-0 bg-transparent text-muted-foreground transition-colors hover:bg-foreground/[0.08] hover:text-foreground';
 
 function FolderTile({
     folder,
@@ -53,7 +53,7 @@ function FolderTile({
             </span>
             <span className='pointer-events-none min-w-0 flex-1'>
                 <span className='block truncate text-[15px] leading-[1.5] font-semibold text-foreground'>{folder.name}</span>
-                <span className='mt-1 flex h-2 items-center gap-1'>
+                <span className='mt-1.5 flex h-2 items-center gap-1'>
                     {folder.servers.slice(0, 10).map((uuid) => (
                         <span key={uuid} className={cn('size-2 rounded-full', dotFill(items.get(uuid)))} />
                     ))}
@@ -62,9 +62,9 @@ function FolderTile({
             <span className='pointer-events-none rounded-full bg-primary/16 px-2 text-xs leading-5 font-medium text-foreground transition-opacity group-hover/folder:opacity-0 pointer-coarse:hidden'>
                 {folder.servers.length}
             </span>
-            <span className='absolute top-1/2 right-3 z-10 flex -translate-y-1/2 items-center gap-0 rounded-md bg-popover opacity-0 transition-opacity group-focus-within/folder:opacity-100 group-hover/folder:opacity-100 pointer-coarse:opacity-100'>
+            <span className='absolute top-1/2 right-3 z-10 flex -translate-y-1/2 items-center gap-0.5 rounded-md bg-popover opacity-0 transition-opacity group-focus-within/folder:opacity-100 group-hover/folder:opacity-100 pointer-coarse:opacity-100'>
                 <button type='button' className={toolButton} onClick={onManage} aria-label={`Choose the servers in ${folder.name}`} title='Servers'>
-                    <ListChecks className='size-3.5' aria-hidden />
+                    <Shapes className='size-3.5' aria-hidden />
                 </button>
                 <button type='button' className={toolButton} onClick={onEdit} aria-label={`Rename ${folder.name}`} title='Rename'>
                     <Pencil className='size-3.5' aria-hidden />

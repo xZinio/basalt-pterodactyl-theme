@@ -1,5 +1,5 @@
 import { useId, type ReactNode } from 'react';
-import { ChevronDown, Search, X } from 'lucide-react';
+import { Search, X } from 'lucide-react';
 import { cn } from '@pterodactyl/sdk';
 import { useThemeSettings } from '@pterodactyl/sdk/theme';
 import { useLocalState } from '../../lib/local';
@@ -41,7 +41,7 @@ export function Announcement() {
             <div className='min-w-0 flex-1 text-sm leading-[1.375]'>
                 {title && <p className='text-[15px] font-semibold text-foreground'>{title}</p>}
                 {body && (
-                    <p className='text-foreground'>
+                    <p className='mt-0.5 text-foreground'>
                         <Rich text={body} />
                     </p>
                 )}
@@ -89,7 +89,7 @@ export function Field({ label, className, children }: { label: string; className
 }
 
 const controlClass =
-    'h-10 w-full min-w-0 rounded-md border border-border bg-popover text-sm text-foreground outline-hidden transition-[border-color,box-shadow] focus:border-primary focus:ring-2 focus:ring-ring/50';
+    'w-full min-w-0 rounded-md border border-border bg-popover text-sm tracking-normal text-foreground outline-hidden transition-[border-color,box-shadow] focus:border-primary focus:ring-2 focus:ring-ring/50';
 
 export function SearchInput({ id, value, onChange, placeholder }: { id: string; value: string; onChange: (value: string) => void; placeholder: string }) {
     return (
@@ -102,7 +102,7 @@ export function SearchInput({ id, value, onChange, placeholder }: { id: string; 
                 onChange={(event) => onChange(event.target.value)}
                 placeholder={placeholder}
                 autoComplete='off'
-                className={cn(controlClass, 'py-2 pr-3 pl-9 placeholder:text-muted-foreground [&::-webkit-search-cancel-button]:hidden')}
+                className={cn(controlClass, 'py-2 pr-3 pl-9 leading-[1.5] placeholder:text-muted-foreground [&::-webkit-search-cancel-button]:hidden')}
             />
         </span>
     );
@@ -120,20 +120,12 @@ export function NativeSelect<T extends string>({
     options: Record<T, string>;
 }) {
     return (
-        <span className='relative block'>
-            <select
-                id={id}
-                value={value}
-                onChange={(event) => onChange(event.target.value as T)}
-                className={cn(controlClass, 'cursor-pointer appearance-none bg-none py-2 pr-8 pl-3')}
-            >
-                {(Object.entries(options) as [T, string][]).map(([option, label]) => (
-                    <option key={option} value={option}>
-                        {label}
-                    </option>
-                ))}
-            </select>
-            <ChevronDown className='pointer-events-none absolute top-1/2 right-2.5 size-4 -translate-y-1/2 text-foreground' aria-hidden />
-        </span>
+        <select id={id} value={value} onChange={(event) => onChange(event.target.value as T)} className={cn(controlClass, 'h-10 cursor-pointer px-3 py-2')}>
+            {(Object.entries(options) as [T, string][]).map(([option, label]) => (
+                <option key={option} value={option}>
+                    {label}
+                </option>
+            ))}
+        </select>
     );
 }

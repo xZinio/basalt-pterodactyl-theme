@@ -1,3 +1,4 @@
+import { lazy } from 'react';
 import { defineTheme, lazyView } from '@pterodactyl/sdk/theme';
 import { useServerDashboard } from './lib/server';
 import { skins } from './skins';
@@ -5,6 +6,7 @@ import AuthLayout from './views/auth/AuthLayout';
 
 const auth = () => import('./views/auth');
 const areas = () => import('./views/shell/AreaLayouts');
+const fields = () => import('./views/admin/Fields');
 
 /**
  * Basalt. Every view except the sign-in layout loads with its route: the entry stays small, and
@@ -31,8 +33,11 @@ export default defineTheme({
         'server.stats': lazyView(() => import('./views/server/Stats')),
         'page.server.console': lazyView(() => import('./views/server/ConsolePage')),
     },
-    setup({ screens }) {
+    setup({ screens, forms }) {
         // Only while the server dashboard is on: it takes the server's first page, so the console moves here.
         screens.register('console', () => import('./screens/ConsoleScreen'), { visible: useServerDashboard });
+        // The values the provider's Fields classes declare: egg artwork and a location's country.
+        forms.extend('admin.egg', lazy(async () => ({ default: (await fields()).EggArtwork })));
+        forms.extend('admin.location', lazy(async () => ({ default: (await fields()).LocationFlag })));
     },
 });

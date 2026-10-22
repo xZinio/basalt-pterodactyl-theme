@@ -21,7 +21,7 @@ function Metric({ icon: Icon, label, value, danger }: { icon: LucideIcon; label:
                 <Icon className='size-[15px] shrink-0' aria-hidden />
                 <span className='truncate'>{value}</span>
             </span>
-            <span className='block text-xs leading-[1.5] text-muted-foreground'>{label}</span>
+            <span className='mt-0.5 block text-xs leading-[1.5] text-muted-foreground'>{label}</span>
         </div>
     );
 }
@@ -33,8 +33,8 @@ export default function ServerCard({ model, server, className }: ViewProps<'dash
 
     return (
         <div className={cn('min-w-0', className)}>
-            <div className='flex min-w-0 items-start gap-2.5 pr-12'>
-                <span className='flex size-9 shrink-0 items-center justify-center rounded-xl bg-popover text-muted-foreground'>
+            <div className='flex min-w-0 items-start gap-2.5 pr-[72px]'>
+                <span className='flex size-9 shrink-0 items-center justify-center rounded-[12px] bg-popover text-muted-foreground'>
                     <ServerIcon className='size-[18px]' aria-hidden />
                 </span>
                 <div className='min-w-0 flex-1'>
@@ -51,7 +51,7 @@ export default function ServerCard({ model, server, className }: ViewProps<'dash
                 </div>
             )}
             {state.kind === 'ready' && (
-                <div className='mt-4 grid grid-cols-2 gap-x-4 gap-y-3.5'>
+                <div className='mt-4 grid grid-cols-2 gap-x-4 gap-y-3'>
                     <Metric icon={Cpu} label='CPU' value={`${state.cpu.value.toFixed(2)} %`} danger={state.cpu.alarm === 'danger'} />
                     <Metric icon={MemoryStick} label='Memory' value={bytesToString(state.memory.value)} danger={state.memory.alarm === 'danger'} />
                     <Metric icon={HardDrive} label='Disk' value={bytesToString(state.disk.value)} danger={state.disk.alarm === 'danger'} />
