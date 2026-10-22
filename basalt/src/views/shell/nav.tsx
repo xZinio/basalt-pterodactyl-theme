@@ -3,11 +3,11 @@ import { NamedIcon, PanelLink, Tooltip, cn, type PanelDestination, type TooltipP
 import { Navigation, NavigationLink, type NavItem } from '@pterodactyl/sdk/theme';
 import { externalProps, type ConfiguredLink } from '../../lib/links';
 
-/** Sidebar items: a faint fill on hover, a tinted fill and a short accent bar while active. */
+/** Sidebar items: the sidebar's accent fill on hover, a tinted fill and a short accent bar while active. */
 export const itemClass = (collapsed: boolean) =>
     cn(
         'relative flex min-w-0 items-center gap-3 rounded-md px-3 py-2 text-sm leading-[1.5] font-medium no-underline',
-        'text-muted-foreground transition-colors duration-150 hover:bg-foreground/[0.06] hover:text-foreground',
+        'text-muted-foreground transition-colors duration-[180ms] ease-[cubic-bezier(0.2,0,0,1)] hover:bg-sidebar-accent hover:text-foreground',
         'data-[status=active]:bg-primary/10 data-[status=active]:text-foreground',
         'before:absolute before:inset-y-2 before:left-0 before:w-[3px] before:rounded-full before:bg-primary before:opacity-0 data-[status=active]:before:opacity-100',
         collapsed && 'justify-center'

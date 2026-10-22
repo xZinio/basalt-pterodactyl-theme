@@ -93,6 +93,7 @@
     --layout-content-width: 100rem;
     --layout-sidebar-width: 16rem;
     --basalt-logo-height: 28px;
+    --basalt-glass-tint: 70%;
     --basalt-glass-blur: 14px;
 }
 
@@ -282,7 +283,7 @@
 
 /* Frosted glass over the page: the sidebar and floating bars. */
 @utility glass {
-    background-color: color-mix(in oklab, var(--sidebar) 70%, transparent);
+    background-color: color-mix(in oklab, var(--sidebar) var(--basalt-glass-tint), transparent);
     backdrop-filter: blur(var(--basalt-glass-blur));
 }
 
@@ -307,6 +308,23 @@
 }
 /* #endregion utilities */
 
+/* #region surfaces */
+/*
+ * As in Graphite, whatever the panel paints with the card fill (file rows, stat icons, a dialog's
+ * footer) is a card: it takes the card shadow in place of classic's rings and heavier shadows.
+ */
+.bg-card {
+    box-shadow: var(--shadow-card);
+}
+
+/* Toasts: a neutral rim and a slightly see-through fill, whatever their kind. */
+[data-sonner-toast] {
+    border-color: color-mix(in oklab, var(--border) 65%, transparent);
+    background: color-mix(in oklab, var(--popover) 88%, transparent);
+    box-shadow: 0 4px 14px rgb(0 0 0 / 0.16);
+}
+/* #endregion surfaces */
+
 /* #region server pages */
 /*
  * The engine keeps the console page mounted, hidden off the server's first page. With the server
@@ -316,6 +334,54 @@
     display: block;
 }
 /* #endregion server pages */
+
+/* #region menus */
+/* With glass on, menus and select lists float on the sidebar's frosted glass. */
+[data-basalt-glass='true'] :is([data-ui='dropdown-menu'][data-part='root'], [data-ui='select'][data-part='popup']) {
+    background-color: color-mix(in oklab, var(--sidebar) var(--basalt-glass-tint), transparent);
+    backdrop-filter: blur(var(--basalt-glass-blur));
+}
+
+/* The account menu: a panel the width of the account button, 8px above it, whose rows are sidebar links. */
+.basalt-user-menu {
+    display: flex;
+    flex-direction: column;
+    gap: 0.125rem;
+    width: var(--anchor-width);
+    min-width: 13rem;
+    border-radius: var(--radius);
+    box-shadow: 0 12px 32px rgb(0 0 0 / 0.35);
+
+    &[data-side='top'] {
+        translate: 0 -4px;
+    }
+
+    & [data-ui='dropdown-menu-item'][data-part='root'] {
+        padding: 0.5rem 0.75rem;
+        border-radius: var(--radius-md);
+        color: var(--muted-foreground);
+        transition-duration: 180ms;
+        transition-timing-function: cubic-bezier(0.2, 0, 0, 1);
+
+        &[data-highlighted] {
+            background-color: var(--sidebar-accent);
+            color: var(--foreground);
+        }
+    }
+
+    & [data-ui='dropdown-menu-item'][data-part='icon'] {
+        width: auto;
+        height: auto;
+        border: 0;
+        background: none;
+        color: inherit;
+    }
+
+    & [data-ui='dropdown-menu-item'][data-part='label'] {
+        line-height: 1.5;
+    }
+}
+/* #endregion menus */
 
 /* #region privacy: emails, addresses and IPs blur until hovered while the user's privacy mode is on */
 [data-basalt-privacy] [data-sensitive]:not(:hover, :focus-within) {
@@ -332,6 +398,7 @@
 
 /* "Glass" off: solid sidebar and bars. */
 [data-basalt-glass='false'] {
+    --basalt-glass-tint: 100%;
     --basalt-glass-blur: 0px;
 }
 

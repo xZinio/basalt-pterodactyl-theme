@@ -22,7 +22,7 @@ export default function Flag({ code, className }: { code: string; className?: st
     const url = flags[`../flags/${code.toLowerCase()}.svg`];
 
     return url ? (
-        <img src={url} alt='' width={18} height={14} className={cn('h-3.5 w-[18px] shrink-0 rounded-[2px] object-cover shadow-card', className)} />
+        <img src={url} alt='' width={18} height={14} className={cn('h-3.5 w-[18px] shrink-0 rounded-[2px] object-cover ring-1 ring-foreground/12', className)} />
     ) : (
         <Globe className={cn('size-3.5 shrink-0 text-muted-foreground', className)} aria-hidden />
     );

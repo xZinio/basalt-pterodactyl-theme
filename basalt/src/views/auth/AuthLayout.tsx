@@ -14,7 +14,8 @@ export default function AuthLayout({ model, className, children }: ViewProps<'la
     return (
         <div className={cn('flex min-h-dvh flex-col justify-center px-4 py-8', className)}>
             <Main className='mx-auto w-full max-w-auth'>
-                <div className='flex flex-col overflow-hidden rounded-[15px] border border-border/70 bg-card shadow-overlay md:flex-row'>
+                {/* The card fill by its token: theme.css gives `.bg-card` the lighter card shadow. */}
+                <div className='flex flex-col overflow-hidden rounded-[15px] border border-border/70 bg-(--card) shadow-overlay md:flex-row'>
                     <div className='auth-banner flex min-h-48 flex-col gap-2 p-8 text-white md:min-h-100 md:w-1/2 in-data-[basalt-login-layout=simple]:hidden'>
                         {brand.logoUrl ? (
                             <img src={brand.logoUrl} alt='' className='mb-auto size-10 object-contain' />

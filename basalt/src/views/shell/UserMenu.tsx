@@ -24,8 +24,8 @@ export default function UserMenu({
         <DropdownMenu
             className='basalt-user-menu'
             triggerClassName={cn(
-                'flex w-full min-w-0 items-center gap-2.5 rounded-lg border-0 bg-transparent p-2 text-left text-foreground transition-colors',
-                'hover:bg-foreground/[0.06] data-popup-open:bg-popover',
+                'flex w-full min-w-0 items-center gap-2.5 rounded-md border-0 bg-transparent p-2 text-left text-foreground transition-colors',
+                'hover:bg-sidebar-accent data-popup-open:bg-sidebar-accent',
                 collapsed && 'justify-center p-2'
             )}
             triggerContent={
