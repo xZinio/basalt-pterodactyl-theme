@@ -46,7 +46,7 @@ function FolderTile({
     onDelete: () => void;
 }) {
     return (
-        <li className='group/folder surface relative flex h-[74px] min-w-0 items-center gap-3.5 p-4 transition-colors hover:border-primary/50'>
+        <li className='group/folder surface basalt-lift relative flex h-[74px] min-w-0 items-center gap-3.5 p-4 transition-colors hover:border-primary/50'>
             <button type='button' onClick={onOpen} aria-label={`Open ${folder.name}`} className='absolute inset-0 z-0 cursor-pointer rounded-[inherit] border-0 bg-transparent' />
             <span className='pointer-events-none flex size-10 shrink-0 items-center justify-center rounded-md bg-primary/14 text-primary'>
                 <NamedIcon name={folder.icon ?? 'folder'} size={20} aria-hidden />
@@ -107,7 +107,7 @@ export function FolderRow({
                     onDelete={() => onDelete(folder)}
                 />
             ))}
-            <li className='min-w-0'>
+            <li className='basalt-lift min-w-0'>
                 <button
                     type='button'
                     onClick={onCreate}

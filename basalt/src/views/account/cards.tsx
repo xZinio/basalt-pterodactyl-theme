@@ -6,8 +6,8 @@ import UserAvatar from '../../components/UserAvatar';
 import { accentPresets, applyAccent } from '../../lib/accent';
 import { useLanguages, usePreferences, useUpdateLanguage, useUpdatePreferences } from '../../lib/api';
 import { usePrivacy } from '../../lib/privacy';
+import { useShortcutsEnabled } from '../../lib/shortcuts';
 import type { ThemeSettings } from '../../theme-types';
-import { useShortcutsEnabled } from '../shell/Shortcuts';
 
 export interface CardProps {
     className?: string;

@@ -40,6 +40,7 @@ const cornerButton =
 
 function ServerTile({
     item,
+    index,
     art,
     favorite,
     folders,
@@ -49,6 +50,7 @@ function ServerTile({
     onNewFolder,
 }: {
     item: ServerListItem;
+    index: number;
     art: string | null;
     favorite: boolean;
     folders: readonly Folder[];
@@ -64,9 +66,10 @@ function ServerTile({
     return (
         <li
             className={cn(
-                'group/card surface relative flex min-w-0 flex-col overflow-hidden transition-[border-color,box-shadow,translate] duration-200',
+                'group/card surface basalt-lift relative flex min-w-0 flex-col overflow-hidden transition-[border-color,box-shadow,translate] duration-200',
                 'hover:-translate-y-px hover:border-primary/50 hover:shadow-raised'
             )}
+            style={{ animationDelay: `${Math.min(index, 10) * 40}ms` }}
         >
             {art && (
                 <img
@@ -321,10 +324,11 @@ export default function ServerList({ model, className }: ViewProps<'dashboard.se
                     <NoServers model={model} filtered={filtered || opened !== null} />
                 ) : (
                     <ul className='grid grid-cols-1 gap-4 @3xl:grid-cols-2'>
-                        {items.map((item) => (
+                        {items.map((item, index) => (
                             <ServerTile
                                 key={item.uuid}
                                 item={item}
+                                index={index}
                                 art={meta[item.uuid]?.banner ?? null}
                                 favorite={favorites.has(item.uuid)}
                                 folders={folders}

@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { afterEach, beforeAll, expect, test } from 'vitest';
-import { screen } from '@testing-library/react';
+import { fireEvent, screen, within } from '@testing-library/react';
 import { preloadTheme, renderView, type RenderedView } from '@pterodactyl/sdk/testing';
 import theme from './theme';
 
@@ -47,6 +47,20 @@ test('names the server\'s first page Dashboard in the sidebar', () => {
 
     expect(screen.getByRole('link', { name: 'Dashboard' })).not.toBeNull();
     expect(screen.queryByRole('link', { name: 'Overview' })).toBeNull();
+});
+
+test('lists the keyboard shortcuts on ?, with the administration for administrators', () => {
+    // jsdom has no modal dialogs: open the element as showModal would.
+    HTMLDialogElement.prototype.showModal ??= function (this: HTMLDialogElement) {
+        this.open = true;
+    };
+    rendered = renderView('layout.app', { themes });
+
+    fireEvent.keyDown(window, { key: '?' });
+
+    const dialog = screen.getByRole('dialog', { name: 'Keyboard shortcuts' });
+    const rows = within(dialog).getAllByRole('listitem').map((row) => row.textContent);
+    expect(rows).toEqual(['Search/', 'OverviewGH', 'AccountGA', 'AdministrationGP', 'Show keyboard shortcuts?']);
 });
 
 test('links each server card to the server and its console', () => {

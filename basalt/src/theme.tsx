@@ -32,6 +32,7 @@ export default defineTheme({
         'layout.account': lazyView(areas, 'AreaLayout'),
         'layout.admin': lazyView(areas, 'AreaLayout'),
         'layout.server': lazyView(areas, 'ServerLayout'),
+        'app.search': lazyView(() => import('./views/shell/Search')),
 
         'page.account.overview': lazyView(() => import('./views/account/AccountPage')),
         'account.avatar': lazyView(() => import('./views/account/Avatar')),

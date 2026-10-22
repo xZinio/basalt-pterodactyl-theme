@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { ExternalLink, Menu, PanelLeftClose, PanelLeftOpen, X } from 'lucide-react';
 import { PanelLink, SpinnerOverlay, Tooltip, cn, usePanelLocation } from '@pterodactyl/sdk';
 import {
@@ -18,6 +18,7 @@ import { applyAccent } from '../../lib/accent';
 import { usePreferences } from '../../lib/api';
 import { useLocalState } from '../../lib/local';
 import { parseLinks } from '../../lib/links';
+import { useMotion } from '../../lib/motion';
 import { usePrivacy } from '../../lib/privacy';
 import type { ThemeSettings } from '../../theme-types';
 import { SidebarServerSlot } from './context';
@@ -147,6 +148,8 @@ export default function AppShell({ model, className, children }: ViewProps<'layo
     const [shortcuts, setShortcuts] = useState(false);
     const [serverSlot, setServerSlot] = useState<HTMLElement | null>(null);
     const { pathname } = usePanelLocation();
+    const page = useRef<HTMLDivElement>(null);
+    const motion = useMotion();
     usePrivacy();
 
     const { userAccent } = useThemeSettings<ThemeSettings>();
@@ -159,10 +162,14 @@ export default function AppShell({ model, className, children }: ViewProps<'layo
     }, [userAccent, preferences.loaded, preferences.accent]);
 
     const rail = collapsed && desktop;
-    const toggleSidebar = useCallback(() => setCollapsed(!collapsed), [collapsed, setCollapsed]);
 
     // A link in the drawer closes it when it navigates.
     useEffect(() => setDrawer(false), [pathname]);
+
+    // Each page fades in as it opens. The element stays, and so does the console the server pages keep mounted.
+    useEffect(() => {
+        if (motion) page.current?.animate?.({ opacity: [0, 1] }, { duration: 180, easing: 'cubic-bezier(0.2, 0, 0, 1)' });
+    }, [pathname, motion]);
 
     return (
         <SidebarServerSlot.Provider value={serverSlot}>
@@ -211,7 +218,7 @@ export default function AppShell({ model, className, children }: ViewProps<'layo
                             type='button'
                             aria-label={rail ? 'Expand sidebar' : 'Collapse sidebar'}
                             title={rail ? 'Expand sidebar' : 'Collapse sidebar'}
-                            onClick={toggleSidebar}
+                            onClick={() => setCollapsed(!collapsed)}
                             className={cn(iconButton, 'hidden size-8 lg:inline-flex')}
                         >
                             {rail ? <PanelLeftOpen className='size-[18px]' aria-hidden /> : <PanelLeftClose className='size-[18px]' aria-hidden />}
@@ -235,11 +242,13 @@ export default function AppShell({ model, className, children }: ViewProps<'layo
                     </div>
                 </aside>
 
-                <Main className='min-w-0 flex-1'>{children}</Main>
+                <Main className='min-w-0 flex-1'>
+                    <div ref={page}>{children}</div>
+                </Main>
 
-                {/* The panel's server search: Cmd+/ (Ctrl+/) opens it; the trigger stays out of sight. */}
+                {/* The panel's server search: its shortcuts open it; the trigger stays out of sight. */}
                 <View name='app.search' className='sr-only' />
-                <Shortcuts open={shortcuts} setOpen={setShortcuts} toggleSidebar={toggleSidebar} />
+                <Shortcuts open={shortcuts} setOpen={setShortcuts} />
             </div>
         </SidebarServerSlot.Provider>
     );

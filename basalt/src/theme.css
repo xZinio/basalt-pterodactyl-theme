@@ -383,6 +383,21 @@
 }
 /* #endregion menus */
 
+/* #region motion: the shell fades each page in; the dashboard's cards lift in one after another */
+@keyframes basalt-lift {
+    from {
+        opacity: 0;
+        transform: translateY(6px);
+    }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+    [data-basalt-motion='true'] .basalt-lift {
+        animation: basalt-lift 180ms cubic-bezier(0.2, 0, 0, 1) backwards;
+    }
+}
+/* #endregion motion */
+
 /* #region privacy: emails, addresses and IPs blur until hovered while the user's privacy mode is on */
 [data-basalt-privacy] [data-sensitive]:not(:hover, :focus-within) {
     filter: blur(5px);

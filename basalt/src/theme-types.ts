@@ -16,6 +16,7 @@ export interface ThemeSettings {
     readonly "logo": string | null;
     readonly "glass": boolean;
     readonly "density": "comfortable" | "compact";
+    readonly "motion": boolean;
     readonly "gravatar": boolean;
     readonly "loginLayout": "banner" | "simple";
     readonly "loginImage": string | null;

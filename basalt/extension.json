@@ -60,6 +60,13 @@
                 "default": "comfortable",
                 "attribute": "data-basalt-density"
             },
+            "motion": {
+                "type": "toggle",
+                "label": "Animations",
+                "help": "Fade each page in as it opens, and lift the dashboard's cards in one after another. They stay off for anyone whose device asks for reduced motion.",
+                "default": true,
+                "attribute": "data-basalt-motion"
+            },
             "gravatar": {
                 "type": "toggle",
                 "label": "Gravatar pictures",
