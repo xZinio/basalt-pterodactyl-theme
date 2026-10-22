@@ -33,13 +33,17 @@ export default function ServerCard({ model, server, className }: ViewProps<'dash
 
     return (
         <div className={cn('min-w-0', className)}>
-            <div className='flex min-w-0 items-start gap-2.5 pr-[72px]'>
-                <span className='flex size-9 shrink-0 items-center justify-center rounded-[12px] bg-popover text-muted-foreground'>
+            <div className='flex min-w-0 items-start gap-2.5 pr-[72px] card-wide:gap-3'>
+                <span className='flex size-9 shrink-0 items-center justify-center rounded-[12px] bg-popover text-muted-foreground card-wide:size-10'>
                     <ServerIcon className='size-[18px]' aria-hidden />
                 </span>
                 <div className='min-w-0 flex-1'>
                     <p className='truncate text-[17px] leading-[1.375] font-semibold text-foreground'>{model.name}</p>
-                    {model.description && <p className='mt-0.5 line-clamp-2 text-[13px] leading-[1.375] text-muted-foreground'>{model.description}</p>}
+                    {model.description && (
+                        <p className='mt-0.5 line-clamp-2 text-[13px] leading-[1.375] text-muted-foreground card-wide:mt-0 card-wide:block card-wide:text-ellipsis card-wide:whitespace-nowrap'>
+                            {model.description}
+                        </p>
+                    )}
                 </div>
                 <Slot name='dashboard.serverRow.name.after' data={server} />
             </div>
@@ -51,7 +55,7 @@ export default function ServerCard({ model, server, className }: ViewProps<'dash
                 </div>
             )}
             {state.kind === 'ready' && (
-                <div className='mt-4 grid grid-cols-2 gap-x-4 gap-y-3'>
+                <div className={cn('mt-4 grid grid-cols-2 gap-x-4 gap-y-3 card-wide:mt-3.5 card-wide:gap-x-3', players ? 'card-wide:grid-cols-4' : 'card-wide:grid-cols-3')}>
                     <Metric icon={Cpu} label='CPU' value={`${state.cpu.value.toFixed(2)} %`} danger={state.cpu.alarm === 'danger'} />
                     <Metric icon={MemoryStick} label='Memory' value={bytesToString(state.memory.value)} danger={state.memory.alarm === 'danger'} />
                     <Metric icon={HardDrive} label='Disk' value={bytesToString(state.disk.value)} danger={state.disk.alarm === 'danger'} />

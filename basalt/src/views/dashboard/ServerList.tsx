@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { Folder as FolderIcon, FolderInput, Server as ServerIcon, SquareTerminal, Star } from 'lucide-react';
+import { Archive, Folder as FolderIcon, FolderInput, Server as ServerIcon, SquareTerminal, Star } from 'lucide-react';
 import {
     DropdownMenu,
     Empty,
@@ -32,8 +32,11 @@ const online = (item: ServerListItem) => item.state.kind === 'ready' && item.sta
 const statusRank = (item: ServerListItem) =>
     item.state.kind !== 'ready' ? 3 : item.state.power === 'running' ? 0 : item.state.power === 'offline' ? 2 : 1;
 
-const quickAction =
-    'inline-flex h-8 min-w-0 flex-1 items-center justify-center gap-1.5 rounded-md border border-border/80 bg-foreground/[0.04] px-2 text-xs leading-[1.5] font-medium text-muted-foreground no-underline backdrop-blur-[2px] transition-colors hover:bg-foreground/[0.08] hover:text-foreground';
+// Two stretched buttons on a narrow card; up to three compact ones on a wide card.
+const quickAction = cn(
+    'inline-flex h-8 min-w-0 flex-1 items-center justify-center gap-1.5 rounded-md border border-border/80 bg-foreground/[0.04] px-2 text-xs leading-[1.5] font-medium text-muted-foreground no-underline backdrop-blur-[2px] transition-colors hover:bg-foreground/[0.08] hover:text-foreground',
+    'card-wide:h-7 card-wide:flex-none card-wide:px-2.5'
+);
 
 const cornerButton =
     'inline-flex size-8 items-center justify-center rounded-md border-0 bg-transparent text-muted-foreground transition-[color,opacity] hover:text-foreground';
@@ -66,7 +69,7 @@ function ServerTile({
     return (
         <li
             className={cn(
-                'group/card surface basalt-lift relative flex min-w-0 flex-col overflow-hidden transition-[border-color,box-shadow,translate] duration-200',
+                'group/card surface basalt-lift @container relative flex min-w-0 flex-col overflow-hidden transition-[border-color,box-shadow,translate] duration-200',
                 'hover:-translate-y-px hover:border-primary/50 hover:shadow-raised'
             )}
             style={{ animationDelay: `${Math.min(index, 10) * 40}ms` }}
@@ -76,21 +79,21 @@ function ServerTile({
                     src={art}
                     alt=''
                     loading='lazy'
-                    className='pointer-events-none absolute inset-y-0 right-0 h-full w-[68%] object-cover opacity-[0.18] [mask-image:linear-gradient(to_right,transparent,black_70%)] in-data-[basalt-server-art=false]:hidden'
+                    className='pointer-events-none absolute inset-y-0 right-0 h-full w-[68%] object-cover opacity-[0.18] [mask-image:linear-gradient(to_right,transparent,black_70%)] card-wide:w-[55%] card-wide:opacity-[0.28] in-data-[basalt-server-art=false]:hidden'
                 />
             )}
             <Slot name='dashboard.serverRow.before' data={server} />
             <PanelLink
                 destination={serverDestination(item.identifier)}
                 aria-label={item.name}
-                className='relative block flex-1 p-4 pr-6 text-foreground no-underline'
+                className='relative block flex-1 p-4 pr-6 text-foreground no-underline card-wide:px-6 card-wide:py-5 card-wide:pr-10'
             >
                 <View name='dashboard.serverCard' server={server} />
             </PanelLink>
             <div className='relative min-w-0 px-4 pb-4 empty:hidden'>
                 <Slot name='dashboard.serverRow.metrics.after' data={server} />
             </div>
-            <div className='relative -mt-2 flex gap-1.5 px-4 pb-4 max-sm:hidden'>
+            <div className='relative -mt-2 flex flex-wrap gap-1.5 px-4 pb-4 max-md:hidden card-wide:px-6'>
                 <PanelLink destination={consoleLink} className={quickAction}>
                     <SquareTerminal className='size-3.5' aria-hidden />
                     Console
@@ -99,17 +102,18 @@ function ServerTile({
                     <FolderIcon className='size-3.5' aria-hidden />
                     Files
                 </PanelLink>
+                <PanelLink destination={{ to: '/server/$id/backups', params }} className={cn(quickAction, 'hidden card-wide:inline-flex')}>
+                    <Archive className='size-3.5' aria-hidden />
+                    Backups
+                </PanelLink>
             </div>
             <div className='relative min-w-0 px-4 pb-4 empty:hidden'>
                 <Slot name='dashboard.serverRow.after' data={server} />
             </div>
 
             <div className='absolute top-3 right-5 flex items-center gap-0.5'>
-                <PanelLink destination={consoleLink} aria-label={`Open the console of ${item.name}`} className={cn(cornerButton, 'sm:hidden')}>
-                    <SquareTerminal className='size-[15px]' aria-hidden />
-                </PanelLink>
                 <DropdownMenu
-                    triggerClassName={cn(cornerButton, 'opacity-0 group-hover/card:opacity-100 focus-visible:opacity-100 data-popup-open:opacity-100 max-sm:hidden')}
+                    triggerClassName={cn(cornerButton, 'opacity-0 group-hover/card:opacity-100 focus-visible:opacity-100 data-popup-open:opacity-100 pointer-coarse:opacity-100')}
                     triggerContent={
                         <>
                             <FolderInput className='size-[15px]' aria-hidden />
@@ -140,7 +144,7 @@ function ServerTile({
                 aria-hidden
                 className={cn(
                     'absolute top-2 right-2 bottom-2 w-[5px] rounded-full',
-                    item.state.kind === 'ready' ? stateFill(item.state.power) : item.state.kind === 'loading' ? 'bg-muted-foreground/40' : 'bg-warning'
+                    stateFill(item.state.kind === 'ready' ? item.state.power : null)
                 )}
             />
         </li>
@@ -323,7 +327,7 @@ export default function ServerList({ model, className }: ViewProps<'dashboard.se
                 ) : items.length === 0 ? (
                     <NoServers model={model} filtered={filtered || opened !== null} />
                 ) : (
-                    <ul className='grid grid-cols-1 gap-4 @3xl:grid-cols-2'>
+                    <ul className='grid grid-cols-1 gap-4 min-[900px]:grid-cols-2'>
                         {items.map((item, index) => (
                             <ServerTile
                                 key={item.uuid}

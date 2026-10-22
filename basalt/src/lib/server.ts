@@ -10,11 +10,12 @@ export function primaryAddress(server: SdkServer): string | null {
     return allocation ? `${allocation.ip_alias || allocation.ip}:${allocation.port}` : null;
 }
 
-/** The fill of a server's status rail. */
+/** The fill of a server's status rail or dot: grey while its state is unknown. */
 export function stateFill(state: ServerRunState | null | undefined): string {
     if (state === 'running') return 'bg-success';
     if (state === 'starting' || state === 'stopping') return 'bg-warning';
-    return 'bg-destructive';
+    if (state === 'offline') return 'bg-destructive';
+    return 'bg-muted-foreground';
 }
 
 /**

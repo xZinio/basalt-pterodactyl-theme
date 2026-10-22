@@ -24,8 +24,7 @@ export const folderIcons = [
     'sparkles',
 ] as const;
 
-const dotFill = (item: ServerListItem | undefined) =>
-    !item || item.state.kind === 'loading' ? 'bg-muted-foreground/50' : item.state.kind === 'ready' ? stateFill(item.state.power) : 'bg-warning';
+const dotFill = (item: ServerListItem | undefined) => stateFill(item?.state.kind === 'ready' ? item.state.power : null);
 
 const toolButton =
     'inline-flex size-7 items-center justify-center rounded-md border-0 bg-transparent text-muted-foreground transition-colors hover:bg-foreground/[0.08] hover:text-foreground';
@@ -95,7 +94,7 @@ export function FolderRow({
     onDelete: (folder: Folder) => void;
 }) {
     return (
-        <ul className='grid grid-cols-1 gap-3 @lg:grid-cols-2 @4xl:grid-cols-4'>
+        <ul className='grid grid-cols-[repeat(auto-fill,minmax(14rem,1fr))] gap-3'>
             {folders.map((folder) => (
                 <FolderTile
                     key={folder.id}

@@ -37,7 +37,8 @@ export function Announcement() {
     const button = buttonLabel && buttonUrl && /^(https?:\/\/|\/(?!\/))/i.test(buttonUrl);
 
     return (
-        <div className='surface accent-bar flex flex-col gap-3 py-4 pr-[52px] pl-7 [--bar-inset:1rem] sm:flex-row sm:items-center sm:py-5 sm:pr-5 sm:pl-8'>
+        // Stacked up to 900px wide, with the dismiss button in the corner.
+        <div className='surface accent-bar flex flex-col gap-3 py-4 pr-[52px] pl-7 [--bar-inset:0.875rem] min-[901px]:flex-row min-[901px]:items-center min-[901px]:py-5 min-[901px]:pr-5 min-[901px]:pl-8 min-[901px]:[--bar-inset:1rem]'>
             <div className='min-w-0 flex-1 text-sm leading-[1.375]'>
                 {title && <p className='text-[15px] font-semibold text-foreground'>{title}</p>}
                 {body && (
@@ -50,7 +51,7 @@ export function Announcement() {
                 <a
                     href={buttonUrl}
                     {...externalProps(buttonUrl)}
-                    className='mt-1 self-start rounded-md border border-primary/55 bg-primary/20 px-3 py-1.5 text-[13px] leading-[1.5] font-semibold whitespace-nowrap text-foreground no-underline transition-colors hover:bg-primary/30 sm:mt-0 sm:self-auto'
+                    className='mt-1 self-start rounded-md border border-primary/55 bg-primary/20 px-3 py-1.5 text-[13px] leading-[1.5] font-semibold whitespace-nowrap text-foreground no-underline transition-colors hover:bg-primary/30 min-[901px]:mt-0 min-[901px]:self-auto'
                 >
                     {buttonLabel}
                 </a>
@@ -59,7 +60,7 @@ export function Announcement() {
                 type='button'
                 onClick={() => setDismissed(signature)}
                 aria-label='Dismiss'
-                className='absolute top-3 right-3 inline-flex size-7 items-center justify-center rounded-md border-0 bg-transparent text-muted-foreground transition-colors hover:text-foreground sm:static'
+                className='absolute top-3 right-3 inline-flex size-7 items-center justify-center rounded-md border-0 bg-transparent text-muted-foreground transition-colors hover:bg-foreground/9 hover:text-foreground min-[901px]:static'
             >
                 <X className='size-[15px]' aria-hidden />
             </button>

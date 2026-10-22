@@ -85,6 +85,9 @@
     --shadow-md: var(--shadow-raised);
 }
 
+/* A server card wider than 42rem takes a roomier layout; the card is its own container. */
+@custom-variant card-wide (@container (width > 42rem));
+
 /* #region tokens */
 :root {
     /* Settings write --basalt-* tokens; every role below falls back to the built-in palette. */
@@ -310,8 +313,8 @@
 
 /* #region surfaces */
 /*
- * As in Graphite, whatever the panel paints with the card fill (file rows, stat icons, a dialog's
- * footer) is a card: it takes the card shadow in place of classic's rings and heavier shadows.
+ * Whatever the panel paints with the card fill (file rows, stat icons, a dialog's footer) is a
+ * card: it takes the card shadow in place of classic's rings and heavier shadows.
  */
 .bg-card {
     box-shadow: var(--shadow-card);
