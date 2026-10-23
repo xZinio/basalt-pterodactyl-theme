@@ -1,6 +1,7 @@
 import { lazy } from 'react';
 import { defineTheme, lazyView } from '@pterodactyl/sdk/theme';
 import { applyAccent, cachedAccent } from './lib/accent';
+import { applyPanelName } from './lib/bootstrap';
 import { loadFont } from './lib/fonts';
 import { adoptDraft } from './lib/preview';
 import { useServerDashboard } from './lib/server';
@@ -18,8 +19,9 @@ if (typeof document !== 'undefined') {
         const accent = cachedAccent();
         if (accent) applyAccent(accent);
     }
-    // The font setting's Google Fonts stylesheet, from the settings (or the draft) just like the tokens.
+    // The font setting's Google Fonts stylesheet and the panel name, from the settings (or the draft) like the tokens.
     loadFont();
+    applyPanelName();
 }
 
 /**

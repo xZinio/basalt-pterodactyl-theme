@@ -3,7 +3,8 @@ import { DropdownMenu, cn } from '@pterodactyl/sdk';
 import { useThemeSettings, type AppLayoutModel } from '@pterodactyl/sdk/theme';
 import UserAvatar from '../../components/UserAvatar';
 import { applyAccent } from '../../lib/accent';
-import { usePrivacy } from '../../lib/privacy';
+import { usePrivacy, usePrivacyAllowed } from '../../lib/privacy';
+import { useShortcutsAllowed } from '../../lib/shortcuts';
 import type { ThemeSettings } from '../../theme-types';
 
 /** The signed-in user at the foot of the sidebar; it opens the account menu. */
@@ -19,6 +20,8 @@ export default function UserMenu({
     const { user, setScheme, scheme } = model;
     const { supportUrl } = useThemeSettings<ThemeSettings>();
     const [privacy, setPrivacy] = usePrivacy();
+    const privacyAllowed = usePrivacyAllowed();
+    const shortcutsAllowed = useShortcutsAllowed();
 
     return (
         <DropdownMenu
@@ -62,12 +65,16 @@ export default function UserMenu({
                     {scheme === 'dark' ? 'Light scheme' : 'Dark scheme'}
                 </DropdownMenu.Item>
             )}
-            <DropdownMenu.Item icon={privacy ? Eye : EyeOff} onClick={() => setPrivacy(!privacy)}>
-                {privacy ? 'Show sensitive data' : 'Hide sensitive data'}
-            </DropdownMenu.Item>
-            <DropdownMenu.Item icon={Keyboard} onClick={onShortcuts}>
-                Keyboard shortcuts
-            </DropdownMenu.Item>
+            {privacyAllowed && (
+                <DropdownMenu.Item icon={privacy ? Eye : EyeOff} onClick={() => setPrivacy(!privacy)}>
+                    {privacy ? 'Show sensitive data' : 'Hide sensitive data'}
+                </DropdownMenu.Item>
+            )}
+            {shortcutsAllowed && (
+                <DropdownMenu.Item icon={Keyboard} onClick={onShortcuts}>
+                    Keyboard shortcuts
+                </DropdownMenu.Item>
+            )}
             {/* The next person to sign in on this browser starts from the panel's accent. */}
             <DropdownMenu.Item
                 icon={LogOut}

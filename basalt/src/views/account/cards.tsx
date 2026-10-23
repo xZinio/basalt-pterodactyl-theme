@@ -5,8 +5,8 @@ import { useTheme, useThemeSettings } from '@pterodactyl/sdk/theme';
 import UserAvatar from '../../components/UserAvatar';
 import { accentPresets, applyAccent } from '../../lib/accent';
 import { useLanguages, usePreferences, useUpdateLanguage, useUpdatePreferences } from '../../lib/api';
-import { usePrivacy } from '../../lib/privacy';
-import { useShortcutsEnabled } from '../../lib/shortcuts';
+import { usePrivacy, usePrivacyAllowed } from '../../lib/privacy';
+import { useShortcutsAllowed, useShortcutsEnabled } from '../../lib/shortcuts';
 import type { ThemeSettings } from '../../theme-types';
 
 export interface CardProps {
@@ -206,20 +206,35 @@ function Toggle({ label, help, checked, onChange, className }: { label: string; 
     );
 }
 
-/** This browser's conveniences: blurring sensitive details, and the keyboard shortcuts. */
+/** Whether the Interface card has anything to offer: privacy mode or the shortcuts, where administrators allow them. */
+export const useInterfaceCard = (): boolean => usePrivacyAllowed() || useShortcutsAllowed();
+
+/** This browser's conveniences: blurring sensitive details, and the keyboard shortcuts, where administrators allow them. */
 export function InterfaceCard({ className }: CardProps) {
     const [privacy, setPrivacy] = usePrivacy();
     const [shortcuts, setShortcuts] = useShortcutsEnabled();
+    const privacyAllowed = usePrivacyAllowed();
+    const shortcutsAllowed = useShortcutsAllowed();
 
     return (
         <ContentBox title='Interface' className={className}>
-            <Toggle
-                label='Privacy mode'
-                help='Blurs IP addresses and email addresses until you hover them. Handy while streaming.'
-                checked={privacy}
-                onChange={setPrivacy}
-            />
-            <Toggle className='mt-5' label='Keyboard shortcuts' help='Press ? anywhere to see all shortcuts.' checked={shortcuts} onChange={setShortcuts} />
+            {privacyAllowed && (
+                <Toggle
+                    label='Privacy mode'
+                    help='Blurs IP addresses and email addresses until you hover them. Handy while streaming.'
+                    checked={privacy}
+                    onChange={setPrivacy}
+                />
+            )}
+            {shortcutsAllowed && (
+                <Toggle
+                    className={privacyAllowed ? 'mt-5' : undefined}
+                    label='Keyboard shortcuts'
+                    help='Press ? anywhere to see all shortcuts.'
+                    checked={shortcuts}
+                    onChange={setShortcuts}
+                />
+            )}
         </ContentBox>
     );
 }

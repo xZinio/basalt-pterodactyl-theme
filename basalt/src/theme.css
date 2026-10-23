@@ -347,11 +347,23 @@
     border-radius: 0;
 }
 
-/* Toasts: a neutral rim and a slightly see-through fill, whatever their kind. */
+/* Toasts: a neutral rim and a slightly see-through fill, whatever their kind; solid or bare by the Notifications setting. */
 [data-sonner-toast] {
     border-color: color-mix(in oklab, var(--border) 65%, transparent);
     background: color-mix(in oklab, var(--popover) 88%, transparent);
     box-shadow: 0 4px 14px rgb(0 0 0 / 0.16);
+}
+
+[data-basalt-notifications='solid'] [data-sonner-toast] {
+    border-color: var(--border);
+    background: var(--popover);
+    box-shadow: 0 8px 24px rgb(0 0 0 / 0.32);
+}
+
+[data-basalt-notifications='minimal'] [data-sonner-toast] {
+    border-color: transparent;
+    background: none;
+    box-shadow: none;
 }
 /* #endregion surfaces */
 

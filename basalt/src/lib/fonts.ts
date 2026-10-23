@@ -1,3 +1,5 @@
+import { bootstrapSettings } from './bootstrap';
+
 /** The Google Fonts family of each font setting option that loads from Google Fonts. */
 const googleFamilies: Readonly<Record<string, string>> = {
     inter: 'Inter',
@@ -30,7 +32,7 @@ export function fontStylesheet(font: unknown, customUrl: unknown): string | null
 
 /** Links the configured font's stylesheet, before the first render. */
 export function loadFont(): void {
-    const settings = (window as Window & { SiteConfiguration?: { theme?: { settings?: Record<string, unknown> } } }).SiteConfiguration?.theme?.settings ?? {};
+    const settings = bootstrapSettings();
     const href = fontStylesheet(settings.font, settings.fontUrl);
     if (!href) return;
 

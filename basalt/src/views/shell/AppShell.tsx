@@ -40,13 +40,17 @@ function useDesktop(): boolean {
     return desktop;
 }
 
+/** The brand's logo at the Logo height setting; a wide logo keeps its shape. */
 export function Logo({ brand, className }: { brand: LayoutBrand; className?: string }) {
     return brand.logoUrl ? (
-        <img src={brand.logoUrl} alt='' className={cn('size-7 shrink-0 object-contain', className)} />
+        <img src={brand.logoUrl} alt='' className={cn('h-(--basalt-logo-height) w-auto max-w-full shrink-0 object-contain', className)} />
     ) : (
-        <BrandMark className={cn('size-7 shrink-0', className)} />
+        <BrandMark className={cn('size-(--basalt-logo-height) shrink-0', className)} />
     );
 }
+
+/** The panel name beside the logo; hidden by the Branding setting, it still names the link. */
+const brandNameClass = 'truncate text-lg leading-[1.5] font-semibold in-data-[basalt-hide-name=true]:sr-only';
 
 const iconButton =
     'inline-flex shrink-0 items-center justify-center rounded-md border-0 bg-transparent text-muted-foreground transition-colors hover:bg-foreground/[0.06] hover:text-foreground';
@@ -215,7 +219,7 @@ export default function AppShell({ model, className, children }: ViewProps<'layo
                     </button>
                     <PanelLink destination={{ to: '/' }} className='flex min-w-0 items-center gap-2.5 text-foreground no-underline'>
                         <Logo brand={model.brand} />
-                        <span className='truncate text-lg leading-[1.5] font-semibold'>{model.brand.name}</span>
+                        <span className={brandNameClass}>{model.brand.name}</span>
                     </PanelLink>
                 </header>
 
@@ -238,7 +242,7 @@ export default function AppShell({ model, className, children }: ViewProps<'layo
                             className={cn('flex h-10 min-w-0 items-center gap-2.5 text-foreground no-underline', rail ? 'flex-none' : 'flex-1')}
                         >
                             <Logo brand={model.brand} />
-                            {!rail && <span className='truncate text-lg leading-[1.5] font-semibold'>{model.brand.name}</span>}
+                            {!rail && <span className={brandNameClass}>{model.brand.name}</span>}
                         </PanelLink>
                         <button
                             type='button'

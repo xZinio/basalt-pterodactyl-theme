@@ -13,6 +13,7 @@ import {
     Settings2,
     SlidersHorizontal,
     Smartphone,
+    Stamp,
     Type,
 } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
@@ -149,6 +150,7 @@ export const categories: readonly Category[] = [
         sections: [{ title: 'Overview', keys: ['welcome', 'serverArt', 'announcementTitle', 'announcement', 'announcementButton'] }],
     },
     { id: 'server', label: 'Server dashboard', icon: LayoutTemplate, tabs: ['Server'], page: 'server' },
+    { id: 'branding', label: 'Branding', icon: Stamp, tabs: ['Branding'] },
     { id: 'sign-in', label: 'Sign-in page', icon: LogIn, tabs: ['Sign-in'], page: 'sign-in' },
 ];
 

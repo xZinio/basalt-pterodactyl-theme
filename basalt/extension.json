@@ -151,6 +151,94 @@
                 "default": "#d4d4d8",
                 "token": "--basalt-terminal-foreground"
             },
+            "panelName": {
+                "type": "text",
+                "label": "Panel name",
+                "tab": "General",
+                "help": "Replaces the panel name in the browser tab, the sidebar and the sign-in page. Leave empty to keep the panel's own name.",
+                "default": "",
+                "maxLength": 80
+            },
+            "defaultScheme": {
+                "type": "select",
+                "label": "Default color mode",
+                "tab": "General",
+                "help": "Used until a user picks a mode in their account settings.",
+                "default": "dark",
+                "options": { "system": "Follow the device", "dark": "Dark", "light": "Light" }
+            },
+            "privacyMode": {
+                "type": "toggle",
+                "label": "Privacy mode",
+                "tab": "General",
+                "help": "Lets users blur IP addresses and email addresses, handy when sharing their screen.",
+                "default": true
+            },
+            "keyboardShortcuts": {
+                "type": "toggle",
+                "label": "Keyboard shortcuts",
+                "tab": "General",
+                "help": "Lets users move around with shortcuts such as G then D. Press ? to see them all.",
+                "default": true
+            },
+            "userAccent": {
+                "type": "toggle",
+                "label": "Personal accent color",
+                "tab": "General",
+                "help": "Lets users pick their own accent color in their account settings.",
+                "default": true
+            },
+            "avatarUploads": {
+                "type": "toggle",
+                "label": "Avatar uploads",
+                "tab": "General",
+                "help": "Lets users upload their own avatar instead of Gravatar.",
+                "default": true
+            },
+            "gravatar": {
+                "type": "toggle",
+                "label": "Gravatar pictures",
+                "tab": "General",
+                "help": "Show a user's Gravatar until they upload a picture. Loading it sends a hash of their email address to Gravatar.",
+                "default": true
+            },
+            "installableApp": {
+                "type": "toggle",
+                "label": "Installable app",
+                "tab": "General",
+                "help": "Lets users install the panel as an app on their phone or computer.",
+                "default": true
+            },
+            "appName": {
+                "type": "text",
+                "label": "App name",
+                "tab": "General",
+                "help": "Leave empty to use the panel name.",
+                "default": "",
+                "maxLength": 40
+            },
+            "appColor": {
+                "type": "color",
+                "label": "App color",
+                "tab": "General",
+                "help": "The color of the app window and splash screen.",
+                "default": "#1e1e20"
+            },
+            "languagePicker": {
+                "type": "toggle",
+                "label": "Language picker",
+                "tab": "General",
+                "help": "Lets users pick their language in their account settings.",
+                "default": true
+            },
+            "notifications": {
+                "type": "select",
+                "label": "Notifications",
+                "tab": "General",
+                "default": "subtle",
+                "attribute": "data-basalt-notifications",
+                "options": { "subtle": "Subtle", "solid": "Solid", "minimal": "Minimal" }
+            },
             "font": {
                 "type": "select",
                 "label": "Font",
@@ -400,14 +488,41 @@
             "logo": {
                 "type": "image",
                 "label": "Logo",
-                "help": "Shown beside the panel name in the sidebar and on the sign-in card. A square image looks best.",
+                "tab": "Branding",
+                "help": "Shown in the sidebar and, without a sign-in logo, on the sign-in page.",
                 "token": "--brand-logo"
             },
-            "gravatar": {
+            "logoHeight": {
+                "type": "number",
+                "label": "Logo height",
+                "tab": "Branding",
+                "default": 28,
+                "min": 16,
+                "max": 64,
+                "step": 1,
+                "unit": "px",
+                "token": "--basalt-logo-height"
+            },
+            "hideName": {
                 "type": "toggle",
-                "label": "Gravatar pictures",
-                "help": "Show a user's Gravatar until they upload a picture. Loading it sends a hash of their email address to Gravatar.",
-                "default": true
+                "label": "Hide the panel name next to the logo",
+                "tab": "Branding",
+                "default": false,
+                "attribute": "data-basalt-hide-name"
+            },
+            "favicon": {
+                "type": "image",
+                "label": "Favicon",
+                "tab": "Branding",
+                "help": "The browser tab icon."
+            },
+            "supportUrl": {
+                "type": "text",
+                "label": "Support link",
+                "tab": "Branding",
+                "help": "An https:// URL or a path beginning with /. Shown in the account menu and on the sign-in page.",
+                "default": "",
+                "maxLength": 500
             },
             "loginLayout": {
                 "type": "select",
@@ -447,14 +562,6 @@
                 "help": "A Links section in the sidebar, as Label|URL|icon|where entries separated by commas. The icon is any lucide name, such as message-circle, book-open or shopping-cart; where is all (the default), dashboard (the server list only) or server.",
                 "default": "",
                 "maxLength": 1000
-            },
-            "supportUrl": {
-                "type": "text",
-                "label": "Support link",
-                "tab": "Navigation",
-                "help": "Where Support in the user menu leads. Leave empty to hide it.",
-                "default": "",
-                "maxLength": 300
             },
             "navHeadings": {
                 "type": "toggle",
@@ -501,20 +608,6 @@
                 "help": "Show each server's egg banner behind its card. Set banners on the egg's admin page.",
                 "default": true,
                 "attribute": "data-basalt-server-art"
-            },
-            "userAccent": {
-                "type": "toggle",
-                "label": "Personal accent colour",
-                "tab": "Account",
-                "help": "Let users pick their own accent colour on their account page. It changes the panel only for them.",
-                "default": true
-            },
-            "languagePicker": {
-                "type": "toggle",
-                "label": "Language picker",
-                "tab": "Account",
-                "help": "Let users choose, on their account page, which of the panel's installed languages it is shown in.",
-                "default": true
             },
             "serverDashboard": {
                 "type": "toggle",

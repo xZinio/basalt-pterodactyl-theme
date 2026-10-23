@@ -2,7 +2,7 @@ import type { ComponentType } from 'react';
 import { Alert, PageContentBlock, PageHeading, cn } from '@pterodactyl/sdk';
 import { Slot, View, useTheme, useThemeSettings, type ViewProps } from '@pterodactyl/sdk/theme';
 import type { ThemeSettings } from '../../theme-types';
-import { AccentCard, ColorModeCard, GravatarCard, InterfaceCard, LanguageCard, type CardProps } from './cards';
+import { AccentCard, ColorModeCard, GravatarCard, InterfaceCard, LanguageCard, type CardProps, useInterfaceCard } from './cards';
 
 /** Classic's cards: full width on phones, two across on tablets, three across from `lg`. */
 const placed = (index: number) =>
@@ -28,7 +28,8 @@ function Row({ cards }: { cards: (ComponentType<CardProps> | false | null)[] }) 
  */
 export default function AccountPage({ model, className }: ViewProps<'page.account.overview'>) {
     const { schemes } = useTheme();
-    const { userAccent, languagePicker, gravatar } = useThemeSettings<ThemeSettings>();
+    const { userAccent, languagePicker, gravatar, avatarUploads } = useThemeSettings<ThemeSettings>();
+    const interfaceCard = useInterfaceCard();
 
     return (
         <PageContentBlock title='Account Overview' className={className}>
@@ -45,7 +46,7 @@ export default function AccountPage({ model, className }: ViewProps<'page.accoun
                 <View name='account.twoFactor' className={placed(2)} />
             </div>
             <Row cards={[schemes.length > 1 && ColorModeCard, languagePicker && LanguageCard]} />
-            <Row cards={[model.userAvatarsEnabled ? AvatarCard : gravatar && GravatarCard, userAccent && AccentCard, InterfaceCard]} />
+            <Row cards={[model.userAvatarsEnabled && avatarUploads ? AvatarCard : gravatar && GravatarCard, userAccent && AccentCard, interfaceCard && InterfaceCard]} />
             <Slot name='account.overview.after' />
         </PageContentBlock>
     );
