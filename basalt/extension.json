@@ -6,7 +6,7 @@
     "version": "1.0.0",
     "description": "A graphite-dark panel theme: a glass sidebar, a split sign-in card, a card dashboard with folders and favourites, a server overview and a docked console.",
     "author": "carlos",
-    "icon": "palette",
+    "icon": "icon.png",
     "requires": {
         "panel": "^2.0.0-dev",
         "sdk": ">=2.0.0-beta.6 <3.0",

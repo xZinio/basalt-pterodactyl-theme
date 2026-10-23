@@ -292,14 +292,14 @@ export default function ServerList({ model, className }: ViewProps<'dashboard.se
                 </div>
                 {welcome && !others && <Welcome name={user.username} />}
                 <Slot name='dashboard.before' />
-                <div className='surface flex flex-col gap-3 px-5 pt-4 pb-5 @3xl:flex-row @3xl:items-end'>
+                <div className='surface flex flex-col gap-3 px-5 pt-4 pb-5 md:flex-row md:items-end'>
                     <Field label='Search servers' className='flex-1'>
                         {(id) => <SearchInput id={id} value={query} onChange={setQuery} placeholder='Name, identifier, or node' />}
                     </Field>
-                    <Field label='Status' className='@3xl:w-[91px]'>
+                    <Field label='Status' className='md:w-[91px]'>
                         {(id) => <NativeSelect id={id} value={status} onChange={setStatus} options={{ all: 'All', online: 'Online', offline: 'Offline' }} />}
                     </Field>
-                    <Field label='Sort by' className='@3xl:w-[143px]'>
+                    <Field label='Sort by' className='md:w-[143px]'>
                         {(id) => (
                             <NativeSelect id={id} value={sort} onChange={setSort} options={{ custom: 'Custom order', name: 'Name', status: 'Status' }} />
                         )}

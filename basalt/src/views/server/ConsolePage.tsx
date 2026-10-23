@@ -17,7 +17,7 @@ function Console({ model }: { model: ServerConsoleModel }) {
             <Slot name='server.console.before' data={model.server} />
             <ServerHeader name={model.name} description={model.description} />
             <div className='grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,1fr)_18rem]'>
-                <div className='flex min-w-0'>
+                <div className='flex min-h-[26rem] min-w-0'>
                     <View name='server.terminal' />
                 </div>
                 <View name='server.stats' className='order-last lg:order-none' />

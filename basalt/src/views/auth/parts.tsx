@@ -15,7 +15,7 @@ export function AuthForm({ title, submit, links, children }: { title: string; su
         <Form form={{ handleSubmit: submit }} className='flex flex-col gap-5'>
             <h1 className='mb-1 text-center text-2xl leading-9 font-semibold text-foreground'>{title}</h1>
             {children}
-            <div className='flex flex-wrap items-center justify-center gap-x-4 gap-y-2'>
+            <div className='flex flex-wrap items-center justify-center gap-4'>
                 {links}
                 {parseLinks(loginLinks).map((link) => (
                     <a

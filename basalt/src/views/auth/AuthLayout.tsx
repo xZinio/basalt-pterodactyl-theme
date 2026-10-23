@@ -16,14 +16,14 @@ export default function AuthLayout({ model, className, children }: ViewProps<'la
             <Main className='mx-auto w-full max-w-auth'>
                 {/* The card fill by its token: theme.css gives `.bg-card` the lighter card shadow. */}
                 <div className='flex flex-col overflow-hidden rounded-[15px] border border-border/70 bg-(--card) shadow-overlay md:flex-row'>
-                    <div className='auth-banner flex min-h-48 flex-col gap-2 p-8 text-white md:min-h-100 md:w-1/2 in-data-[basalt-login-layout=simple]:hidden'>
+                    <div className='auth-banner flex min-h-48 flex-col gap-2 p-8 text-white md:w-1/2 in-data-[basalt-login-layout=simple]:hidden'>
                         {brand.logoUrl ? (
                             <img src={brand.logoUrl} alt='' className='mb-auto size-10 object-contain' />
                         ) : (
                             <BrandMark className='mb-auto size-10' />
                         )}
                         <strong className='block text-[28px] leading-[1.2] font-semibold text-white'>{brand.name}</strong>
-                        {loginTagline && <span className='block text-sm text-white/85'>{loginTagline}</span>}
+                        {loginTagline && <span className='block text-sm text-white opacity-85'>{loginTagline}</span>}
                     </div>
                     <div className='min-w-0 flex-1 p-8'>{children}</div>
                 </div>
