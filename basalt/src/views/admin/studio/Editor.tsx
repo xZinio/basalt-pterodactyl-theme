@@ -166,7 +166,7 @@ function Studio({ settings }: { settings: readonly Setting[] }) {
                         onClick={(event) => {
                             if (dirty && !window.confirm('Leave without saving your changes?')) event.preventDefault();
                         }}
-                        className='inline-flex items-center gap-1.5 rounded-md border border-border px-3 py-1.5 text-[13px] leading-[1.5] font-medium text-muted-foreground no-underline transition-colors hover:bg-popover hover:text-foreground'
+                        className='inline-flex items-center gap-1.5 rounded-(--basalt-control-radius) border border-border px-3 py-1.5 text-[13px] leading-[1.5] font-medium text-muted-foreground no-underline transition-colors hover:bg-popover hover:text-foreground'
                     >
                         <ArrowLeft className='size-4' aria-hidden />
                         Back to admin
@@ -212,7 +212,7 @@ function Studio({ settings }: { settings: readonly Setting[] }) {
                 </header>
 
                 <nav aria-label='Settings' className='flex flex-col items-center gap-1 overflow-y-auto overscroll-contain border-r border-border py-3'>
-                    {categories.map((item) => (
+                    {categories.filter((item) => settings.some((setting) => categoryOf(setting) === item)).map((item) => (
                         <Tooltip key={item.id} content={item.label} placement='right'>
                             <button
                                 type='button'
@@ -220,7 +220,7 @@ function Studio({ settings }: { settings: readonly Setting[] }) {
                                 aria-current={item === category ? 'true' : undefined}
                                 onClick={() => open(item)}
                                 className={cn(
-                                    'inline-flex size-10 shrink-0 cursor-pointer items-center justify-center rounded-md border-0 transition-colors',
+                                    'inline-flex size-10 shrink-0 cursor-pointer items-center justify-center rounded-(--basalt-control-radius) border-0 transition-colors',
                                     item === category ? 'bg-primary/18 text-foreground' : 'bg-transparent text-muted-foreground hover:bg-popover hover:text-foreground'
                                 )}
                             >

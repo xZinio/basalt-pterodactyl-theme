@@ -1,5 +1,20 @@
 import type { LucideIcon } from 'lucide-react';
-import { Brush, LayoutGrid, LayoutTemplate, LogIn, Monitor, Navigation, Palette, Settings2, Smartphone } from 'lucide-react';
+import {
+    Brush,
+    Gauge,
+    Layers,
+    LayoutDashboard,
+    LayoutGrid,
+    LayoutTemplate,
+    LogIn,
+    Monitor,
+    Navigation,
+    Palette,
+    Settings2,
+    SlidersHorizontal,
+    Smartphone,
+    Type,
+} from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { http } from '@pterodactyl/sdk';
 import manifest from '../../../../extension.json';
@@ -119,7 +134,12 @@ export const categories: readonly Category[] = [
         ],
     },
     { id: 'general', label: 'General', icon: Settings2, tabs: ['General', 'Account'] },
+    { id: 'text', label: 'Text and shape', icon: Type, tabs: ['Text and shape'] },
+    { id: 'surfaces', label: 'Surfaces', icon: Layers, tabs: ['Surfaces'] },
+    { id: 'controls', label: 'Controls', icon: SlidersHorizontal, tabs: ['Controls'] },
+    { id: 'layout', label: 'Layout', icon: LayoutDashboard, tabs: ['Layout'] },
     { id: 'navigation', label: 'Navigation', icon: Navigation, tabs: ['Navigation'] },
+    { id: 'motion', label: 'Motion', icon: Gauge, tabs: ['Motion'] },
     {
         id: 'overview',
         label: 'Overview',
@@ -228,12 +248,15 @@ export function draftOf(settings: readonly Setting[], values: Values): StudioDra
     return { settings: values, tokens, attributes };
 }
 
+/** Settings with a token or an attribute that the page's code reads as well. */
+const readByCode = new Set(['motion', 'pageTransition', 'font']);
+
 /**
- * Settings React reads, not only the stylesheet, and images, which the sign-in preview draws from
- * its settings: the preview reloads when one changes.
+ * Settings the page's code reads, not only the stylesheet, and images, which the sign-in preview
+ * draws from its settings: the preview reloads when one changes.
  */
 export const reloadsPreview = (key: string): boolean =>
-    key === 'motion' || declared[key]?.type === 'image' || (!declared[key]?.token && !declared[key]?.attribute);
+    readByCode.has(key) || declared[key]?.type === 'image' || (!declared[key]?.token && !declared[key]?.attribute);
 
 export const isHex = (value: string): boolean => /^#(?:[0-9a-f]{3}|[0-9a-f]{6})$/i.test(value);
 

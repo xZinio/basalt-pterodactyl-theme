@@ -90,7 +90,7 @@ export function Field({ label, className, children }: { label: string; className
 }
 
 const controlClass =
-    'w-full min-w-0 rounded-md border border-border bg-popover text-sm tracking-normal text-foreground outline-hidden transition-[border-color,box-shadow] focus:border-primary focus:ring-2 focus:ring-ring/50';
+    'w-full min-w-0 rounded-(--basalt-control-radius) border border-input-border bg-input text-sm tracking-normal text-foreground outline-hidden transition-[border-color,box-shadow] focus:border-primary focus:ring-2 focus:ring-ring/50';
 
 export function SearchInput({ id, value, onChange, placeholder }: { id: string; value: string; onChange: (value: string) => void; placeholder: string }) {
     return (

@@ -1,7 +1,7 @@
 import { skin, type ThemeSkins } from '@pterodactyl/sdk/theme';
 
-/** The 1px light rim every button carries inside its border. */
-const rim = 'shadow-[inset_0_0_0_1px_color-mix(in_oklab,var(--foreground)_22%,transparent)]';
+/** The light rim every button carries inside its border, as thick as the borders. */
+const rim = 'shadow-[inset_0_0_0_var(--basalt-border-width,1px)_color-mix(in_oklab,var(--foreground)_22%,transparent)]';
 
 /**
  * Class recipes by primitive. Classic's recipes are the starting point: most parts extend them with

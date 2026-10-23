@@ -6,7 +6,7 @@ import { SETTINGS_URL, fullHex, isHex, type Setting, type SettingList, type Sett
 
 /** The studio's text controls: a compact field on the input surface. */
 const controlClass =
-    'w-full min-w-0 rounded-md border border-input-border bg-input px-3 py-2 text-sm leading-[1.5] font-normal tracking-normal text-foreground normal-case focus:outline-2 focus:outline-offset-1 focus:outline-ring aria-invalid:border-destructive';
+    'w-full min-w-0 rounded-(--basalt-control-radius) border border-input-border bg-input px-3 py-2 text-sm leading-[1.5] font-normal tracking-normal text-foreground normal-case focus:outline-2 focus:outline-offset-1 focus:outline-ring aria-invalid:border-destructive';
 
 /** A few choices side by side in a well, the chosen one raised. */
 export function Segmented<T extends string>({
@@ -23,7 +23,7 @@ export function Segmented<T extends string>({
     labelledBy?: string;
 }) {
     return (
-        <div role='group' aria-label={label} aria-labelledby={labelledBy} className='inline-flex flex-wrap gap-1 rounded-md border border-input-border bg-input p-1'>
+        <div role='group' aria-label={label} aria-labelledby={labelledBy} className='inline-flex flex-wrap gap-1 rounded-(--basalt-control-radius) border border-input-border bg-input p-1'>
             {options.map((option) => (
                 <button
                     key={option.id}
@@ -32,7 +32,7 @@ export function Segmented<T extends string>({
                     disabled={option.disabled}
                     onClick={() => onChange(option.id)}
                     className={cn(
-                        'inline-flex flex-1 basis-0 cursor-pointer items-center justify-center gap-1.5 rounded-sm border-0 px-2.5 py-1.5 text-[13px] leading-[1.5] whitespace-nowrap transition-colors disabled:cursor-default disabled:opacity-50',
+                        'inline-flex flex-1 basis-0 cursor-pointer items-center justify-center gap-1.5 rounded-[calc(var(--basalt-control-radius)*0.75)] border-0 px-2.5 py-1.5 text-[13px] leading-[1.5] whitespace-nowrap transition-colors disabled:cursor-default disabled:opacity-50',
                         value === option.id
                             ? 'bg-popover text-foreground shadow-[0_1px_2px_rgb(0_0_0/0.25)]'
                             : 'bg-transparent text-muted-foreground hover:not-disabled:text-foreground'
@@ -54,7 +54,7 @@ function ColorControl({ id, label, value, onChange }: { id: string; label: strin
 
     return (
         <div className='grid grid-cols-[2.5rem_minmax(0,1fr)] gap-2'>
-            <label className='relative h-[2.375rem] cursor-pointer overflow-hidden rounded-md border border-border' style={{ backgroundColor: color }}>
+            <label className='relative h-[2.375rem] cursor-pointer overflow-hidden rounded-(--basalt-control-radius) border border-border' style={{ backgroundColor: color }}>
                 <input
                     type='color'
                     value={color}
@@ -98,7 +98,7 @@ function ImageControl({ setting, value, onSaved }: { setting: Setting; value: Se
 
     return (
         <div className='grid gap-2'>
-            <div className='flex h-20 items-center justify-center overflow-hidden rounded-md border border-dashed border-border bg-input text-xs leading-[1.5] text-muted-foreground'>
+            <div className='flex h-20 items-center justify-center overflow-hidden rounded-(--basalt-control-radius) border border-dashed border-border bg-input text-xs leading-[1.5] text-muted-foreground'>
                 {typeof value === 'string' ? <img src={value} alt='' className='max-h-full max-w-full object-contain' /> : 'None'}
             </div>
             <div className='flex flex-wrap gap-2'>
@@ -175,18 +175,34 @@ export function Field({
                         ))}
                     </select>
                 ))}
-            {setting.type === 'number' && (
-                <input
-                    id={id}
-                    type='number'
-                    value={typeof value === 'number' ? value : ''}
-                    min={setting.min ?? undefined}
-                    max={setting.max ?? undefined}
-                    step={setting.step ?? undefined}
-                    onChange={(event) => onChange(event.target.value === '' ? null : event.target.valueAsNumber)}
-                    className={controlClass}
-                />
-            )}
+            {setting.type === 'number' &&
+                (setting.min !== null && setting.max !== null ? (
+                    <div className='grid grid-cols-[minmax(0,1fr)_4rem] items-center gap-3'>
+                        <input
+                            id={id}
+                            type='range'
+                            value={typeof value === 'number' ? value : (setting.min ?? 0)}
+                            min={setting.min}
+                            max={setting.max}
+                            step={setting.step ?? undefined}
+                            onChange={(event) => onChange(event.target.valueAsNumber)}
+                            className='w-full min-w-0 accent-(--primary)'
+                        />
+                        <span className='text-right text-[13px] leading-[1.5] text-foreground tabular-nums'>
+                            {typeof value === 'number' ? value : '–'}
+                            {setting.unit}
+                        </span>
+                    </div>
+                ) : (
+                    <input
+                        id={id}
+                        type='number'
+                        value={typeof value === 'number' ? value : ''}
+                        step={setting.step ?? undefined}
+                        onChange={(event) => onChange(event.target.value === '' ? null : event.target.valueAsNumber)}
+                        className={controlClass}
+                    />
+                ))}
             {setting.type === 'text' &&
                 ((setting.max_length ?? 0) > 200 ? (
                     <textarea

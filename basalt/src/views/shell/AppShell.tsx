@@ -18,7 +18,7 @@ import { applyAccent } from '../../lib/accent';
 import { usePreferences } from '../../lib/api';
 import { useLocalState } from '../../lib/local';
 import { parseLinks } from '../../lib/links';
-import { useMotion } from '../../lib/motion';
+import { motionSpeed, useMotion } from '../../lib/motion';
 import { usePrivacy } from '../../lib/privacy';
 import type { ThemeSettings } from '../../theme-types';
 import { SidebarServerSlot } from './context';
@@ -138,6 +138,30 @@ function AreaNavigation({ model, rail }: { model: AppLayoutModel; rail: boolean 
     );
 }
 
+/** A picture's CSS `url()`, escaped. */
+const cssUrl = (url: string) => `url("${url.replace(/["\\\n]/g, (char) => (char === '\n' ? '\\a ' : `\\${char}`))}")`;
+
+/**
+ * The picture behind the area's pages: the overview's or the server pages' own, else the page
+ * background while it is on, from its file or its https:// address.
+ */
+function Backdrop({ area }: { area: AppArea['kind'] }) {
+    const { overviewBackground, serverBackground, backgroundImage, backgroundFile, backgroundUrl } = useThemeSettings<ThemeSettings>();
+    const page = backgroundImage ? (backgroundFile ?? (backgroundUrl.startsWith('https://') ? backgroundUrl : null)) : null;
+    const picture = (area === 'dashboard' && overviewBackground) || (area === 'server' && serverBackground) || page;
+
+    return picture ? <div className='basalt-backdrop' style={{ backgroundImage: cssUrl(picture) }} aria-hidden /> : null;
+}
+
+/** The page's entrance, by the page transition setting. */
+const entrances: Readonly<Record<string, Keyframe[]>> = {
+    fade: [{ opacity: 0 }, { opacity: 1 }],
+    lift: [
+        { opacity: 0, transform: 'translateY(6px)' },
+        { opacity: 1, transform: 'none' },
+    ],
+};
+
 /**
  * The frame of every signed-in page: a frosted sidebar with the area's navigation on large screens,
  * a bar and a drawer below them, and the page in <Main>.
@@ -153,7 +177,7 @@ export default function AppShell({ model, className, children }: ViewProps<'layo
     const motion = useMotion();
     usePrivacy();
 
-    const { userAccent } = useThemeSettings<ThemeSettings>();
+    const { userAccent, pageTransition } = useThemeSettings<ThemeSettings>();
     const preferences = usePreferences();
 
     // The user's personal accent, while administrators allow them; the panel's own until their preferences arrive.
@@ -167,10 +191,11 @@ export default function AppShell({ model, className, children }: ViewProps<'layo
     // A link in the drawer closes it when it navigates.
     useEffect(() => setDrawer(false), [pathname]);
 
-    // Each page fades in as it opens. The element stays, and so does the console the server pages keep mounted.
+    // Each page comes in as it opens. The element stays, and so does the console the server pages keep mounted.
     useEffect(() => {
-        if (motion) page.current?.animate?.({ opacity: [0, 1] }, { duration: 180, easing: 'cubic-bezier(0.2, 0, 0, 1)' });
-    }, [pathname, motion]);
+        const entrance = entrances[pageTransition];
+        if (motion && entrance) page.current?.animate?.(entrance, { duration: motionSpeed(), easing: 'cubic-bezier(0.2, 0, 0, 1)' });
+    }, [pathname, motion, pageTransition]);
 
     return (
         <SidebarServerSlot.Provider value={serverSlot}>
@@ -243,8 +268,12 @@ export default function AppShell({ model, className, children }: ViewProps<'layo
                     </div>
                 </aside>
 
+                <Backdrop area={model.area.kind} />
+
                 <Main className='min-w-0 flex-1'>
-                    <div ref={page}>{children}</div>
+                    <div ref={page} className='basalt-page'>
+                        {children}
+                    </div>
                 </Main>
 
                 {/* The panel's server search: its shortcuts open it; the trigger stays out of sight. */}

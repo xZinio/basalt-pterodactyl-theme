@@ -1,6 +1,7 @@
 import { lazy } from 'react';
 import { defineTheme, lazyView } from '@pterodactyl/sdk/theme';
 import { applyAccent, cachedAccent } from './lib/accent';
+import { loadFont } from './lib/fonts';
 import { adoptDraft } from './lib/preview';
 import { useServerDashboard } from './lib/server';
 import { skins } from './skins';
@@ -10,11 +11,15 @@ const auth = () => import('./views/auth');
 const areas = () => import('./views/shell/AreaLayouts');
 const fields = () => import('./views/admin/Fields');
 
-// In the studio's preview frame the draft replaces the saved settings. Anywhere else the user's
-// personal accent is painted before the first render, and the shell reconciles it with their preferences.
-if (typeof document !== 'undefined' && !adoptDraft()) {
-    const accent = cachedAccent();
-    if (accent) applyAccent(accent);
+if (typeof document !== 'undefined') {
+    // In the studio's preview frame the draft replaces the saved settings. Anywhere else the user's
+    // personal accent is painted before the first render, and the shell reconciles it with their preferences.
+    if (!adoptDraft()) {
+        const accent = cachedAccent();
+        if (accent) applyAccent(accent);
+    }
+    // The font setting's Google Fonts stylesheet, from the settings (or the draft) just like the tokens.
+    loadFont();
 }
 
 /**

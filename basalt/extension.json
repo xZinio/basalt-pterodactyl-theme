@@ -151,32 +151,257 @@
                 "default": "#d4d4d8",
                 "token": "--basalt-terminal-foreground"
             },
+            "font": {
+                "type": "select",
+                "label": "Font",
+                "tab": "Text and shape",
+                "help": "Fonts other than Poppins, IBM Plex Sans and the system font load from Google Fonts.",
+                "default": "poppins",
+                "attribute": "data-basalt-font",
+                "options": { "poppins": "Poppins", "plex": "IBM Plex Sans (panel default)", "system": "System font", "inter": "Inter", "roboto": "Roboto", "open_sans": "Open Sans", "lato": "Lato", "montserrat": "Montserrat", "nunito_sans": "Nunito Sans", "source_sans_3": "Source Sans 3", "manrope": "Manrope", "dm_sans": "DM Sans", "work_sans": "Work Sans", "outfit": "Outfit", "merriweather": "Merriweather", "playfair_display": "Playfair Display", "roboto_mono": "Roboto Mono", "jetbrains_mono": "JetBrains Mono", "custom": "Custom" }
+            },
+            "fontCustom": {
+                "type": "text",
+                "label": "Custom font name",
+                "tab": "Text and shape",
+                "help": "With the font set to Custom: the font family to use, such as a font installed on visitors' devices or the family of the Google Fonts URL below.",
+                "default": "",
+                "token": "--basalt-font-custom",
+                "maxLength": 100
+            },
+            "fontUrl": {
+                "type": "text",
+                "label": "Custom Google Fonts URL",
+                "tab": "Text and shape",
+                "help": "With the font set to Custom: a https://fonts.googleapis.com/css2?family=… URL to load.",
+                "default": "",
+                "maxLength": 500
+            },
+            "radius": {
+                "type": "number",
+                "label": "Corner radius",
+                "tab": "Text and shape",
+                "default": 10,
+                "min": 0,
+                "max": 24,
+                "step": 1,
+                "unit": "px",
+                "token": "--radius"
+            },
+            "textSize": {
+                "type": "number",
+                "label": "Text size",
+                "tab": "Text and shape",
+                "default": 100,
+                "min": 90,
+                "max": 115,
+                "step": 1,
+                "unit": "%",
+                "token": "--basalt-text-size"
+            },
+            "borderWidth": {
+                "type": "number",
+                "label": "Border thickness",
+                "tab": "Text and shape",
+                "default": 1,
+                "min": 0,
+                "max": 3,
+                "step": 1,
+                "unit": "px",
+                "token": "--basalt-border-width"
+            },
+            "shadows": {
+                "type": "select",
+                "label": "Shadows",
+                "tab": "Text and shape",
+                "default": "soft",
+                "attribute": "data-basalt-shadows",
+                "options": { "none": "None", "soft": "Soft", "strong": "Strong" }
+            },
+            "cardStyle": {
+                "type": "select",
+                "label": "Card style",
+                "tab": "Surfaces",
+                "help": "Glass cards are see-through and blur what is behind them, which shows best with a background image.",
+                "default": "solid",
+                "attribute": "data-basalt-card-style",
+                "options": { "solid": "Solid", "glass": "Glass", "outline": "Outlined" }
+            },
+            "cardOpacity": {
+                "type": "number",
+                "label": "Card opacity",
+                "tab": "Surfaces",
+                "help": "How opaque solid cards are. Below 100% the page background shows through.",
+                "default": 100,
+                "min": 0,
+                "max": 100,
+                "step": 1,
+                "unit": "%",
+                "token": "--basalt-card-opacity"
+            },
+            "glass": {
+                "type": "toggle",
+                "label": "Blur behind menus and the sidebar",
+                "tab": "Surfaces",
+                "default": true,
+                "attribute": "data-basalt-glass"
+            },
+            "glassBlur": {
+                "type": "number",
+                "label": "Blur strength",
+                "tab": "Surfaces",
+                "help": "Used by glass cards and by the blur behind menus and the sidebar.",
+                "default": 14,
+                "min": 0,
+                "max": 32,
+                "step": 1,
+                "unit": "px",
+                "token": "--basalt-glass-blur"
+            },
+            "boxEdges": {
+                "type": "select",
+                "label": "Box edges",
+                "tab": "Surfaces",
+                "default": "soft",
+                "attribute": "data-basalt-box-edges",
+                "options": { "soft": "Rounded", "flat": "Square", "outline": "Outlined" }
+            },
+            "inputBorders": {
+                "type": "toggle",
+                "label": "Input borders",
+                "tab": "Controls",
+                "help": "Draws a border around text fields and selects.",
+                "default": true,
+                "attribute": "data-basalt-input-borders"
+            },
+            "buttonBorders": {
+                "type": "toggle",
+                "label": "Button borders",
+                "tab": "Controls",
+                "default": true,
+                "attribute": "data-basalt-button-borders"
+            },
+            "controlRadius": {
+                "type": "number",
+                "label": "Control corner radius",
+                "tab": "Controls",
+                "default": 8,
+                "min": 0,
+                "max": 24,
+                "step": 1,
+                "unit": "px",
+                "token": "--basalt-control-radius"
+            },
+            "clickFeedback": {
+                "type": "toggle",
+                "label": "Click feedback",
+                "tab": "Controls",
+                "help": "Buttons and links shrink slightly while pressed.",
+                "default": true,
+                "attribute": "data-basalt-click-feedback"
+            },
+            "contentWidth": {
+                "type": "select",
+                "label": "Content width",
+                "tab": "Layout",
+                "help": "Keeps pages from stretching too wide on large screens.",
+                "default": "w1600",
+                "attribute": "data-basalt-content-width",
+                "options": { "full": "Full width", "w1280": "1280 px", "w1440": "1440 px", "w1600": "1600 px", "w1920": "1920 px" }
+            },
+            "density": {
+                "type": "select",
+                "label": "Spacing",
+                "tab": "Layout",
+                "default": "comfortable",
+                "attribute": "data-basalt-density",
+                "options": { "compact": "Compact", "comfortable": "Comfortable", "spacious": "Spacious" }
+            },
+            "overviewBackground": {
+                "type": "image",
+                "label": "Overview background",
+                "tab": "Layout",
+                "help": "Shown behind the server overview."
+            },
+            "serverBackground": {
+                "type": "image",
+                "label": "Server page background",
+                "tab": "Layout",
+                "help": "Shown behind every server page."
+            },
+            "backgroundStyle": {
+                "type": "select",
+                "label": "Background",
+                "tab": "Layout",
+                "default": "solid",
+                "attribute": "data-basalt-background-style",
+                "options": { "solid": "Solid", "spotlight": "Spotlight", "gradient": "Gradient" }
+            },
+            "backgroundImage": {
+                "type": "toggle",
+                "label": "Background image",
+                "tab": "Layout",
+                "help": "Shows the uploaded background image, or the image at the URL below when none is uploaded.",
+                "default": false
+            },
+            "backgroundFile": {
+                "type": "image",
+                "label": "Background image file",
+                "tab": "Layout"
+            },
+            "backgroundUrl": {
+                "type": "text",
+                "label": "Background image URL",
+                "tab": "Layout",
+                "help": "An https:// image URL, used when no background image file is uploaded.",
+                "default": "",
+                "maxLength": 500
+            },
+            "motion": {
+                "type": "select",
+                "label": "Animation",
+                "tab": "Motion",
+                "default": "full",
+                "attribute": "data-basalt-motion",
+                "options": { "full": "Full", "reduced": "Reduced", "none": "None" }
+            },
+            "pageTransition": {
+                "type": "select",
+                "label": "Page transition",
+                "tab": "Motion",
+                "default": "fade",
+                "attribute": "data-basalt-page-transition",
+                "options": { "none": "Off", "fade": "Fade", "lift": "Fade and lift" }
+            },
+            "overviewReveal": {
+                "type": "select",
+                "label": "Overview servers",
+                "tab": "Motion",
+                "default": "lift",
+                "attribute": "data-basalt-overview-reveal",
+                "options": { "none": "Off", "fade": "Fade in", "lift": "Fade and lift" }
+            },
+            "motionSpeed": {
+                "type": "select",
+                "label": "Speed",
+                "tab": "Motion",
+                "default": "standard",
+                "attribute": "data-basalt-motion-speed",
+                "options": { "quick": "Quick (120 ms)", "standard": "Standard (180 ms)", "relaxed": "Relaxed (240 ms)" }
+            },
+            "hoverEffect": {
+                "type": "select",
+                "label": "Hover effect",
+                "tab": "Motion",
+                "default": "default",
+                "attribute": "data-basalt-hover-effect",
+                "options": { "default": "Default", "filled": "Filled", "filled_secondary": "Filled secondary", "icon_pill": "Icon pill", "pill": "Pill", "pill_secondary": "Pill secondary" }
+            },
             "logo": {
                 "type": "image",
                 "label": "Logo",
                 "help": "Shown beside the panel name in the sidebar and on the sign-in card. A square image looks best.",
                 "token": "--brand-logo"
-            },
-            "glass": {
-                "type": "toggle",
-                "label": "Frosted sidebar",
-                "help": "Blur what scrolls under the sidebar and the mobile bar.",
-                "default": true,
-                "attribute": "data-basalt-glass"
-            },
-            "density": {
-                "type": "select",
-                "label": "Density",
-                "options": { "comfortable": "Comfortable", "compact": "Compact" },
-                "default": "comfortable",
-                "attribute": "data-basalt-density"
-            },
-            "motion": {
-                "type": "toggle",
-                "label": "Animations",
-                "help": "Fade each page in as it opens, and lift the dashboard's cards in one after another. They stay off for anyone whose device asks for reduced motion.",
-                "default": true,
-                "attribute": "data-basalt-motion"
             },
             "gravatar": {
                 "type": "toggle",

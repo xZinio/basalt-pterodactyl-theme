@@ -75,6 +75,9 @@
 /* #endregion fonts */
 
 @theme {
+    /* The border utilities' width: the Border thickness setting. */
+    --default-border-width: var(--basalt-border-width, 1px);
+
     --font-sans: 'Poppins', 'IBM Plex Sans', system-ui, sans-serif;
     --font-header: 'Poppins', 'IBM Plex Sans', system-ui, sans-serif;
 
@@ -93,11 +96,11 @@
     /* Settings write --basalt-* tokens; every role below falls back to the built-in palette. */
     --radius: 10px;
     --layout-auth-width: 60rem;
-    --layout-content-width: 100rem;
     --layout-sidebar-width: 16rem;
     --basalt-logo-height: 28px;
-    --basalt-glass-tint: 70%;
     --basalt-glass-blur: 14px;
+    --basalt-speed: 180ms;
+    --basalt-ease: cubic-bezier(0.2, 0, 0, 1);
 }
 
 .dark {
@@ -106,7 +109,8 @@
 
     --background: var(--basalt-background, #1e1e20);
     --foreground: var(--basalt-foreground, #fafafa);
-    --card: var(--basalt-card, #252529);
+    --card-solid: var(--basalt-card, #252529);
+    --card: color-mix(in oklab, var(--card-solid) var(--basalt-card-opacity, 100%), transparent);
     --card-foreground: var(--foreground);
     --popover: var(--basalt-raised, #2d2d30);
     --popover-foreground: var(--foreground);
@@ -114,7 +118,7 @@
     --primary-foreground: var(--basalt-primary-foreground, #ffffff);
     --secondary: var(--popover);
     --secondary-foreground: var(--foreground);
-    --muted: var(--card);
+    --muted: var(--card-solid);
     --muted-foreground: var(--basalt-muted-foreground, #a1a1aa);
     --accent: var(--basalt-accent, color-mix(in srgb, var(--primary) 80%, white));
     --accent-foreground: #ffffff;
@@ -124,7 +128,7 @@
     --input: var(--basalt-input, #2d2d30);
     --input-border: var(--border);
     --ring: var(--accent);
-    --sunken: color-mix(in oklab, var(--card) 80%, black);
+    --sunken: color-mix(in oklab, var(--card-solid) 80%, black);
 
     --state-foreground: var(--background);
     --success: var(--basalt-success, #3fb37f);
@@ -180,7 +184,8 @@
 
     --background: color-mix(in oklab, var(--basalt-background, #1e1e20) 5%, white);
     --foreground: color-mix(in oklab, var(--basalt-foreground, #fafafa) 12%, black);
-    --card: color-mix(in oklab, var(--basalt-card, #252529) 3%, white);
+    --card-solid: color-mix(in oklab, var(--basalt-card, #252529) 3%, white);
+    --card: color-mix(in oklab, var(--card-solid) var(--basalt-card-opacity, 100%), transparent);
     --card-foreground: var(--foreground);
     --popover: color-mix(in oklab, var(--basalt-raised, #2d2d30) 8%, white);
     --popover-foreground: var(--foreground);
@@ -188,7 +193,7 @@
     --primary-foreground: var(--basalt-primary-foreground, #ffffff);
     --secondary: var(--popover);
     --secondary-foreground: var(--foreground);
-    --muted: var(--card);
+    --muted: var(--card-solid);
     --muted-foreground: color-mix(in oklab, var(--basalt-muted-foreground, #a1a1aa) 60%, black);
     --accent: var(--basalt-accent, color-mix(in srgb, var(--primary) 80%, white));
     --accent-foreground: #ffffff;
@@ -198,7 +203,7 @@
     --input: color-mix(in oklab, var(--basalt-input, #2d2d30) 6%, white);
     --input-border: var(--border);
     --ring: var(--accent);
-    --sunken: color-mix(in oklab, var(--card) 80%, black);
+    --sunken: color-mix(in oklab, var(--card-solid) 80%, black);
 
     --state-foreground: var(--background);
     --success: var(--basalt-success, #3fb37f);
@@ -257,8 +262,8 @@
 /* #region utilities */
 /* A resting surface: the card fill, a soft hairline and the card shadow. */
 @utility surface {
-    background-color: var(--card);
-    border: 1px solid color-mix(in oklab, var(--border) 70%, transparent);
+    background-color: var(--card-fill);
+    border: var(--basalt-border-width, 1px) solid color-mix(in oklab, var(--border) 70%, transparent);
     border-radius: var(--radius);
     box-shadow: var(--shadow-card);
 }
@@ -279,10 +284,10 @@
     }
 }
 
-/* Frosted glass over the page: the sidebar and floating bars. */
+/* Frosted glass over the page: the sidebar and floating bars, solid with the glass setting off. */
 @utility glass {
-    background-color: color-mix(in oklab, var(--sidebar) var(--basalt-glass-tint), transparent);
-    backdrop-filter: blur(var(--basalt-glass-blur));
+    background-color: var(--basalt-bar-fill);
+    backdrop-filter: var(--basalt-bar-blur);
 }
 
 /* The picture half of the sign-in card: the uploaded image, or the built-in artwork, under a dark fade. */
@@ -309,10 +314,37 @@
 /* #region surfaces */
 /*
  * Whatever the panel paints with the card fill (file rows, stat icons, a dialog's footer) is a
- * card: it takes the card shadow in place of classic's rings and heavier shadows.
+ * card: it takes the card shadow in place of classic's rings and heavier shadows, and the card
+ * style and box edges settings: a see-through glass fill or an outline, square corners.
  */
-.bg-card {
-    box-shadow: var(--shadow-card);
+:root {
+    --card-fill: var(--card);
+    --card-blur: none;
+    --card-ring: 0 0 #0000;
+    /* What bg-card paints, so a hover fill on a card still wins. */
+    --color-card: var(--card-fill);
+}
+
+[data-basalt-card-style='glass'] {
+    --card-fill: color-mix(in oklab, var(--card-solid) 62%, transparent);
+    --card-blur: blur(var(--basalt-glass-blur, 14px));
+}
+
+:is([data-basalt-card-style='outline'], [data-basalt-box-edges='outline']) {
+    --card-ring: inset 0 0 0 var(--basalt-border-width, 1px) var(--border);
+}
+
+[data-basalt-card-style='outline'] {
+    --card-fill: transparent;
+}
+
+:is(.bg-card, .surface, [data-ui='card'][data-part='root']) {
+    backdrop-filter: var(--card-blur);
+    box-shadow: var(--card-ring), var(--shadow-card);
+}
+
+[data-basalt-box-edges='flat'] :is(.bg-card, .surface, [data-ui='card'][data-part='root']) {
+    border-radius: 0;
 }
 
 /* Toasts: a neutral rim and a slightly see-through fill, whatever their kind. */
@@ -336,8 +368,8 @@
 /* #region menus */
 /* With glass on, menus and select lists float on the sidebar's frosted glass. */
 [data-basalt-glass='true'] :is([data-ui='dropdown-menu'][data-part='root'], [data-ui='select'][data-part='popup']) {
-    background-color: color-mix(in oklab, var(--sidebar) var(--basalt-glass-tint), transparent);
-    backdrop-filter: blur(var(--basalt-glass-blur));
+    background-color: var(--basalt-bar-fill);
+    backdrop-filter: var(--basalt-bar-blur);
 }
 
 /* The account menu: a panel the width of the account button, 8px above it, whose rows are sidebar links. */
@@ -381,7 +413,37 @@
 }
 /* #endregion menus */
 
-/* #region motion: the shell fades each page in; the dashboard's cards lift in one after another */
+/* #region motion: the shell fades each page in; the overview's cards come in one after another */
+[data-basalt-motion-speed='quick'] {
+    --basalt-speed: 120ms;
+}
+
+[data-basalt-motion-speed='relaxed'] {
+    --basalt-speed: 240ms;
+}
+
+/* Reduced: every transition short. None: nothing moves. */
+[data-basalt-motion='reduced'] {
+    --basalt-speed: 100ms;
+
+    & :is(*, ::before, ::after) {
+        transition-duration: 100ms;
+    }
+}
+
+[data-basalt-motion='none'] :is(*, ::before, ::after) {
+    scroll-behavior: auto !important;
+    transition-duration: 0.001ms !important;
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+}
+
+@keyframes basalt-fade {
+    from {
+        opacity: 0;
+    }
+}
+
 @keyframes basalt-lift {
     from {
         opacity: 0;
@@ -390,9 +452,65 @@
 }
 
 @media (prefers-reduced-motion: no-preference) {
-    [data-basalt-motion='true'] .basalt-lift {
-        animation: basalt-lift 180ms cubic-bezier(0.2, 0, 0, 1) backwards;
+    [data-basalt-overview-reveal='fade'] .basalt-lift {
+        animation: basalt-fade var(--basalt-speed) var(--basalt-ease) backwards;
     }
+
+    [data-basalt-overview-reveal='lift'] .basalt-lift {
+        animation: basalt-lift var(--basalt-speed) var(--basalt-ease) backwards;
+    }
+}
+
+/* Hover: the sidebar's items and the overview's server cards. */
+:is([data-basalt-hover-effect='default'], [data-basalt-hover-effect='icon_pill'], [data-basalt-hover-effect='pill'], [data-basalt-hover-effect='pill_secondary'])
+    .basalt-server:hover {
+    border-color: color-mix(in oklab, var(--primary) 45%, var(--border));
+    transform: translateY(-2px);
+}
+
+[data-basalt-hover-effect='filled'] :is(.basalt-nav-item, .basalt-server):hover {
+    background-color: color-mix(in oklab, var(--primary) 22%, var(--card));
+    color: var(--foreground);
+}
+
+[data-basalt-hover-effect='filled_secondary'] :is(.basalt-nav-item, .basalt-server):hover {
+    background-color: var(--popover);
+    color: var(--foreground);
+}
+
+:is([data-basalt-hover-effect='icon_pill'], [data-basalt-hover-effect='pill'], [data-basalt-hover-effect='pill_secondary']) .basalt-nav-item {
+    border-radius: 9999px;
+}
+
+[data-basalt-hover-effect='pill'] .basalt-nav-item:hover {
+    background-color: var(--primary);
+    color: var(--primary-foreground);
+}
+
+[data-basalt-hover-effect='pill_secondary'] .basalt-nav-item:hover {
+    background-color: transparent;
+    box-shadow: inset 0 0 0 var(--basalt-border-width, 1px) var(--primary);
+    color: var(--foreground);
+}
+
+[data-basalt-hover-effect='icon_pill'] .basalt-nav-item:hover {
+    background-color: transparent;
+    color: var(--foreground);
+
+    & svg {
+        border-radius: 9999px;
+        background-color: var(--primary);
+        box-shadow: 0 0 0 0.3rem var(--primary);
+        color: var(--primary-foreground);
+    }
+}
+
+[data-basalt-hover-effect='pill'] .basalt-server:hover {
+    box-shadow: 0 0 0 calc(var(--basalt-border-width, 1px) + 1px) var(--primary);
+}
+
+[data-basalt-hover-effect='pill_secondary'] .basalt-server:hover {
+    box-shadow: 0 0 0 calc(var(--basalt-border-width, 1px) + 1px) color-mix(in oklab, var(--primary) 50%, transparent);
 }
 /* #endregion motion */
 
@@ -428,14 +546,213 @@
     --layout-auth-width: 30rem;
 }
 
-/* "Glass" off: solid sidebar and bars. */
-[data-basalt-glass='false'] {
-    --basalt-glass-tint: 100%;
-    --basalt-glass-blur: 0px;
+/* Glass: see-through, blurred bars and menus; off, they are solid. */
+:root {
+    --basalt-bar-fill: color-mix(in oklab, var(--sidebar) 70%, transparent);
+    --basalt-bar-blur: blur(var(--basalt-glass-blur, 14px));
 }
 
-/* Density. */
+[data-basalt-glass='false'] {
+    --basalt-bar-fill: var(--sidebar);
+    --basalt-bar-blur: none;
+}
+
+/* Spacing: the spacing scale every padding, margin and gap is a step of. */
 [data-basalt-density='compact'] {
     --spacing: 0.22rem;
+}
+
+[data-basalt-density='spacious'] {
+    --spacing: 0.28rem;
+}
+
+/* Text size: every size in rem follows the root's. */
+html {
+    font-size: var(--basalt-text-size, 100%);
+}
+
+/* Shadows: none, the soft default, or strong. */
+[data-basalt-shadows='none'] {
+    --shadow-card: 0 0 #0000;
+    --shadow-raised: 0 0 #0000;
+    --shadow-overlay: 0 0 #0000;
+}
+
+[data-basalt-shadows='strong'] {
+    --shadow-card: 0 2px 6px #00000059, 0 8px 20px #0000004d;
+    --shadow-raised: 0 4px 10px #00000061, 0 12px 32px #00000057;
+    --shadow-overlay: 0 8px 18px #0000006b, 0 20px 48px #00000061;
+}
+
+/* Controls: their corner radius, the fields' borders, the buttons' rims, and the press feedback. */
+:is([data-ui='input'], [data-ui='text-area'], [data-ui='number-input'], [data-ui='select'][data-part='trigger'], [data-ui='button'][data-part='root']) {
+    border-radius: var(--basalt-control-radius, 8px);
+}
+
+:root[data-basalt-input-borders='false'] {
+    --input-border: var(--input);
+}
+
+[data-basalt-button-borders='false'] [data-ui='button'][data-part='root'] {
+    box-shadow: none;
+}
+
+[data-basalt-click-feedback='true'] :is(button:not(:disabled), a) {
+    transition-property: transform, background-color, border-color, color, box-shadow, opacity;
+    transition-duration: var(--basalt-speed);
+
+    &:active {
+        transform: scale(0.97);
+    }
+}
+
+/* Content width: pages stop growing at the setting's width and centre; inside, they fill it. */
+.basalt-page {
+    --layout-content-width: 100%;
+}
+
+[data-basalt-content-width]:not([data-basalt-content-width='full']) .basalt-page {
+    width: 100%;
+    margin-inline: auto;
+}
+
+[data-basalt-content-width='w1280'] .basalt-page {
+    max-width: 80rem;
+}
+
+[data-basalt-content-width='w1440'] .basalt-page {
+    max-width: 90rem;
+}
+
+[data-basalt-content-width='w1600'] .basalt-page {
+    max-width: 100rem;
+}
+
+[data-basalt-content-width='w1920'] .basalt-page {
+    max-width: 120rem;
+}
+
+/* Background: a spotlight or a gradient of the accents behind every page. */
+[data-basalt-background-style='spotlight'] body {
+    background-image: radial-gradient(60rem 40rem at 12% -10%, color-mix(in oklab, var(--primary) 18%, transparent), transparent 70%);
+    background-attachment: fixed;
+}
+
+[data-basalt-background-style='gradient'] body {
+    background-image: linear-gradient(
+        160deg,
+        color-mix(in oklab, var(--primary) 16%, var(--background)) 0%,
+        var(--background) 45%,
+        color-mix(in oklab, var(--accent) 12%, var(--background)) 100%
+    );
+    background-attachment: fixed;
+}
+
+/* A background picture behind the pages, dimmed toward the background so the cards stay legible. */
+.basalt-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: -10;
+    pointer-events: none;
+    background-position: center;
+    background-size: cover;
+
+    &::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: color-mix(in oklab, var(--background) 55%, transparent);
+    }
+}
+
+/* Fonts: the bundled Poppins, the panel's IBM Plex Sans, the system's, Google Fonts, or a custom family. */
+[data-basalt-font='plex'] {
+    --font-sans: 'IBM Plex Sans', 'Roboto', system-ui, sans-serif;
+    --font-header: 'IBM Plex Sans', 'Roboto', system-ui, sans-serif;
+}
+
+[data-basalt-font='system'] {
+    --font-sans: system-ui, -apple-system, 'Segoe UI', sans-serif;
+    --font-header: system-ui, -apple-system, 'Segoe UI', sans-serif;
+}
+
+[data-basalt-font='inter'] {
+    --font-sans: 'Inter', system-ui, sans-serif;
+    --font-header: 'Inter', system-ui, sans-serif;
+}
+
+[data-basalt-font='roboto'] {
+    --font-sans: 'Roboto', system-ui, sans-serif;
+    --font-header: 'Roboto', system-ui, sans-serif;
+}
+
+[data-basalt-font='open_sans'] {
+    --font-sans: 'Open Sans', system-ui, sans-serif;
+    --font-header: 'Open Sans', system-ui, sans-serif;
+}
+
+[data-basalt-font='lato'] {
+    --font-sans: 'Lato', system-ui, sans-serif;
+    --font-header: 'Lato', system-ui, sans-serif;
+}
+
+[data-basalt-font='montserrat'] {
+    --font-sans: 'Montserrat', system-ui, sans-serif;
+    --font-header: 'Montserrat', system-ui, sans-serif;
+}
+
+[data-basalt-font='nunito_sans'] {
+    --font-sans: 'Nunito Sans', system-ui, sans-serif;
+    --font-header: 'Nunito Sans', system-ui, sans-serif;
+}
+
+[data-basalt-font='source_sans_3'] {
+    --font-sans: 'Source Sans 3', system-ui, sans-serif;
+    --font-header: 'Source Sans 3', system-ui, sans-serif;
+}
+
+[data-basalt-font='manrope'] {
+    --font-sans: 'Manrope', system-ui, sans-serif;
+    --font-header: 'Manrope', system-ui, sans-serif;
+}
+
+[data-basalt-font='dm_sans'] {
+    --font-sans: 'DM Sans', system-ui, sans-serif;
+    --font-header: 'DM Sans', system-ui, sans-serif;
+}
+
+[data-basalt-font='work_sans'] {
+    --font-sans: 'Work Sans', system-ui, sans-serif;
+    --font-header: 'Work Sans', system-ui, sans-serif;
+}
+
+[data-basalt-font='outfit'] {
+    --font-sans: 'Outfit', system-ui, sans-serif;
+    --font-header: 'Outfit', system-ui, sans-serif;
+}
+
+[data-basalt-font='merriweather'] {
+    --font-sans: 'Merriweather', Georgia, serif;
+    --font-header: 'Merriweather', Georgia, serif;
+}
+
+[data-basalt-font='playfair_display'] {
+    --font-sans: 'Playfair Display', Georgia, serif;
+    --font-header: 'Playfair Display', Georgia, serif;
+}
+
+[data-basalt-font='roboto_mono'] {
+    --font-sans: 'Roboto Mono', ui-monospace, monospace;
+    --font-header: 'Roboto Mono', ui-monospace, monospace;
+}
+
+[data-basalt-font='jetbrains_mono'] {
+    --font-sans: 'JetBrains Mono', ui-monospace, monospace;
+    --font-header: 'JetBrains Mono', ui-monospace, monospace;
+}
+
+[data-basalt-font='custom'] {
+    --font-sans: var(--basalt-font-custom, system-ui), system-ui, sans-serif;
+    --font-header: var(--basalt-font-custom, system-ui), system-ui, sans-serif;
 }
 /* #endregion settings */

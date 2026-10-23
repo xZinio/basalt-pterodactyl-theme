@@ -69,8 +69,8 @@ function ServerTile({
     return (
         <li
             className={cn(
-                'group/card surface basalt-lift @container relative flex min-w-0 flex-col overflow-hidden transition-[border-color,box-shadow,translate] duration-200',
-                'hover:-translate-y-px hover:border-primary/50 hover:shadow-raised'
+                'group/card surface basalt-lift basalt-server @container relative flex min-w-0 flex-col overflow-hidden',
+                'transition-[transform,box-shadow,border-color,background-color] duration-(--basalt-speed) ease-(--basalt-ease)'
             )}
             style={{ animationDelay: `${Math.min(index, 10) * 40}ms` }}
         >
