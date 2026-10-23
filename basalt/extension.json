@@ -108,7 +108,7 @@
                 "type": "text",
                 "label": "Sidebar links",
                 "tab": "Navigation",
-                "help": "A Links section in the sidebar, as Label|URL|icon|where entries separated by commas. The icon is any lucide name, such as message-circle, book-open or shopping-cart; where is all (the default), dashboard or server.",
+                "help": "A Links section in the sidebar, as Label|URL|icon|where entries separated by commas. The icon is any lucide name, such as message-circle, book-open or shopping-cart; where is all (the default), dashboard (the server list only) or server.",
                 "default": "",
                 "maxLength": 1000
             },

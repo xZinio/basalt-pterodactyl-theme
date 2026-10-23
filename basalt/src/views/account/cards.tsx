@@ -27,7 +27,7 @@ export function ColorModeCard({ className }: CardProps) {
     return (
         <ContentBox title='Color mode' className={className}>
             <Label id={id}>Color mode</Label>
-            <div role='radiogroup' aria-labelledby={id} className='flex gap-1 rounded-md border border-border bg-input p-1'>
+            <div role='radiogroup' aria-labelledby={id} className='flex flex-wrap gap-1 rounded-md border border-border bg-input p-1'>
                 {modes.map(([value, label, Icon]) => (
                     <button
                         key={value}
@@ -36,14 +36,14 @@ export function ColorModeCard({ className }: CardProps) {
                         aria-checked={preference === value}
                         onClick={() => setScheme(value)}
                         className={cn(
-                            'flex min-w-0 flex-1 cursor-pointer items-center justify-center gap-1.5 rounded-[6px] border-0 p-2.5 text-sm leading-[1.5] transition-colors',
+                            'flex flex-1 cursor-pointer items-center justify-center gap-1.5 rounded-[6px] border-0 p-2.5 text-sm leading-[1.5] whitespace-nowrap transition-colors',
                             preference === value
                                 ? 'bg-popover text-foreground shadow-[0_1px_2px_rgb(0_0_0/0.25)]'
                                 : 'bg-transparent text-muted-foreground hover:text-foreground'
                         )}
                     >
                         <Icon className='size-3.5 shrink-0' aria-hidden />
-                        <span className='truncate'>{label}</span>
+                        {label}
                     </button>
                 ))}
             </div>

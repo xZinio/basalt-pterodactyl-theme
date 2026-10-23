@@ -59,7 +59,8 @@ function AreaSlot({ area, at }: { area: AppArea; at: 'before' | 'after' }) {
     return null;
 }
 
-function Links({ where, rail }: { where: 'dashboard' | 'server'; rail: boolean }) {
+/** The configured sidebar links for this place; account pages show only the ones meant for everywhere. */
+function Links({ where, rail }: { where: 'dashboard' | 'account' | 'server'; rail: boolean }) {
     const { navLinks } = useThemeSettings<ThemeSettings>();
     const links = parseLinks(navLinks).filter((link) => link.area === 'all' || link.area === where);
 
@@ -132,7 +133,7 @@ function AreaNavigation({ model, rail }: { model: AppLayoutModel; rail: boolean 
                 <AreaItems items={area.kind === 'account' ? area.nav.items : account.items} area='account' collapsed={rail} />
                 {area.kind === 'account' && <AreaSlot area={area} at='after' />}
             </Section>
-            <Links where='dashboard' rail={rail} />
+            <Links where={area.kind === 'dashboard' ? 'dashboard' : 'account'} rail={rail} />
         </>
     );
 }
