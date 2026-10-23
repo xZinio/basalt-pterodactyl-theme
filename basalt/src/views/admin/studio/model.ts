@@ -24,6 +24,8 @@ export interface Setting {
     readonly min: number | null;
     readonly max: number | null;
     readonly step: number | null;
+    /** Appended to a number's token, such as "px". */
+    readonly unit: string | null;
     readonly max_length: number | null;
     readonly accept: readonly string[];
     readonly max_kilobytes: number | null;
@@ -110,8 +112,10 @@ export const categories: readonly Category[] = [
         icon: Palette,
         tabs: ['Colors'],
         sections: [
-            { title: 'Surfaces', keys: ['background', 'card', 'raised', 'border', 'sidebar'] },
-            { title: 'Accents', keys: ['accent'] },
+            { title: 'Surfaces', keys: ['background', 'card', 'raised', 'border', 'input', 'sidebar'] },
+            { title: 'Text', keys: ['text', 'mutedText', 'buttonText'] },
+            { title: 'Accents', keys: ['accent', 'hover', 'danger', 'success', 'warning'] },
+            { title: 'Console', keys: ['consoleBackground', 'consoleText'] },
         ],
     },
     { id: 'general', label: 'General', icon: Settings2, tabs: ['General', 'Account'] },
@@ -149,21 +153,46 @@ export function sectionsOf(category: Category, settings: readonly Setting[]): { 
     return sections.filter((section) => section.settings.length > 0);
 }
 
+/** The colour settings a preset sets, in the order its palette lists them. */
+const paletteKeys = [
+    'background',
+    'card',
+    'raised',
+    'border',
+    'input',
+    'sidebar',
+    'text',
+    'mutedText',
+    'buttonText',
+    'accent',
+    'hover',
+    'danger',
+    'success',
+    'warning',
+    'consoleBackground',
+    'consoleText',
+] as const;
+
 export interface Preset {
     readonly name: string;
-    readonly values: Readonly<Record<'accent' | 'background' | 'card' | 'raised' | 'border' | 'sidebar', string>>;
+    readonly values: Readonly<Record<(typeof paletteKeys)[number], string>>;
 }
 
-/** Palettes for the Colors category: an accent and the dark surfaces the light scheme is washed from. */
+const palette = (name: string, colors: readonly string[]): Preset => ({
+    name,
+    values: Object.fromEntries(paletteKeys.map((key, index) => [key, `#${colors[index]}`])) as Preset['values'],
+});
+
+/** Every colour of the Colors category at once: surfaces, text, accents, states and the console. */
 export const presets: readonly Preset[] = [
-    { name: 'Basalt', values: { accent: '#228cf4', background: '#1e1e20', card: '#252529', raised: '#2d2d30', border: '#3f3f46', sidebar: '#1a1a1c' } },
-    { name: 'Midnight', values: { accent: '#6366f1', background: '#0f172a', card: '#16203a', raised: '#1e293b', border: '#334155', sidebar: '#0b1120' } },
-    { name: 'Forest', values: { accent: '#2fa66b', background: '#161c19', card: '#1d2521', raised: '#242e29', border: '#36443c', sidebar: '#121714' } },
-    { name: 'Pterodactyl', values: { accent: '#236bdd', background: '#33404c', card: '#3f4d5a', raised: '#4a5968', border: '#5c6b7a', sidebar: '#2b3640' } },
-    { name: 'Ember', values: { accent: '#ea580c', background: '#1c1917', card: '#24201d', raised: '#2c2724', border: '#44403c', sidebar: '#171412' } },
-    { name: 'Ocean', values: { accent: '#0891b2', background: '#0c1a1f', card: '#11242b', raised: '#172e36', border: '#2a4650', sidebar: '#09151a' } },
-    { name: 'Rose', values: { accent: '#db2777', background: '#1d161b', card: '#261d24', raised: '#2f242c', border: '#483841', sidebar: '#181216' } },
-    { name: 'Arctic', values: { accent: '#5e81ac', background: '#1f2430', card: '#262c3a', raised: '#2e3545', border: '#434c5e', sidebar: '#1a1e28' } },
+    palette('Basalt', ['1e1e20', '252529', '2d2d30', '3f3f46', '2d2d30', '1a1a1c', 'fafafa', 'a1a1aa', 'ffffff', '228cf4', '4da3f7', 'e5484d', '3fb37f', 'f5c451', '161618', 'd4d4d8']),
+    palette('Midnight', ['0f172a', '16203a', '1e2a47', '2b3a5c', '1e2a47', '0b1222', 'f1f5f9', '94a3b8', 'ffffff', '6366f1', '818cf8', 'ef4444', '22c55e', 'eab308', '0b1222', 'e2e8f0']),
+    palette('Forest', ['161c19', '1d2521', '252f2a', '34423b', '252f2a', '121714', 'f0f5f2', '9aaba2', 'ffffff', '2fa66b', '4cc38a', 'e5484d', '4cc38a', 'f5c451', '101411', 'd6e2dc']),
+    palette('Pterodactyl', ['33404c', '3f4d5a', '515f6c', '515f6c', '515f6c', '3f4d5a', 'cad1d9', '7b8793', 'f5f7fa', '236bdd', '04b6d4', 'fb2c36', '00c758', 'fac800', '1f2933', 'cccccc']),
+    palette('Ember', ['1c1917', '24201d', '2c2724', '44403c', '2c2724', '171412', 'fafaf9', 'a8a29e', 'ffffff', 'ea580c', 'fb923c', 'ef4444', '22c55e', 'facc15', '141210', 'e7e5e4']),
+    palette('Ocean', ['0c1a1f', '11242b', '172e36', '23434d', '172e36', '09151a', 'ecfeff', '94b8bf', 'ffffff', '0891b2', '22d3ee', 'f43f5e', '10b981', 'f59e0b', '08141a', 'cfe8ec']),
+    palette('Rose', ['1d161b', '261d24', '2f242c', '4a3844', '2f242c', '181216', 'fdf2f8', 'b8a1b0', 'ffffff', 'db2777', 'f472b6', 'ef4444', '34d399', 'fbbf24', '150f13', 'f0dde8']),
+    palette('Arctic', ['1f2430', '262c3a', '2e3546', '3d4659', '2e3546', '1b1f2a', 'eceff4', 'a3adc2', 'ffffff', '5e81ac', '88c0d0', 'bf616a', 'a3be8c', 'ebcb8b', '1a1e27', 'd8dee9']),
 ];
 
 /** Whether the draft already uses a preset's colours. */
@@ -176,7 +205,8 @@ const declared = manifest.theme.settings as Readonly<Record<string, { readonly t
 const cssString = (value: string) => `"${value.replace(/\\/g, '\\\\').replace(/"/g, '\\"').replace(/\n/g, '\\a ')}"`;
 
 function tokenValue(setting: Setting, value: Exclude<SettingValue, null>): string {
-    if (setting.type === 'color' || setting.type === 'select' || setting.type === 'number') return String(value);
+    if (setting.type === 'number') return `${value}${setting.unit ?? ''}`;
+    if (setting.type === 'color' || setting.type === 'select') return String(value);
     if (setting.type === 'toggle') return value ? '1' : '0';
     if (setting.type === 'image') return `url(${cssString(String(value))})`;
     return cssString(String(value));

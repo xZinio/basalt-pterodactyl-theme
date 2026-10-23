@@ -39,19 +39,10 @@
         "stylesheet": "dist/theme.css",
         "schemes": ["dark", "light"],
         "settings": {
-            "accent": {
-                "type": "color",
-                "label": "Accent colour",
-                "tab": "Colors",
-                "help": "Buttons, links, the active navigation item and focus rings.",
-                "default": "#228cf4",
-                "token": "--basalt-primary"
-            },
             "background": {
                 "type": "color",
                 "label": "Page background",
                 "tab": "Colors",
-                "help": "Behind every page. The light scheme washes the surfaces toward white.",
                 "default": "#1e1e20",
                 "token": "--basalt-background"
             },
@@ -66,7 +57,6 @@
                 "type": "color",
                 "label": "Menus and raised surfaces",
                 "tab": "Colors",
-                "help": "Menus, fields and the surfaces that sit above cards.",
                 "default": "#2d2d30",
                 "token": "--basalt-raised"
             },
@@ -77,12 +67,89 @@
                 "default": "#3f3f46",
                 "token": "--basalt-border"
             },
+            "input": {
+                "type": "color",
+                "label": "Input fields",
+                "tab": "Colors",
+                "default": "#2d2d30",
+                "token": "--basalt-input"
+            },
             "sidebar": {
                 "type": "color",
                 "label": "Sidebar",
                 "tab": "Colors",
                 "default": "#1a1a1c",
                 "token": "--basalt-sidebar"
+            },
+            "text": {
+                "type": "color",
+                "label": "Text",
+                "tab": "Colors",
+                "default": "#fafafa",
+                "token": "--basalt-foreground"
+            },
+            "mutedText": {
+                "type": "color",
+                "label": "Muted text",
+                "tab": "Colors",
+                "default": "#a1a1aa",
+                "token": "--basalt-muted-foreground"
+            },
+            "buttonText": {
+                "type": "color",
+                "label": "Text on buttons",
+                "tab": "Colors",
+                "default": "#ffffff",
+                "token": "--basalt-primary-foreground"
+            },
+            "accent": {
+                "type": "color",
+                "label": "Buttons and links",
+                "tab": "Colors",
+                "default": "#228cf4",
+                "token": "--basalt-primary"
+            },
+            "hover": {
+                "type": "color",
+                "label": "Hover and focus",
+                "tab": "Colors",
+                "default": "#4da3f7",
+                "token": "--basalt-accent"
+            },
+            "danger": {
+                "type": "color",
+                "label": "Danger",
+                "tab": "Colors",
+                "default": "#e5484d",
+                "token": "--basalt-destructive"
+            },
+            "success": {
+                "type": "color",
+                "label": "Success",
+                "tab": "Colors",
+                "default": "#3fb37f",
+                "token": "--basalt-success"
+            },
+            "warning": {
+                "type": "color",
+                "label": "Warning",
+                "tab": "Colors",
+                "default": "#f5c451",
+                "token": "--basalt-warning"
+            },
+            "consoleBackground": {
+                "type": "color",
+                "label": "Console background",
+                "tab": "Colors",
+                "default": "#161618",
+                "token": "--basalt-terminal-background"
+            },
+            "consoleText": {
+                "type": "color",
+                "label": "Console text",
+                "tab": "Colors",
+                "default": "#d4d4d8",
+                "token": "--basalt-terminal-foreground"
             },
             "logo": {
                 "type": "image",

@@ -12,12 +12,22 @@ export type ExtensionPublicConfigKey = never;
 export type ExtensionPublicConfig = Pick<ExtensionConfig, ExtensionPublicConfigKey>;
 // The theme's settings, as useThemeSettings<ThemeSettings>() returns them.
 export interface ThemeSettings {
-    readonly "accent": string;
     readonly "background": string;
     readonly "card": string;
     readonly "raised": string;
     readonly "border": string;
+    readonly "input": string;
     readonly "sidebar": string;
+    readonly "text": string;
+    readonly "mutedText": string;
+    readonly "buttonText": string;
+    readonly "accent": string;
+    readonly "hover": string;
+    readonly "danger": string;
+    readonly "success": string;
+    readonly "warning": string;
+    readonly "consoleBackground": string;
+    readonly "consoleText": string;
     readonly "logo": string | null;
     readonly "glass": boolean;
     readonly "density": "comfortable" | "compact";

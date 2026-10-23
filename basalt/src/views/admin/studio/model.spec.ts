@@ -2,7 +2,18 @@ import { describe, expect, test } from 'vitest';
 import manifest from '../../../../extension.json';
 import { categories, draftOf, exportedSettings, importedValues, reloadsPreview, sectionsOf, valuesOf, type Setting } from './model';
 
-type Declared = { type: Setting['type']; label: string; default?: Setting['default']; tab?: string; options?: Record<string, string>; maxLength?: number };
+type Declared = {
+    type: Setting['type'];
+    label: string;
+    default?: Setting['default'];
+    tab?: string;
+    options?: Record<string, string>;
+    min?: number;
+    max?: number;
+    step?: number;
+    unit?: string;
+    maxLength?: number;
+};
 
 // The settings as the panel's admin API lists them: each declared setting at its default.
 const settings: Setting[] = Object.entries(manifest.theme.settings as Record<string, Declared>).map(([key, setting]) => ({
@@ -14,9 +25,10 @@ const settings: Setting[] = Object.entries(manifest.theme.settings as Record<str
     default: setting.default ?? null,
     value: setting.default ?? null,
     options: Object.entries(setting.options ?? {}).map(([value, label]) => ({ value, label })),
-    min: null,
-    max: null,
-    step: null,
+    min: setting.min ?? null,
+    max: setting.max ?? null,
+    step: setting.step ?? null,
+    unit: setting.unit ?? null,
     max_length: setting.maxLength ?? null,
     accept: [],
     max_kilobytes: null,

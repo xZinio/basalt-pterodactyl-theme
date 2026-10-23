@@ -8,15 +8,22 @@ export const isAccent = (value: unknown): value is string => typeof value === 's
 
 const KEY = 'basalt.accent';
 
+/** The inline tokens a personal accent sets: the accent, and the hover and focus colour lightened from it. */
+const ACCENT_TOKENS = ['--basalt-primary', '--basalt-accent'] as const;
+
 /**
- * Paints a personal accent, or the panel's with null. It goes on <html> as an inline token, which
- * outranks the theme setting's, and into this browser's storage, so the next page load paints it
+ * Paints a personal accent, or the panel's with null. It goes on <html> as inline tokens, which
+ * outrank the theme settings', and into this browser's storage, so the next page load paints it
  * before the user's preferences arrive.
  */
 export function applyAccent(color: string | null): void {
     const root = document.documentElement;
-    if (isAccent(color)) root.style.setProperty('--basalt-primary', color);
-    else root.style.removeProperty('--basalt-primary');
+    if (isAccent(color)) {
+        root.style.setProperty('--basalt-primary', color);
+        root.style.setProperty('--basalt-accent', `color-mix(in srgb, ${color} 80%, white)`);
+    } else {
+        for (const token of ACCENT_TOKENS) root.style.removeProperty(token);
+    }
     // A studio preview frame shares this browser's storage with the administrator's own pages.
     if (!inPreviewFrame()) writeLocal(KEY, isAccent(color) ? color : null);
 }

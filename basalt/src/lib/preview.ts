@@ -47,10 +47,10 @@ function writeSettings(doc: Document, draft: StudioDraft): void {
     for (const [name, value] of Object.entries(draft.attributes)) doc.documentElement.setAttribute(name, value);
 }
 
-/** Writes a draft into a preview frame's document. A personal accent is an inline token, which would hide the draft's. */
+/** Writes a draft into a preview frame's document. A personal accent is inline tokens, which would hide the draft's. */
 export function applyDraft(doc: Document, draft: StudioDraft): void {
     writeSettings(doc, draft);
-    doc.documentElement.style.removeProperty('--basalt-primary');
+    for (const token of ['--basalt-primary', '--basalt-accent']) doc.documentElement.style.removeProperty(token);
 }
 
 /**

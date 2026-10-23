@@ -102,7 +102,7 @@
 
 .dark {
     --color-scheme: dark;
-    --theme-color: #1e1e20;
+    --theme-color: var(--background);
 
     --background: var(--basalt-background, #1e1e20);
     --foreground: var(--basalt-foreground, #fafafa);
@@ -111,25 +111,25 @@
     --popover: var(--basalt-raised, #2d2d30);
     --popover-foreground: var(--foreground);
     --primary: var(--basalt-primary, #228cf4);
-    --primary-foreground: #ffffff;
+    --primary-foreground: var(--basalt-primary-foreground, #ffffff);
     --secondary: var(--popover);
     --secondary-foreground: var(--foreground);
     --muted: var(--card);
     --muted-foreground: var(--basalt-muted-foreground, #a1a1aa);
-    --accent: color-mix(in srgb, var(--primary) 80%, white);
+    --accent: var(--basalt-accent, color-mix(in srgb, var(--primary) 80%, white));
     --accent-foreground: #ffffff;
-    --destructive: #e5484d;
+    --destructive: var(--basalt-destructive, #e5484d);
     --destructive-foreground: #ffffff;
     --border: var(--basalt-border, #3f3f46);
-    --input: var(--popover);
+    --input: var(--basalt-input, #2d2d30);
     --input-border: var(--border);
     --ring: var(--accent);
     --sunken: color-mix(in oklab, var(--card) 80%, black);
 
     --state-foreground: var(--background);
-    --success: #3fb37f;
+    --success: var(--basalt-success, #3fb37f);
     --success-foreground: var(--state-foreground);
-    --warning: #f5c451;
+    --warning: var(--basalt-warning, #f5c451);
     --warning-foreground: var(--state-foreground);
 
     --chart-1: var(--accent);
@@ -155,17 +155,17 @@
 
     --terminal-background: var(--basalt-terminal-background, #161618);
     --terminal-foreground: var(--basalt-terminal-foreground, #d4d4d8);
-    --terminal-cursor: #d4d4d8;
-    --terminal-selection: color-mix(in oklab, var(--primary) 45%, #161618);
-    --terminal-selection-foreground: #fafafa;
+    --terminal-cursor: var(--terminal-foreground);
+    --terminal-selection: color-mix(in oklab, var(--primary) 45%, var(--terminal-background));
+    --terminal-selection-foreground: var(--foreground);
 
-    --editor-background: #161618;
-    --editor-foreground: #d4d4d8;
+    --editor-background: var(--terminal-background);
+    --editor-foreground: var(--terminal-foreground);
     --editor-caret: var(--accent);
-    --editor-selection: color-mix(in oklab, var(--primary) 40%, #161618);
+    --editor-selection: color-mix(in oklab, var(--primary) 40%, var(--editor-background));
     --editor-border: var(--border);
     --editor-muted: color-mix(in oklab, var(--muted-foreground) 80%, var(--foreground));
-    --editor-active-line: color-mix(in oklab, #161618 85%, #d4d4d8);
+    --editor-active-line: color-mix(in oklab, var(--editor-background) 85%, var(--editor-foreground));
     --editor-tooltip: var(--popover);
     --editor-tooltip-border: var(--border);
 }
@@ -176,7 +176,7 @@
  */
 .light {
     --color-scheme: light;
-    --theme-color: #f2f2f2;
+    --theme-color: var(--background);
 
     --background: color-mix(in oklab, var(--basalt-background, #1e1e20) 5%, white);
     --foreground: color-mix(in oklab, var(--basalt-foreground, #fafafa) 12%, black);
@@ -185,25 +185,25 @@
     --popover: color-mix(in oklab, var(--basalt-raised, #2d2d30) 8%, white);
     --popover-foreground: var(--foreground);
     --primary: var(--basalt-primary, #228cf4);
-    --primary-foreground: #ffffff;
+    --primary-foreground: var(--basalt-primary-foreground, #ffffff);
     --secondary: var(--popover);
     --secondary-foreground: var(--foreground);
     --muted: var(--card);
     --muted-foreground: color-mix(in oklab, var(--basalt-muted-foreground, #a1a1aa) 60%, black);
-    --accent: color-mix(in srgb, var(--primary) 80%, white);
+    --accent: var(--basalt-accent, color-mix(in srgb, var(--primary) 80%, white));
     --accent-foreground: #ffffff;
-    --destructive: #e5484d;
+    --destructive: var(--basalt-destructive, #e5484d);
     --destructive-foreground: #ffffff;
     --border: color-mix(in oklab, var(--basalt-border, #3f3f46) 22%, white);
-    --input: color-mix(in oklab, var(--basalt-raised, #2d2d30) 6%, white);
+    --input: color-mix(in oklab, var(--basalt-input, #2d2d30) 6%, white);
     --input-border: var(--border);
     --ring: var(--accent);
     --sunken: color-mix(in oklab, var(--card) 80%, black);
 
     --state-foreground: var(--background);
-    --success: #3fb37f;
+    --success: var(--basalt-success, #3fb37f);
     --success-foreground: var(--state-foreground);
-    --warning: #f5c451;
+    --warning: var(--basalt-warning, #f5c451);
     --warning-foreground: var(--state-foreground);
 
     --chart-1: var(--accent);
