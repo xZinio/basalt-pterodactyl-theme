@@ -17,7 +17,8 @@ function Console({ model }: { model: ServerConsoleModel }) {
             <Slot name='server.console.before' data={model.server} />
             <ServerHeader name={model.name} description={model.description} />
             <div className='grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,1fr)_18rem]'>
-                <div className='flex min-h-[26rem] min-w-0'>
+                {/* Room for 24 rows and the command line while the stats stack below; beside them, it takes their height. */}
+                <div className='flex min-h-[27.25rem] min-w-0 sm:min-h-[27.75rem]'>
                     <View name='server.terminal' />
                 </div>
                 <View name='server.stats' className='order-last lg:order-none' />
