@@ -105,7 +105,7 @@
     --theme-color: #1e1e20;
 
     --background: var(--basalt-background, #1e1e20);
-    --foreground: #fafafa;
+    --foreground: var(--basalt-foreground, #fafafa);
     --card: var(--basalt-card, #252529);
     --card-foreground: var(--foreground);
     --popover: var(--basalt-raised, #2d2d30);
@@ -115,8 +115,8 @@
     --secondary: var(--popover);
     --secondary-foreground: var(--foreground);
     --muted: var(--card);
-    --muted-foreground: #a1a1aa;
-    --accent: color-mix(in oklab, var(--primary) 82%, white);
+    --muted-foreground: var(--basalt-muted-foreground, #a1a1aa);
+    --accent: color-mix(in srgb, var(--primary) 80%, white);
     --accent-foreground: #ffffff;
     --destructive: #e5484d;
     --destructive-foreground: #ffffff;
@@ -131,8 +131,6 @@
     --success-foreground: var(--state-foreground);
     --warning: #f5c451;
     --warning-foreground: var(--state-foreground);
-    --caution: #e5832b;
-    --caution-foreground: #ffffff;
 
     --chart-1: var(--accent);
     --chart-2: var(--warning);
@@ -155,8 +153,8 @@
     --scrollbar-thumb-fill: color-mix(in oklab, var(--muted-foreground) 35%, transparent);
     --scrollbar-track: transparent;
 
-    --terminal-background: #161618;
-    --terminal-foreground: #d4d4d8;
+    --terminal-background: var(--basalt-terminal-background, #161618);
+    --terminal-foreground: var(--basalt-terminal-foreground, #d4d4d8);
     --terminal-cursor: #d4d4d8;
     --terminal-selection: color-mix(in oklab, var(--primary) 45%, #161618);
     --terminal-selection-foreground: #fafafa;
@@ -172,72 +170,78 @@
     --editor-tooltip-border: var(--border);
 }
 
+/*
+ * The light scheme is the dark palette washed toward white, with its text pressed toward black, so
+ * both schemes share their hues; the accent and the status colours stay as they are.
+ */
 .light {
     --color-scheme: light;
-    --theme-color: #f4f4f5;
+    --theme-color: #f2f2f2;
 
-    --background: #f4f4f5;
-    --foreground: #18181b;
-    --card: #ffffff;
+    --background: color-mix(in oklab, var(--basalt-background, #1e1e20) 5%, white);
+    --foreground: color-mix(in oklab, var(--basalt-foreground, #fafafa) 12%, black);
+    --card: color-mix(in oklab, var(--basalt-card, #252529) 3%, white);
     --card-foreground: var(--foreground);
-    --popover: #f4f4f5;
+    --popover: color-mix(in oklab, var(--basalt-raised, #2d2d30) 8%, white);
     --popover-foreground: var(--foreground);
     --primary: var(--basalt-primary, #228cf4);
     --primary-foreground: #ffffff;
-    --secondary: #e4e4e7;
+    --secondary: var(--popover);
     --secondary-foreground: var(--foreground);
-    --muted: #f4f4f5;
-    --muted-foreground: #52525b;
-    --accent: color-mix(in oklab, var(--primary) 88%, black);
+    --muted: var(--card);
+    --muted-foreground: color-mix(in oklab, var(--basalt-muted-foreground, #a1a1aa) 60%, black);
+    --accent: color-mix(in srgb, var(--primary) 80%, white);
     --accent-foreground: #ffffff;
-    --destructive: #d93036;
+    --destructive: #e5484d;
     --destructive-foreground: #ffffff;
-    --border: #d4d4d8;
-    --input: #ffffff;
+    --border: color-mix(in oklab, var(--basalt-border, #3f3f46) 22%, white);
+    --input: color-mix(in oklab, var(--basalt-raised, #2d2d30) 6%, white);
     --input-border: var(--border);
-    --ring: var(--primary);
-    --sunken: #e4e4e7;
+    --ring: var(--accent);
+    --sunken: color-mix(in oklab, var(--card) 80%, black);
 
-    --state-foreground: #ffffff;
-    --success: #208a5c;
+    --state-foreground: var(--background);
+    --success: #3fb37f;
     --success-foreground: var(--state-foreground);
-    --warning: #b7791f;
+    --warning: #f5c451;
     --warning-foreground: var(--state-foreground);
-    --caution: #c2410c;
-    --caution-foreground: #ffffff;
 
-    --chart-1: var(--primary);
+    --chart-1: var(--accent);
     --chart-2: var(--warning);
     --chart-3: var(--primary);
     --chart-4: var(--success);
     --chart-5: var(--destructive);
 
-    --sidebar: #fafafa;
+    --sidebar: color-mix(in oklab, var(--basalt-sidebar, #1a1a1c) 5%, white);
     --sidebar-foreground: var(--foreground);
     --sidebar-primary: var(--primary);
     --sidebar-primary-foreground: var(--primary-foreground);
-    --sidebar-accent: #f4f4f5;
+    --sidebar-accent: var(--popover);
     --sidebar-accent-foreground: var(--foreground);
     --sidebar-border: var(--border);
     --sidebar-ring: var(--ring);
 
-    --selection: color-mix(in oklab, var(--primary) 25%, transparent);
+    --selection: color-mix(in oklab, var(--primary) 40%, transparent);
     --selection-foreground: var(--foreground);
-    --scrollbar-thumb: #a1a1aa;
-    --scrollbar-thumb-fill: color-mix(in oklab, #71717a 35%, transparent);
+    --scrollbar-thumb: var(--border);
+    --scrollbar-thumb-fill: color-mix(in oklab, var(--muted-foreground) 35%, transparent);
+    --scrollbar-track: transparent;
 
-    /* The console and editor stay dark in both schemes. */
-    --terminal-background: #18181b;
-    --terminal-foreground: #d4d4d8;
-    --terminal-cursor: #d4d4d8;
-    --terminal-selection: color-mix(in oklab, var(--primary) 45%, #18181b);
-    --terminal-selection-foreground: #fafafa;
-    --editor-background: #18181b;
-    --editor-foreground: #d4d4d8;
-    --editor-caret: var(--primary);
-    --editor-selection: color-mix(in oklab, var(--primary) 40%, #18181b);
-    --editor-border: #3f3f46;
-    --editor-active-line: #222225;
+    --terminal-background: color-mix(in oklab, var(--basalt-terminal-background, #161618) 8%, white);
+    --terminal-foreground: color-mix(in oklab, var(--basalt-terminal-foreground, #d4d4d8) 15%, black);
+    --terminal-cursor: var(--terminal-foreground);
+    --terminal-selection: color-mix(in oklab, var(--primary) 45%, var(--terminal-background));
+    --terminal-selection-foreground: var(--foreground);
+
+    --editor-background: var(--terminal-background);
+    --editor-foreground: var(--terminal-foreground);
+    --editor-caret: var(--accent);
+    --editor-selection: color-mix(in oklab, var(--primary) 40%, var(--editor-background));
+    --editor-border: var(--border);
+    --editor-muted: color-mix(in oklab, var(--muted-foreground) 80%, var(--foreground));
+    --editor-active-line: color-mix(in oklab, var(--editor-background) 85%, var(--editor-foreground));
+    --editor-tooltip: var(--popover);
+    --editor-tooltip-border: var(--border);
 }
 /* #endregion tokens */
 
