@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { http } from '@pterodactyl/sdk';
 
 const BASE = '/api/client/extensions/basalt';
+const ADMIN = '/api/admin/extensions/basalt';
 
 export interface Folder {
     readonly id: string;
@@ -120,4 +121,20 @@ export function useUpdateLanguage() {
             void client.invalidateQueries({ queryKey: ['account', 'current-user'] });
         },
     });
+}
+
+export interface BasaltVersion {
+    readonly current: string;
+    /** The latest release on GitHub; null while there is none or GitHub cannot be reached. */
+    readonly latest: string | null;
+    readonly is_latest: boolean | null;
+}
+
+/** The installed Basalt and its latest release, for administrators. */
+export function useBasaltVersion(): BasaltVersion | undefined {
+    return useQuery({
+        queryKey: ['basalt', 'version'],
+        queryFn: async () => (await http.get<BasaltVersion>(`${ADMIN}/version`)).data,
+        staleTime: 30 * 60_000,
+    }).data;
 }

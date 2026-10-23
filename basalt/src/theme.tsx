@@ -44,19 +44,13 @@ export default defineTheme({
         'server.stats': lazyView(() => import('./views/server/Stats')),
         'page.server.console': lazyView(() => import('./views/server/ConsolePage')),
     },
-    setup({ meta, screens, forms, slots }) {
+    setup({ screens, forms, slots }) {
         // Only while the server dashboard is on: it takes the server's first page, so the console moves here.
         screens.register('console', () => import('./screens/ConsoleScreen'), { visible: useServerDashboard });
         // The values the provider's Fields classes declare: egg artwork and a location's country.
         forms.extend('admin.egg', lazy(async () => ({ default: (await fields()).EggArtwork })));
         forms.extend('admin.location', lazy(async () => ({ default: (await fields()).LocationFlag })));
         // The installed Basalt, on the admin overview beside the panel's own version.
-        slots.register(
-            'panel.overview.before',
-            lazy(async () => {
-                const { VersionNotice } = await import('./views/admin/Overview');
-                return { default: () => <VersionNotice version={meta.version} /> };
-            })
-        );
+        slots.register('panel.overview.before', lazy(() => import('./views/admin/Overview')));
     },
 });

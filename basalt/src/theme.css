@@ -396,6 +396,25 @@
 }
 /* #endregion motion */
 
+/* #region admin */
+/*
+ * The admin overview's slot for extensions comes before the panel's own version notice; this puts
+ * the panel's notice first and Basalt's after it, under the page header.
+ */
+:has(> .basalt-version) {
+    display: flex;
+    flex-direction: column;
+
+    & > header {
+        order: -2;
+    }
+
+    & > .basalt-version ~ [role='alert'] {
+        order: -1;
+    }
+}
+/* #endregion admin */
+
 /* #region privacy: emails, addresses and IPs blur until hovered while the user's privacy mode is on */
 [data-basalt-privacy] [data-sensitive]:not(:hover, :focus-within) {
     filter: blur(5px);
