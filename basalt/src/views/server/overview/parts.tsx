@@ -18,7 +18,7 @@ export function Section({ icon: Icon, title, children, className }: { icon: Luci
 
 /** The rows of a section, each after the first divided by a faint line. */
 export function Facts({ children }: { children: ReactNode }) {
-    return <div className='px-5 pt-2 pb-3 [&>*+*]:border-t [&>*+*]:border-border/60'>{children}</div>;
+    return <div className='px-5 py-2 [&>*+*]:border-t [&>*+*]:border-border/60'>{children}</div>;
 }
 
 export function FactRow({ icon: Icon, label, children }: { icon: LucideIcon; label: string; children: ReactNode }) {

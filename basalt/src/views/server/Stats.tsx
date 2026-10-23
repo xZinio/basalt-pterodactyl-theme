@@ -38,7 +38,7 @@ function UsageCard({
     const tone = meter?.alarm === 'danger' ? 'bg-destructive' : meter?.alarm === 'warning' ? 'bg-warning' : 'bg-primary';
 
     return (
-        <div className='surface flex min-h-[83px] min-w-0 overflow-hidden'>
+        <div className='surface flex min-w-0 overflow-hidden'>
             <span className='flex w-16 shrink-0 items-center justify-center bg-primary/12 text-primary'>
                 <Icon className='size-5' aria-hidden />
             </span>
