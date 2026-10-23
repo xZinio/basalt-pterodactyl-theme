@@ -2,7 +2,7 @@
 import type { ExtensionConfig as SdkExtensionConfig, ExtensionConfigValue } from '@pterodactyl/sdk';
 
 export type ExtensionId = "basalt";
-export type ExtensionScreenId = "console";
+export type ExtensionScreenId = "console" | "studio";
 export type ExtensionPermission = never;
 export interface ExtensionConfig extends SdkExtensionConfig {
 
@@ -13,6 +13,11 @@ export type ExtensionPublicConfig = Pick<ExtensionConfig, ExtensionPublicConfigK
 // The theme's settings, as useThemeSettings<ThemeSettings>() returns them.
 export interface ThemeSettings {
     readonly "accent": string;
+    readonly "background": string;
+    readonly "card": string;
+    readonly "raised": string;
+    readonly "border": string;
+    readonly "sidebar": string;
     readonly "logo": string | null;
     readonly "glass": boolean;
     readonly "density": "comfortable" | "compact";

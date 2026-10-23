@@ -1,4 +1,5 @@
 import { readLocal, writeLocal } from './local';
+import { inPreviewFrame } from './preview';
 
 /** The colours the account page offers beside the panel's own accent. */
 export const accentPresets = ['#5865f2', '#3b82f6', '#06b6d4', '#10b981', '#84cc16', '#f59e0b', '#f97316', '#ef4444', '#ec4899', '#a855f7'] as const;
@@ -16,7 +17,8 @@ export function applyAccent(color: string | null): void {
     const root = document.documentElement;
     if (isAccent(color)) root.style.setProperty('--basalt-primary', color);
     else root.style.removeProperty('--basalt-primary');
-    writeLocal(KEY, isAccent(color) ? color : null);
+    // A studio preview frame shares this browser's storage with the administrator's own pages.
+    if (!inPreviewFrame()) writeLocal(KEY, isAccent(color) ? color : null);
 }
 
 /** The accent this browser last painted, for the entry to paint again before the first render. */

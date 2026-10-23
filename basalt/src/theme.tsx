@@ -1,6 +1,7 @@
 import { lazy } from 'react';
 import { defineTheme, lazyView } from '@pterodactyl/sdk/theme';
 import { applyAccent, cachedAccent } from './lib/accent';
+import { adoptDraft } from './lib/preview';
 import { useServerDashboard } from './lib/server';
 import { skins } from './skins';
 import AuthLayout from './views/auth/AuthLayout';
@@ -9,8 +10,9 @@ const auth = () => import('./views/auth');
 const areas = () => import('./views/shell/AreaLayouts');
 const fields = () => import('./views/admin/Fields');
 
-// The user's personal accent, painted before the first render; the shell reconciles it with their preferences.
-if (typeof document !== 'undefined') {
+// In the studio's preview frame the draft replaces the saved settings. Anywhere else the user's
+// personal accent is painted before the first render, and the shell reconciles it with their preferences.
+if (typeof document !== 'undefined' && !adoptDraft()) {
     const accent = cachedAccent();
     if (accent) applyAccent(accent);
 }
@@ -47,6 +49,8 @@ export default defineTheme({
     setup({ screens, forms, slots }) {
         // Only while the server dashboard is on: it takes the server's first page, so the console moves here.
         screens.register('console', () => import('./screens/ConsoleScreen'), { visible: useServerDashboard });
+        // The studio: Basalt's settings beside a live preview, under its own entry in the admin navigation.
+        screens.register('studio', () => import('./screens/Studio'));
         // The values the provider's Fields classes declare: egg artwork and a location's country.
         forms.extend('admin.egg', lazy(async () => ({ default: (await fields()).EggArtwork })));
         forms.extend('admin.location', lazy(async () => ({ default: (await fields()).LocationFlag })));

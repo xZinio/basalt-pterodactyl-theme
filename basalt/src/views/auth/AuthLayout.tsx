@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import { Main, cn, useThemeSettings, type ViewProps } from '@pterodactyl/sdk/theme';
 import BrandMark from '../../components/BrandMark';
 import type { ThemeSettings } from '../../theme-types';
@@ -9,8 +10,26 @@ import type { ThemeSettings } from '../../theme-types';
  */
 export default function AuthLayout({ model, className, children }: ViewProps<'layout.auth'>) {
     const { loginTagline } = useThemeSettings<ThemeSettings>();
-    const { brand } = model;
 
+    return (
+        <AuthFrame brand={model.brand} tagline={loginTagline} className={className}>
+            {children}
+        </AuthFrame>
+    );
+}
+
+/** The sign-in card around a form, for the layout and for the studio's preview of it. */
+export function AuthFrame({
+    brand,
+    tagline,
+    className,
+    children,
+}: {
+    brand: { readonly name: string; readonly logoUrl: string | null };
+    tagline: string;
+    className?: string;
+    children: ReactNode;
+}) {
     return (
         <div className={cn('flex min-h-dvh flex-col justify-center px-4 py-8', className)}>
             <Main className='mx-auto w-full max-w-auth'>
@@ -23,7 +42,7 @@ export default function AuthLayout({ model, className, children }: ViewProps<'la
                             <BrandMark className='mb-auto size-10' />
                         )}
                         <strong className='block text-[28px] leading-[1.2] font-semibold text-white'>{brand.name}</strong>
-                        {loginTagline && <span className='block text-sm text-white opacity-85'>{loginTagline}</span>}
+                        {tagline && <span className='block text-sm text-white opacity-85'>{tagline}</span>}
                     </div>
                     <div className='min-w-0 flex-1 p-8'>{children}</div>
                 </div>

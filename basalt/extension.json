@@ -4,7 +4,7 @@
     "type": "theme",
     "name": "Basalt",
     "version": "1.0.0",
-    "description": "A graphite-dark panel theme: a glass sidebar, a split sign-in card, a card dashboard with folders and favourites, a server overview and a docked console.",
+    "description": "A graphite-dark panel theme: a glass sidebar, a split sign-in card, a card dashboard with folders and favourites, a server overview, a docked console and a live theme editor.",
     "author": "carlos",
     "icon": "icon.png",
     "requires": {
@@ -25,6 +25,12 @@
                 "path": "console",
                 "nav": { "label": "Console", "icon": "square-terminal", "order": -1000 },
                 "when": { "runtime": true }
+            },
+            {
+                "id": "studio",
+                "area": "admin",
+                "path": "basalt",
+                "nav": { "label": "Basalt", "icon": "palette", "order": 1000 }
             }
         ]
     },
@@ -36,9 +42,47 @@
             "accent": {
                 "type": "color",
                 "label": "Accent colour",
+                "tab": "Colors",
                 "help": "Buttons, links, the active navigation item and focus rings.",
                 "default": "#228cf4",
                 "token": "--basalt-primary"
+            },
+            "background": {
+                "type": "color",
+                "label": "Page background",
+                "tab": "Colors",
+                "help": "Behind every page. The light scheme washes the surfaces toward white.",
+                "default": "#1e1e20",
+                "token": "--basalt-background"
+            },
+            "card": {
+                "type": "color",
+                "label": "Cards",
+                "tab": "Colors",
+                "default": "#252529",
+                "token": "--basalt-card"
+            },
+            "raised": {
+                "type": "color",
+                "label": "Menus and raised surfaces",
+                "tab": "Colors",
+                "help": "Menus, fields and the surfaces that sit above cards.",
+                "default": "#2d2d30",
+                "token": "--basalt-raised"
+            },
+            "border": {
+                "type": "color",
+                "label": "Borders",
+                "tab": "Colors",
+                "default": "#3f3f46",
+                "token": "--basalt-border"
+            },
+            "sidebar": {
+                "type": "color",
+                "label": "Sidebar",
+                "tab": "Colors",
+                "default": "#1a1a1c",
+                "token": "--basalt-sidebar"
             },
             "logo": {
                 "type": "image",
