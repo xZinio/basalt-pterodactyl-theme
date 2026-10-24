@@ -19,7 +19,7 @@ import {
 import { Slot, View, useThemeSettings, type ServerListItem, type ServerListModel, type ViewProps } from '@pterodactyl/sdk/theme';
 import { usePlayers, usePreferences, useServerMeta, useUpdatePreferences, type Folder } from '../../lib/api';
 import { useLocalState } from '../../lib/local';
-import { consoleDestination, serverDestination, stateFill, useServerDashboard } from '../../lib/server';
+import { consoleDestination, serverDestination, useServerDashboard } from '../../lib/server';
 import type { ThemeSettings } from '../../theme-types';
 import { DashboardDataContext } from './data';
 import { FolderDialog, FolderRow, ManageDialog, OpenFolderBar } from './Folders';
@@ -32,15 +32,17 @@ const online = (item: ServerListItem) => item.state.kind === 'ready' && item.sta
 const statusRank = (item: ServerListItem) =>
     item.state.kind !== 'ready' ? 3 : item.state.power === 'running' ? 0 : item.state.power === 'offline' ? 2 : 1;
 
-// Two stretched buttons on a narrow card; up to three compact ones on a wide card.
-const quickAction = cn(
-    'inline-flex h-8 min-w-0 flex-1 items-center justify-center gap-1.5 rounded-md border border-border/80 bg-foreground/[0.04] px-2 text-xs leading-[1.5] font-medium text-muted-foreground no-underline backdrop-blur-[2px] transition-colors hover:bg-foreground/[0.08] hover:text-foreground',
-    'card-wide:h-7 card-wide:flex-none card-wide:px-2.5'
-);
-
 const cornerButton =
-    'inline-flex size-8 items-center justify-center rounded-md border-0 bg-transparent text-muted-foreground transition-[color,opacity] hover:text-foreground';
+    'inline-flex size-8 cursor-pointer items-center justify-center rounded-(--basalt-control-radius) border-0 bg-transparent text-muted-foreground transition-[color,opacity,background-color] hover:bg-[color:color-mix(in_oklab,var(--foreground)_9%,transparent)] hover:text-foreground';
 
+/** A server's power for its status rail: grey while it is loading or out of reach. */
+const powerOf = (item: ServerListItem) => (item.state.kind === 'ready' ? item.state.power : item.state.kind === 'loading' ? 'loading' : 'unavailable');
+
+/**
+ * One server of the overview, laid out by the Server layout and Server card settings: its card, a
+ * picture of its egg, the shortcuts under it, its status rail, and the tools to move it into a
+ * folder or star it, while those are on.
+ */
 function ServerTile({
     item,
     index,
@@ -55,8 +57,8 @@ function ServerTile({
     item: ServerListItem;
     index: number;
     art: string | null;
-    favorite: boolean;
-    folders: readonly Folder[];
+    favorite: boolean | null;
+    folders: readonly Folder[] | null;
     folderId: string | null;
     onFavorite: () => void;
     onMove: (folder: string | null) => void;
@@ -68,85 +70,68 @@ function ServerTile({
 
     return (
         <li
-            className={cn(
-                'group/card surface basalt-lift basalt-server @container relative flex min-w-0 flex-col overflow-hidden',
-                'transition-[transform,box-shadow,border-color,background-color] duration-(--basalt-speed) ease-(--basalt-ease)'
-            )}
+            className='basalt-server basalt-lift'
             style={{ animationDelay: `${Math.min(index, 10) * 40}ms` }}
+            data-movable={folders !== null || favorite !== null || undefined}
+            data-favorite={favorite || undefined}
+            data-art={art ? '' : undefined}
         >
-            {art && (
-                <img
-                    src={art}
-                    alt=''
-                    loading='lazy'
-                    className='pointer-events-none absolute inset-y-0 right-0 h-full w-[68%] object-cover opacity-[0.18] [mask-image:linear-gradient(to_right,transparent,black_70%)] card-wide:w-[55%] card-wide:opacity-[0.28] in-data-[basalt-server-art=false]:hidden'
-                />
-            )}
+            {art && <img src={art} alt='' aria-hidden loading={index < 2 ? 'eager' : 'lazy'} decoding='async' className='basalt-server-art' />}
+            <div className='basalt-row-tools'>
+                {folders !== null && (
+                    <DropdownMenu
+                        triggerClassName={cn(cornerButton, 'basalt-move')}
+                        triggerContent={
+                            <>
+                                <FolderInput className='size-[15px]' aria-hidden />
+                                <span className='sr-only'>Move {item.name} to a folder</span>
+                            </>
+                        }
+                    >
+                        {folders.map((folder) => (
+                            <DropdownMenu.Item key={folder.id} checked={folder.id === folderId} onClick={() => onMove(folder.id === folderId ? null : folder.id)}>
+                                {folder.name}
+                            </DropdownMenu.Item>
+                        ))}
+                        {folderId && <DropdownMenu.Item onClick={() => onMove(null)}>Remove from folder</DropdownMenu.Item>}
+                        <DropdownMenu.Item onClick={onNewFolder}>New folder…</DropdownMenu.Item>
+                    </DropdownMenu>
+                )}
+                {favorite !== null && (
+                    <button
+                        type='button'
+                        onClick={onFavorite}
+                        aria-pressed={favorite}
+                        aria-label={favorite ? `Remove ${item.name} from favourites` : `Add ${item.name} to favourites`}
+                        className={cn(cornerButton, 'basalt-star')}
+                    >
+                        <Star className={cn('size-[15px]', favorite && 'fill-current')} aria-hidden />
+                    </button>
+                )}
+            </div>
             <Slot name='dashboard.serverRow.before' data={server} />
-            <PanelLink
-                destination={serverDestination(item.identifier)}
-                aria-label={item.name}
-                className='relative block flex-1 p-4 pr-6 text-foreground no-underline card-wide:px-6 card-wide:py-5 card-wide:pr-10'
-            >
+            <PanelLink destination={serverDestination(item.identifier)} aria-label={item.name} className='basalt-server-link'>
                 <View name='dashboard.serverCard' server={server} />
             </PanelLink>
-            <div className='relative min-w-0 px-4 pb-4 empty:hidden'>
-                <Slot name='dashboard.serverRow.metrics.after' data={server} />
-            </div>
-            <div className='relative -mt-2 flex flex-wrap gap-1.5 px-4 pb-4 max-md:hidden card-wide:px-6'>
-                <PanelLink destination={consoleLink} className={quickAction}>
+            <div className='basalt-quick'>
+                <PanelLink destination={consoleLink} className='basalt-quick-action'>
                     <SquareTerminal className='size-3.5' aria-hidden />
-                    Console
+                    <span>Console</span>
                 </PanelLink>
-                <PanelLink destination={{ to: '/server/$id/files', params }} className={quickAction}>
+                <PanelLink destination={{ to: '/server/$id/files', params }} className='basalt-quick-action'>
                     <FolderIcon className='size-3.5' aria-hidden />
-                    Files
+                    <span>Files</span>
                 </PanelLink>
-                <PanelLink destination={{ to: '/server/$id/backups', params }} className={cn(quickAction, 'hidden card-wide:inline-flex')}>
+                <PanelLink destination={{ to: '/server/$id/backups', params }} className='basalt-quick-action'>
                     <Archive className='size-3.5' aria-hidden />
-                    Backups
+                    <span>Backups</span>
                 </PanelLink>
             </div>
-            <div className='relative min-w-0 px-4 pb-4 empty:hidden'>
+            <div className='basalt-server-extra'>
+                <Slot name='dashboard.serverRow.metrics.after' data={server} />
                 <Slot name='dashboard.serverRow.after' data={server} />
             </div>
-
-            <div className='absolute top-3 right-5 flex items-center gap-0.5'>
-                <DropdownMenu
-                    triggerClassName={cn(cornerButton, 'opacity-0 group-hover/card:opacity-100 focus-visible:opacity-100 data-popup-open:opacity-100 pointer-coarse:opacity-100')}
-                    triggerContent={
-                        <>
-                            <FolderInput className='size-[15px]' aria-hidden />
-                            <span className='sr-only'>Move {item.name} to a folder</span>
-                        </>
-                    }
-                >
-                    {folders.map((folder) => (
-                        <DropdownMenu.Item key={folder.id} checked={folder.id === folderId} onClick={() => onMove(folder.id === folderId ? null : folder.id)}>
-                            {folder.name}
-                        </DropdownMenu.Item>
-                    ))}
-                    {folderId && <DropdownMenu.Item onClick={() => onMove(null)}>Remove from folder</DropdownMenu.Item>}
-                    <DropdownMenu.Item onClick={onNewFolder}>New folder…</DropdownMenu.Item>
-                </DropdownMenu>
-                <button
-                    type='button'
-                    onClick={onFavorite}
-                    aria-pressed={favorite}
-                    aria-label={favorite ? `Remove ${item.name} from favourites` : `Add ${item.name} to favourites`}
-                    className={cn(cornerButton, favorite ? 'text-warning hover:text-warning' : 'opacity-0 group-hover/card:opacity-100 focus-visible:opacity-100 pointer-coarse:opacity-100')}
-                >
-                    <Star className={cn('size-[15px]', favorite && 'fill-current')} aria-hidden />
-                </button>
-            </div>
-
-            <span
-                aria-hidden
-                className={cn(
-                    'absolute top-2 right-2 bottom-2 w-[5px] rounded-full',
-                    stateFill(item.state.kind === 'ready' ? item.state.power : null)
-                )}
-            />
+            <span aria-hidden className='basalt-status' data-power={powerOf(item)} />
         </li>
     );
 }
@@ -178,15 +163,23 @@ function NoServers({ model, filtered }: { model: ServerListModel; filtered: bool
     );
 }
 
-/** The dashboard: a greeting, a search and filter bar, the user's folders and their servers as cards. */
+/**
+ * The overview: a greeting and a search and filter bar by the Header setting, the user's folders
+ * and their servers, starred ones first, while the Server folders and Favorites settings allow them.
+ */
 export default function ServerList({ model, className }: ViewProps<'dashboard.serverList'>) {
     const user = useCurrentUser();
-    const { welcome } = useThemeSettings<ThemeSettings>();
+    const { overviewHeader, serverFolders, serverFavorites, serverArt } = useThemeSettings<ThemeSettings>();
     const preferences = usePreferences();
     const update = useUpdatePreferences();
-    const [query, setQuery] = useState('');
-    const [status, setStatus] = useLocalState<StatusFilter>('basalt.dashboard.status', 'all');
-    const [sort, setSort] = useLocalState<SortOrder>('basalt.dashboard.sort', 'custom');
+    const [typed, setQuery] = useState('');
+    const [chosenStatus, setStatus] = useLocalState<StatusFilter>('basalt.dashboard.status', 'all');
+    const [chosenSort, setSort] = useLocalState<SortOrder>('basalt.dashboard.sort', 'custom');
+    // Without the search bar, nothing it keeps filters or sorts the list.
+    const toolbar = overviewHeader !== 'minimal';
+    const query = toolbar ? typed : '';
+    const status = toolbar ? chosenStatus : 'all';
+    const sort = toolbar ? chosenSort : 'custom';
     const [openFolder, setOpenFolder] = useState<string | null>(null);
     const [editing, setEditing] = useState<{ folder: Folder | null; moving?: string } | null>(null);
     const [managing, setManaging] = useState<Folder | null>(null);
@@ -196,14 +189,15 @@ export default function ServerList({ model, className }: ViewProps<'dashboard.se
     const meta = useServerMeta(uuids);
     const players = usePlayers(uuids.filter((uuid) => meta[uuid]?.minecraft));
 
-    const folders = others ? [] : preferences.folders;
+    const foldersOn = serverFolders && !others;
+    const folders = foldersOn ? preferences.folders : [];
     const folderOf = useMemo(() => {
         const map = new Map<string, string>();
         for (const folder of folders) for (const uuid of folder.servers) map.set(uuid, folder.id);
         return map;
     }, [folders]);
     const byUuid = useMemo(() => new Map(model.servers.map((item) => [item.uuid, item])), [model.servers]);
-    const favorites = new Set(preferences.favorites);
+    const favorites = new Set(serverFavorites ? preferences.favorites : []);
     const opened = folders.find((folder) => folder.id === openFolder) ?? null;
 
     const items = useMemo(() => {
@@ -290,23 +284,25 @@ export default function ServerList({ model, className }: ViewProps<'dashboard.se
                         />
                     )}
                 </div>
-                {welcome && !others && <Welcome name={user.username} />}
+                {overviewHeader === 'standard' && !others && <Welcome name={user.username} />}
                 <Slot name='dashboard.before' />
-                <div className='surface flex flex-col gap-3 px-5 pt-4 pb-5 md:flex-row md:items-end'>
-                    <Field label='Search servers' className='flex-1'>
-                        {(id) => <SearchInput id={id} value={query} onChange={setQuery} placeholder='Name, identifier, or node' />}
-                    </Field>
-                    <Field label='Status' className='md:w-[91px]'>
-                        {(id) => <NativeSelect id={id} value={status} onChange={setStatus} options={{ all: 'All', online: 'Online', offline: 'Offline' }} />}
-                    </Field>
-                    <Field label='Sort by' className='md:w-[143px]'>
-                        {(id) => (
-                            <NativeSelect id={id} value={sort} onChange={setSort} options={{ custom: 'Custom order', name: 'Name', status: 'Status' }} />
-                        )}
-                    </Field>
-                </div>
+                {toolbar && (
+                    <div className='surface flex flex-col gap-3 px-5 pt-4 pb-5 md:flex-row md:items-end'>
+                        <Field label='Search servers' className='flex-1'>
+                            {(id) => <SearchInput id={id} value={query} onChange={setQuery} placeholder='Name, identifier, or node' />}
+                        </Field>
+                        <Field label='Status' className='md:w-[91px]'>
+                            {(id) => <NativeSelect id={id} value={status} onChange={setStatus} options={{ all: 'All', online: 'Online', offline: 'Offline' }} />}
+                        </Field>
+                        <Field label='Sort by' className='md:w-[143px]'>
+                            {(id) => (
+                                <NativeSelect id={id} value={sort} onChange={setSort} options={{ custom: 'Custom order', name: 'Name', status: 'Status' }} />
+                            )}
+                        </Field>
+                    </div>
+                )}
 
-                {!others && !query.trim() && (
+                {foldersOn && !query.trim() && (
                     opened ? (
                         <OpenFolderBar folder={opened} onClose={() => setOpenFolder(null)} />
                     ) : (
@@ -327,15 +323,15 @@ export default function ServerList({ model, className }: ViewProps<'dashboard.se
                 ) : items.length === 0 ? (
                     <NoServers model={model} filtered={filtered || opened !== null} />
                 ) : (
-                    <ul className='grid grid-cols-1 gap-4 min-[900px]:grid-cols-2'>
+                    <ul className='basalt-servers'>
                         {items.map((item, index) => (
                             <ServerTile
                                 key={item.uuid}
                                 item={item}
                                 index={index}
-                                art={meta[item.uuid]?.banner ?? null}
-                                favorite={favorites.has(item.uuid)}
-                                folders={folders}
+                                art={serverArt ? (meta[item.uuid]?.banner ?? null) : null}
+                                favorite={serverFavorites ? favorites.has(item.uuid) : null}
+                                folders={foldersOn ? folders : null}
                                 folderId={folderOf.get(item.uuid) ?? null}
                                 onFavorite={() => toggleFavorite(item.uuid)}
                                 onMove={(target) => moveServer(item.uuid, target)}

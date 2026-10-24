@@ -343,7 +343,7 @@
     box-shadow: var(--card-ring), var(--shadow-card);
 }
 
-[data-basalt-box-edges='flat'] :is(.bg-card, .surface, [data-ui='card'][data-part='root']) {
+[data-basalt-box-edges='flat'] :is(.bg-card, .surface, [data-ui='card'][data-part='root'], .basalt-server) {
     border-radius: 0;
 }
 
@@ -376,6 +376,538 @@
     display: block;
 }
 /* #endregion server pages */
+
+/* #region overview: the servers, by the Server layout, Server card, Status indicator and background settings */
+.basalt-servers {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.75rem;
+}
+
+.basalt-server {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    overflow: hidden;
+    container-type: inline-size;
+    border: var(--basalt-border-width, 1px) solid color-mix(in oklab, var(--border) 70%, transparent);
+    border-radius: var(--radius);
+    background-color: color-mix(in oklab, var(--card-fill) var(--basalt-server-opacity, 100%), transparent);
+    backdrop-filter: var(--card-blur);
+    box-shadow: var(--card-ring), var(--shadow-card);
+    transition:
+        transform var(--basalt-speed) var(--basalt-ease),
+        box-shadow var(--basalt-speed) var(--basalt-ease),
+        border-color var(--basalt-speed) var(--basalt-ease),
+        background-color var(--basalt-speed) var(--basalt-ease);
+}
+
+.basalt-server-link {
+    display: block;
+    min-width: 0;
+    padding: 1.25rem 1.5rem;
+    color: var(--foreground);
+    text-decoration: none;
+}
+
+.basalt-server-extra {
+    min-width: 0;
+    padding: 0 1.5rem;
+
+    &:empty {
+        display: none;
+    }
+}
+
+/* The status rail down the right: green running, amber starting or stopping, red offline, grey unknown. */
+.basalt-status {
+    --status: var(--muted-foreground);
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    bottom: 0.5rem;
+    width: 0.3rem;
+    border-radius: 9999px;
+    background-color: var(--status);
+
+    &[data-power='running'] {
+        --status: var(--success);
+    }
+
+    &:is([data-power='starting'], [data-power='stopping']) {
+        --status: var(--warning);
+    }
+
+    &[data-power='offline'] {
+        --status: var(--destructive);
+    }
+}
+
+.basalt-card {
+    display: grid;
+    gap: 0.875rem;
+    min-width: 0;
+    padding-right: 1rem;
+}
+
+.basalt-card-head {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    min-width: 0;
+}
+
+.basalt-card-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.basalt-card-title {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    min-width: 0;
+}
+
+.basalt-card-icon {
+    display: inline-flex;
+    flex: none;
+    align-items: center;
+    justify-content: center;
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: calc(var(--radius) * 1.2);
+    background-color: var(--popover);
+    color: var(--muted-foreground);
+}
+
+.basalt-card-name {
+    overflow: hidden;
+    font-family: var(--font-header);
+    font-size: 1.0625rem;
+    font-weight: 600;
+    line-height: 1.375;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.basalt-card-sub {
+    overflow: hidden;
+    color: var(--muted-foreground);
+    font-size: 0.8125rem;
+    line-height: 1.375;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.basalt-metrics {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.75rem;
+
+    &[data-count='4'] {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+}
+
+.basalt-metric {
+    display: flex;
+    flex-direction: column;
+    gap: 0.125rem;
+    min-width: 0;
+    font-size: 0.875rem;
+    line-height: 1.5;
+
+    &[data-alarm='warning'] .basalt-metric-value {
+        color: var(--warning);
+    }
+
+    &[data-alarm='danger'] .basalt-metric-value {
+        color: var(--destructive);
+    }
+}
+
+.basalt-metric-value {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    overflow: hidden;
+    font-weight: 500;
+    white-space: nowrap;
+}
+
+.basalt-metric-limit {
+    overflow: hidden;
+    color: var(--muted-foreground);
+    font-size: 0.75rem;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* The move and star tools in the corner, shown on hover, and the star while it is on. */
+.basalt-row-tools {
+    position: absolute;
+    top: 0.75rem;
+    right: 1.25rem;
+    z-index: 2;
+    display: flex;
+    gap: 0.125rem;
+
+    &:empty {
+        display: none;
+    }
+}
+
+.basalt-move,
+.basalt-star {
+    opacity: 0;
+}
+
+.basalt-server:is(:hover, :focus-within) .basalt-move,
+.basalt-move[aria-expanded='true'],
+.basalt-server:hover .basalt-star,
+.basalt-star:focus-visible,
+.basalt-star[aria-pressed='true'] {
+    opacity: 1;
+}
+
+.basalt-star[aria-pressed='true'] {
+    color: var(--warning);
+}
+
+@media (hover: none) {
+    .basalt-move,
+    .basalt-star {
+        opacity: 1;
+    }
+}
+
+.basalt-server[data-movable] .basalt-card-head {
+    padding-right: 4.5rem;
+}
+
+/* The egg's picture, fading in towards the right behind the card. */
+.basalt-server-art {
+    position: absolute;
+    inset: 0 0 0 auto;
+    z-index: 0;
+    width: 55%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+    opacity: 0.28;
+    pointer-events: none;
+    mask-image: linear-gradient(90deg, #0000, #000 70%);
+}
+
+.basalt-server[data-art] > :not(.basalt-server-art, .basalt-status, .basalt-row-tools) {
+    position: relative;
+    z-index: 1;
+}
+
+.basalt-quick {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.375rem;
+    margin-top: -0.5rem;
+    padding: 0 1.5rem 1rem;
+}
+
+.basalt-quick-action {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    padding: 0.25rem 0.625rem;
+    border: var(--basalt-border-width, 1px) solid color-mix(in oklab, var(--border) 80%, transparent);
+    border-radius: var(--basalt-control-radius, 8px);
+    background-color: color-mix(in oklab, var(--foreground) 4%, transparent);
+    color: var(--muted-foreground);
+    font-size: 0.75rem;
+    font-weight: 500;
+    line-height: 1.5;
+    text-decoration: none;
+    transition:
+        background-color var(--basalt-speed) var(--basalt-ease),
+        color var(--basalt-speed) var(--basalt-ease),
+        border-color var(--basalt-speed) var(--basalt-ease);
+
+    &:hover {
+        border-color: color-mix(in oklab, var(--primary) 50%, var(--border));
+        background-color: color-mix(in oklab, var(--primary) 12%, transparent);
+        color: var(--foreground);
+    }
+
+    &:nth-child(n + 4) {
+        display: none;
+    }
+}
+
+/* A narrow card: tighter, two metrics and two shortcuts to a row, a two-line description. */
+@container (width <= 42rem) {
+    .basalt-server-link {
+        padding: 1rem;
+    }
+
+    .basalt-card {
+        gap: 1rem;
+        padding-right: 0.5rem;
+    }
+
+    .basalt-card-head {
+        gap: 0.625rem;
+    }
+
+    .basalt-card-icon {
+        width: 2.25rem;
+        height: 2.25rem;
+    }
+
+    .basalt-card-sub {
+        display: -webkit-box;
+        margin-top: 0.125rem;
+        white-space: normal;
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 2;
+    }
+
+    .basalt-metrics,
+    .basalt-metrics[data-count='4'] {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 0.75rem 1rem;
+    }
+
+    .basalt-quick {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        padding: 0 1rem 1rem;
+    }
+
+    .basalt-quick-action {
+        justify-content: center;
+        min-width: 0;
+        padding: 0.375rem 0.5rem;
+
+        &:nth-child(n + 3) {
+            display: none;
+        }
+    }
+
+    .basalt-server-art {
+        width: 68%;
+        opacity: 0.18;
+    }
+}
+
+@media (width < 48rem) {
+    [data-basalt-hide-quick-actions='true'] .basalt-quick {
+        display: none;
+    }
+}
+
+/* Server layout: Cards in two columns, Rows, Slim rows, Pills, or wide Horizontal cards. */
+:is([data-basalt-server-layout='floating'], [data-basalt-server-layout='horizontal']) .basalt-servers {
+    gap: 1rem;
+}
+
+@media (width >= 900px) {
+    [data-basalt-server-layout='floating'] .basalt-servers {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+[data-basalt-server-layout='default'] .basalt-server-link {
+    padding: 1rem 1.25rem;
+}
+
+[data-basalt-server-layout='slim'] .basalt-server-link {
+    padding: 0.625rem 1rem;
+}
+
+[data-basalt-server-layout='pill'] :is(.basalt-server, .basalt-folder, .basalt-folder-new) {
+    border-radius: 9999px;
+}
+
+[data-basalt-server-layout='pill'] .basalt-server-link {
+    padding: 0.875rem 2rem;
+}
+
+[data-basalt-server-layout='horizontal'] :is(.basalt-server, .basalt-folder, .basalt-folder-new) {
+    border-radius: calc(var(--radius) * 1.5);
+}
+
+[data-basalt-server-layout='pill'] .basalt-status {
+    top: 50%;
+    right: 1.5rem;
+    bottom: auto;
+    width: 0.625rem;
+    height: 0.625rem;
+    box-shadow: 0 0 0 0.25rem color-mix(in oklab, var(--status) 22%, transparent);
+    transform: translateY(-50%);
+}
+
+[data-basalt-server-layout='pill'] .basalt-card {
+    padding-right: 2rem;
+}
+
+:is([data-basalt-server-layout='default'], [data-basalt-server-layout='slim'], [data-basalt-server-layout='pill']) .basalt-card {
+    align-items: center;
+}
+
+@media (width >= 48rem) {
+    :is([data-basalt-server-layout='default'], [data-basalt-server-layout='slim'], [data-basalt-server-layout='pill']) .basalt-card {
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr);
+    }
+}
+
+[data-basalt-server-layout='slim'] :is(.basalt-card-icon, .basalt-metric-limit, .basalt-card-sub) {
+    display: none;
+}
+
+[data-basalt-server-layout='horizontal'] .basalt-card {
+    grid-template-columns: minmax(0, 1fr);
+}
+
+[data-basalt-server-layout='horizontal'] .basalt-metrics {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+}
+
+:is([data-basalt-server-layout='slim'], [data-basalt-server-layout='pill']) .basalt-row-tools {
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+[data-basalt-server-layout='pill'] .basalt-row-tools {
+    right: 2.75rem;
+}
+
+[data-basalt-server-layout='default'] .basalt-quick {
+    padding: 0 1.25rem 0.875rem;
+}
+
+:is([data-basalt-server-layout='slim'], [data-basalt-server-layout='pill']) .basalt-quick {
+    display: none;
+}
+
+/* The folders follow the servers' fill and shape. */
+.basalt-folder {
+    background-color: color-mix(in oklab, var(--card-fill) var(--basalt-server-opacity, 100%), transparent);
+}
+
+[data-basalt-server-layout='default'] :is(.basalt-folder, .basalt-folder-new) {
+    padding-inline: 1.25rem;
+}
+
+[data-basalt-server-layout='slim'] :is(.basalt-folder, .basalt-folder-new) {
+    height: auto;
+    padding: 0.625rem 1rem;
+}
+
+[data-basalt-server-layout='slim'] .basalt-folder-icon {
+    width: 2rem;
+    height: 2rem;
+}
+
+[data-basalt-server-layout='pill'] :is(.basalt-folder, .basalt-folder-new) {
+    height: auto;
+    padding: 0.875rem 1.5rem 0.875rem 1rem;
+}
+
+[data-basalt-server-layout='pill'] .basalt-folder-actions {
+    right: 1.5rem;
+}
+
+[data-basalt-server-layout='pill'] .basalt-folder-grid {
+    grid-template-columns: repeat(auto-fill, minmax(17rem, 1fr));
+}
+
+/* Server card: a tinted top or corner, flat rows, a minimal card, or a compact one. */
+[data-basalt-server-card='banner'] :is(.basalt-server, .basalt-folder, .basalt-folder-new) {
+    border-color: color-mix(in oklab, var(--primary) 35%, var(--border));
+    background-image: linear-gradient(180deg, color-mix(in oklab, var(--primary) 22%, transparent) 0, transparent 4.5rem);
+}
+
+[data-basalt-server-card='flat'] :is(.basalt-server, .basalt-folder, .basalt-folder-new) {
+    border-color: transparent;
+    background-color: transparent;
+    box-shadow: none;
+}
+
+[data-basalt-server-card='flat'] .basalt-server + .basalt-server {
+    border-top-color: var(--border);
+}
+
+[data-basalt-server-card='linear'] :is(.basalt-server, .basalt-folder, .basalt-folder-new) {
+    border-color: color-mix(in oklab, var(--primary) 30%, var(--border));
+    background-image: linear-gradient(115deg, color-mix(in oklab, var(--primary) 14%, transparent), transparent 55%);
+}
+
+[data-basalt-server-card='minimal'] :is(.basalt-card-icon, .basalt-metric-limit, .basalt-metric-value svg) {
+    display: none;
+}
+
+[data-basalt-server-card='minimal'] :is(.basalt-server, .basalt-folder, .basalt-folder-new) {
+    border-color: transparent;
+}
+
+[data-basalt-server-card='compact'] .basalt-server-link {
+    padding: 0.75rem 1rem;
+}
+
+[data-basalt-server-card='compact'] :is(.basalt-folder, .basalt-folder-new) {
+    height: auto;
+    padding: 0.75rem 1rem;
+}
+
+[data-basalt-server-card='compact'] .basalt-card {
+    gap: 0.5rem;
+}
+
+[data-basalt-server-card='compact'] .basalt-card-icon {
+    width: 2rem;
+    height: 2rem;
+}
+
+/* Status indicator: a thin line along the bottom, or none. */
+[data-basalt-server-status='subtle'] .basalt-status {
+    inset: auto 1.5rem 0;
+    width: auto;
+    height: 0.15rem;
+    opacity: 0.7;
+}
+
+[data-basalt-server-layout='pill'][data-basalt-server-status='subtle'] .basalt-status {
+    inset: auto 3rem 0;
+    width: auto;
+    height: 0.15rem;
+    box-shadow: none;
+    transform: none;
+}
+
+[data-basalt-server-status='none'] .basalt-status {
+    display: none;
+}
+
+/* Server background: off, the servers keep only their border. */
+[data-basalt-server-background='false'] :is(.basalt-server, .basalt-folder) {
+    background-color: transparent;
+}
+
+/* Tables: the panel's, comfortable, compact or with lines between their rows. */
+[data-basalt-tables='compact'] [data-ui='table']:is([data-part='cell'], [data-part='headerCell']) {
+    padding-block: calc(var(--spacing) * 1.5);
+}
+
+[data-basalt-tables='lined'] [data-ui='table'][data-part='row'] {
+    border-bottom: var(--basalt-border-width, 1px) solid var(--border);
+}
+
+[data-basalt-tables='lined'] [data-ui='table'][data-part='headerRow'] {
+    border-bottom: calc(var(--basalt-border-width, 1px) * 2) solid var(--border);
+}
+/* #endregion overview */
 
 /* #region console: the statistics beside the terminal or below it, by the Console settings */
 @media (width >= 64rem) {

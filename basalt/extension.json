@@ -753,12 +753,92 @@
                 "default": "",
                 "maxLength": 1000
             },
-            "welcome": {
+            "serverLayout": {
+                "type": "select",
+                "label": "Server layout",
+                "tab": "Overview",
+                "default": "floating",
+                "attribute": "data-basalt-server-layout",
+                "options": { "default": "Rows", "floating": "Cards", "pill": "Pills", "slim": "Slim rows", "horizontal": "Horizontal cards" }
+            },
+            "serverCardStyle": {
+                "type": "select",
+                "label": "Server card",
+                "tab": "Overview",
+                "default": "default",
+                "attribute": "data-basalt-server-card",
+                "options": { "default": "Default", "banner": "Banner", "flat": "Flat", "linear": "Linear", "minimal": "Minimal", "compact": "Compact" }
+            },
+            "hideQuickActionsMobile": {
                 "type": "toggle",
-                "label": "Welcome card",
-                "tab": "Dashboard",
-                "help": "Greet the user by name above their servers.",
+                "label": "Hide quick actions on mobile",
+                "tab": "Overview",
+                "help": "Hides shortcut buttons from server cards on mobile.",
+                "default": true,
+                "attribute": "data-basalt-hide-quick-actions"
+            },
+            "serverFolders": {
+                "type": "toggle",
+                "label": "Server folders",
+                "tab": "Overview",
+                "help": "Lets users group their servers into folders on the overview.",
                 "default": true
+            },
+            "serverFavorites": {
+                "type": "toggle",
+                "label": "Favorites and own order",
+                "tab": "Overview",
+                "help": "Lets users star servers and drag them into their own order.",
+                "default": true
+            },
+            "serverArt": {
+                "type": "toggle",
+                "label": "Egg images on servers",
+                "tab": "Overview",
+                "help": "Shows the image you set per egg on server cards. Set it on the egg's admin page.",
+                "default": true
+            },
+            "overviewHeader": {
+                "type": "select",
+                "label": "Header",
+                "tab": "Overview",
+                "default": "standard",
+                "options": { "standard": "Welcome and search", "dense": "Search only", "minimal": "Title only" }
+            },
+            "serverRowBackground": {
+                "type": "toggle",
+                "label": "Server background",
+                "tab": "Overview",
+                "help": "Off draws the servers without a fill, only their border.",
+                "default": true,
+                "attribute": "data-basalt-server-background"
+            },
+            "serverOpacity": {
+                "type": "number",
+                "label": "Server background opacity",
+                "tab": "Overview",
+                "default": 100,
+                "min": 0,
+                "max": 100,
+                "step": 1,
+                "unit": "%",
+                "token": "--basalt-server-opacity"
+            },
+            "serverStatus": {
+                "type": "select",
+                "label": "Status indicator",
+                "tab": "Overview",
+                "default": "full",
+                "attribute": "data-basalt-server-status",
+                "options": { "full": "Full bar", "subtle": "Subtle accent", "none": "Hidden" }
+            },
+            "tableStyle": {
+                "type": "select",
+                "label": "Tables",
+                "tab": "Overview",
+                "default": "comfortable",
+                "attribute": "data-basalt-tables",
+                "options": { "comfortable": "Comfortable", "compact": "Compact", "lined": "Lined" }
             },
             "announcement": {
                 "type": "text",
@@ -782,14 +862,6 @@
                 "help": "An optional button on the announcement, as Label|URL.",
                 "default": "",
                 "maxLength": 300
-            },
-            "serverArt": {
-                "type": "toggle",
-                "label": "Server artwork",
-                "tab": "Dashboard",
-                "help": "Show each server's egg banner behind its card. Set banners on the egg's admin page.",
-                "default": true,
-                "attribute": "data-basalt-server-art"
             },
             "serverDashboard": {
                 "type": "toggle",

@@ -45,9 +45,9 @@ function FolderTile({
     onDelete: () => void;
 }) {
     return (
-        <li className='group/folder surface basalt-lift relative flex h-[74px] min-w-0 items-center gap-3.5 p-4 transition-colors hover:border-primary/50'>
+        <li className='group/folder surface basalt-lift basalt-folder relative flex h-[74px] min-w-0 items-center gap-3.5 p-4 transition-colors hover:border-primary/50'>
             <button type='button' onClick={onOpen} aria-label={`Open ${folder.name}`} className='absolute inset-0 z-0 cursor-pointer rounded-[inherit] border-0 bg-transparent' />
-            <span className='pointer-events-none flex size-10 shrink-0 items-center justify-center rounded-md bg-primary/14 text-primary'>
+            <span className='basalt-folder-icon pointer-events-none flex size-10 shrink-0 items-center justify-center rounded-md bg-primary/14 text-primary'>
                 <NamedIcon name={folder.icon ?? 'folder'} size={20} aria-hidden />
             </span>
             <span className='pointer-events-none min-w-0 flex-1'>
@@ -61,7 +61,7 @@ function FolderTile({
             <span className='pointer-events-none rounded-full bg-primary/16 px-2 text-xs leading-5 font-medium text-foreground transition-opacity group-hover/folder:opacity-0 pointer-coarse:hidden'>
                 {folder.servers.length}
             </span>
-            <span className='absolute top-1/2 right-3 z-10 flex -translate-y-1/2 items-center gap-0.5 rounded-md bg-popover opacity-0 transition-opacity group-focus-within/folder:opacity-100 group-hover/folder:opacity-100 pointer-coarse:opacity-100'>
+            <span className='basalt-folder-actions absolute top-1/2 right-3 z-10 flex -translate-y-1/2 items-center gap-0.5 rounded-md bg-popover opacity-0 transition-opacity group-focus-within/folder:opacity-100 group-hover/folder:opacity-100 pointer-coarse:opacity-100'>
                 <button type='button' className={toolButton} onClick={onManage} aria-label={`Choose the servers in ${folder.name}`} title='Servers'>
                     <Shapes className='size-3.5' aria-hidden />
                 </button>
@@ -94,7 +94,7 @@ export function FolderRow({
     onDelete: (folder: Folder) => void;
 }) {
     return (
-        <ul className='grid grid-cols-[repeat(auto-fill,minmax(14rem,1fr))] gap-3'>
+        <ul className='basalt-folder-grid grid grid-cols-[repeat(auto-fill,minmax(14rem,1fr))] gap-3'>
             {folders.map((folder) => (
                 <FolderTile
                     key={folder.id}
@@ -110,9 +110,9 @@ export function FolderRow({
                 <button
                     type='button'
                     onClick={onCreate}
-                    className='group/new flex h-[74px] w-full cursor-pointer items-center gap-3.5 rounded-lg border border-dashed border-border/70 bg-transparent p-4 text-left transition-colors hover:border-primary/60 hover:bg-primary/5'
+                    className='group/new basalt-folder-new flex h-[74px] w-full cursor-pointer items-center gap-3.5 rounded-lg border border-dashed border-border/70 bg-transparent p-4 text-left transition-colors hover:border-primary/60 hover:bg-primary/5'
                 >
-                    <span className='flex size-10 shrink-0 items-center justify-center rounded-md border border-dashed border-primary/50 text-primary'>
+                    <span className='basalt-folder-icon flex size-10 shrink-0 items-center justify-center rounded-md border border-dashed border-primary/50 text-primary'>
                         <Plus className='size-5' aria-hidden />
                     </span>
                     <span className='text-[15px] leading-[1.5] font-semibold text-muted-foreground transition-colors group-hover/new:text-foreground'>New folder</span>

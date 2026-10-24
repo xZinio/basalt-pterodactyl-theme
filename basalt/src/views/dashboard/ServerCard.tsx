@@ -1,7 +1,8 @@
+import type { ReactNode } from 'react';
 import type { LucideIcon } from 'lucide-react';
 import { Cpu, HardDrive, MemoryStick, Server as ServerIcon, Users } from 'lucide-react';
 import { Badge, Spinner, bytesToString, cn } from '@pterodactyl/sdk';
-import { Slot, type ServerUnavailableReason, type UiTone, type ViewProps } from '@pterodactyl/sdk/theme';
+import { Slot, type ServerStatMetric, type ServerUnavailableReason, type UiTone, type ViewProps } from '@pterodactyl/sdk/theme';
 import { useCardData } from './data';
 
 const unavailable: Record<ServerUnavailableReason, [string, UiTone]> = {
@@ -14,51 +15,62 @@ const unavailable: Record<ServerUnavailableReason, [string, UiTone]> = {
     unavailable: ['Unavailable', 'neutral'],
 };
 
-function Metric({ icon: Icon, label, value, danger }: { icon: LucideIcon; label: string; value: string; danger?: boolean }) {
+/** One usage figure: its value, in the alarm's colour past the panel's thresholds, over its label. */
+function Metric({ icon: Icon, label, value, limit, metric }: { icon: LucideIcon; label: string; value: ReactNode; limit?: string; metric?: ServerStatMetric }) {
+    const named = metric && metric.limit > 0 && limit ? `${label}: ${value} of ${limit}` : `${label}: ${value}`;
+
     return (
-        <div className='min-w-0'>
-            <span className={cn('flex items-center gap-1.5 text-sm leading-[1.5] font-medium text-foreground', danger && 'text-destructive')}>
+        <div className='basalt-metric' data-alarm={metric?.alarm ?? undefined} aria-label={named} title={named}>
+            <span className='basalt-metric-value'>
                 <Icon className='size-[15px] shrink-0' aria-hidden />
                 <span className='truncate'>{value}</span>
             </span>
-            <span className='mt-0.5 block text-xs leading-[1.5] text-muted-foreground'>{label}</span>
+            <span className='basalt-metric-limit'>{label}</span>
         </div>
     );
 }
 
-/** A server's identity and usage, as the dashboard's cards show them. */
+/**
+ * A server's identity and usage, as the overview's cards show them. The stylesheet lays it out by
+ * the Server layout and Server card settings.
+ */
 export default function ServerCard({ model, server, className }: ViewProps<'dashboard.serverCard'>) {
     const { players } = useCardData(model.uuid);
     const { state } = model;
+    const sub = model.description || model.address;
 
     return (
-        <div className={cn('min-w-0', className)}>
-            <div className='flex min-w-0 items-start gap-2.5 pr-[72px] card-wide:gap-3'>
-                <span className='flex size-9 shrink-0 items-center justify-center rounded-[12px] bg-popover text-muted-foreground card-wide:size-10'>
-                    <ServerIcon className='size-[18px]' aria-hidden />
+        <div className={cn('basalt-card', className)}>
+            <div className='basalt-card-head'>
+                <span className='basalt-card-icon' aria-hidden>
+                    <ServerIcon className='size-[18px]' />
                 </span>
-                <div className='min-w-0 flex-1'>
-                    <p className='truncate text-[17px] leading-[1.375] font-semibold text-foreground'>{model.name}</p>
-                    {model.description && (
-                        <p className='mt-0.5 line-clamp-2 text-[13px] leading-[1.375] text-muted-foreground card-wide:mt-0 card-wide:block card-wide:text-ellipsis card-wide:whitespace-nowrap'>
-                            {model.description}
-                        </p>
-                    )}
+                <div className='basalt-card-content'>
+                    <div className='basalt-card-title'>
+                        <p className='basalt-card-name'>{model.name}</p>
+                        <Slot name='dashboard.serverRow.name.after' data={server} />
+                    </div>
+                    {sub && <p className='basalt-card-sub'>{sub}</p>}
                 </div>
-                <Slot name='dashboard.serverRow.name.after' data={server} />
             </div>
 
             {state.kind === 'loading' && <Spinner size='small' />}
             {state.kind === 'unavailable' && (
-                <div className='mt-4'>
+                <div>
                     <Badge tone={unavailable[state.reason][1]}>{unavailable[state.reason][0]}</Badge>
                 </div>
             )}
             {state.kind === 'ready' && (
-                <div className={cn('mt-4 grid grid-cols-2 gap-x-4 gap-y-3 card-wide:mt-3.5 card-wide:gap-x-3', players ? 'card-wide:grid-cols-4' : 'card-wide:grid-cols-3')}>
-                    <Metric icon={Cpu} label='CPU' value={`${state.cpu.value.toFixed(2)} %`} danger={state.cpu.alarm === 'danger'} />
-                    <Metric icon={MemoryStick} label='Memory' value={bytesToString(state.memory.value)} danger={state.memory.alarm === 'danger'} />
-                    <Metric icon={HardDrive} label='Disk' value={bytesToString(state.disk.value)} danger={state.disk.alarm === 'danger'} />
+                <div className='basalt-metrics' data-count={players ? 4 : 3}>
+                    <Metric icon={Cpu} label='CPU' value={`${state.cpu.value.toFixed(2)} %`} limit={`${state.cpu.limit} %`} metric={state.cpu} />
+                    <Metric
+                        icon={MemoryStick}
+                        label='Memory'
+                        value={bytesToString(state.memory.value)}
+                        limit={bytesToString(state.memory.limit)}
+                        metric={state.memory}
+                    />
+                    <Metric icon={HardDrive} label='Disk' value={bytesToString(state.disk.value)} limit={bytesToString(state.disk.limit)} metric={state.disk} />
                     {players && <Metric icon={Users} label='Players' value={`${players.online} / ${players.max}`} />}
                 </div>
             )}

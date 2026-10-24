@@ -102,10 +102,19 @@ export interface ThemeSettings {
     readonly "loginTagline": string;
     readonly "loginLinks": string;
     readonly "navLinks": string;
-    readonly "welcome": boolean;
+    readonly "serverLayout": "default" | "floating" | "pill" | "slim" | "horizontal";
+    readonly "serverCardStyle": "default" | "banner" | "flat" | "linear" | "minimal" | "compact";
+    readonly "hideQuickActionsMobile": boolean;
+    readonly "serverFolders": boolean;
+    readonly "serverFavorites": boolean;
+    readonly "serverArt": boolean;
+    readonly "overviewHeader": "standard" | "dense" | "minimal";
+    readonly "serverRowBackground": boolean;
+    readonly "serverOpacity": number;
+    readonly "serverStatus": "full" | "subtle" | "none";
+    readonly "tableStyle": "comfortable" | "compact" | "lined";
     readonly "announcement": string;
     readonly "announcementTitle": string;
     readonly "announcementButton": string;
-    readonly "serverArt": boolean;
     readonly "serverDashboard": boolean;
 }
