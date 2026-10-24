@@ -272,7 +272,7 @@ function Studio({ settings }: { settings: readonly Setting[] }) {
                     ))}
                 </div>
 
-                <Stage settings={settings} values={values} page={page} device={device} onPage={setPage} onDevice={setDevice} />
+                <Stage settings={settings} values={values} page={page} screen={category.screen} device={device} onPage={setPage} onDevice={setDevice} />
             </div>
         </Screen>
     );

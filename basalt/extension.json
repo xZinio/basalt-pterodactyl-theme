@@ -527,6 +527,114 @@
                 "default": "k",
                 "maxLength": 1
             },
+            "consoleLayout": {
+                "type": "select",
+                "label": "Layout",
+                "tab": "Console",
+                "help": "Wide puts the statistics beside the console; Stacked puts them below it.",
+                "default": "wide",
+                "attribute": "data-basalt-console-layout",
+                "options": { "wide": "Wide", "stacked": "Stacked" }
+            },
+            "consoleDock": {
+                "type": "select",
+                "label": "Statistics position",
+                "tab": "Console",
+                "help": "Where the statistics go in the Wide layout.",
+                "default": "right",
+                "attribute": "data-basalt-console-dock",
+                "options": { "right": "Right", "bottom": "Below the console" }
+            },
+            "consoleStats": {
+                "type": "toggle",
+                "label": "Show statistics",
+                "tab": "Console",
+                "default": true
+            },
+            "consoleGraphs": {
+                "type": "toggle",
+                "label": "Show graphs",
+                "tab": "Console",
+                "default": true
+            },
+            "consoleLogDownload": {
+                "type": "toggle",
+                "label": "Download log button",
+                "tab": "Console",
+                "help": "Lets users download the recent console output as a file.",
+                "default": true
+            },
+            "consolePrelude": {
+                "type": "text",
+                "label": "Command prelude",
+                "tab": "Console",
+                "help": "The text shown before the panel's own messages in the server console.",
+                "default": "container@pterodactyl~",
+                "maxLength": 48
+            },
+            "consolePreludeColor": {
+                "type": "color",
+                "label": "Prelude color",
+                "tab": "Console",
+                "help": "The color of the command prelude text.",
+                "default": "#4da3f7"
+            },
+            "editorDirection": {
+                "type": "select",
+                "label": "File editor direction",
+                "tab": "Console",
+                "default": "ltr",
+                "options": { "ltr": "Left to right", "rtl": "Right to left" }
+            },
+            "memoryAlert": {
+                "type": "number",
+                "label": "Memory alert at",
+                "tab": "Resource alerts",
+                "help": "Shows an upgrade alert on the server dashboard and console when memory use passes this percentage of the limit. 0 turns it off.",
+                "default": 90,
+                "min": 0,
+                "max": 100,
+                "step": 5,
+                "unit": "%"
+            },
+            "cpuAlert": {
+                "type": "number",
+                "label": "CPU alert at",
+                "tab": "Resource alerts",
+                "help": "Shows the alert when CPU use stays above this percentage of the limit for about ten seconds. 0 turns it off. Servers without a CPU limit never get it.",
+                "default": 95,
+                "min": 0,
+                "max": 100,
+                "step": 5,
+                "unit": "%"
+            },
+            "diskAlert": {
+                "type": "number",
+                "label": "Disk alert at",
+                "tab": "Resource alerts",
+                "help": "Shows the alert when disk use passes this percentage of the limit. 0 turns it off. Servers without a disk limit never get it.",
+                "default": 90,
+                "min": 0,
+                "max": 100,
+                "step": 5,
+                "unit": "%"
+            },
+            "upgradeUrl": {
+                "type": "text",
+                "label": "Upgrade link",
+                "tab": "Resource alerts",
+                "help": "Where the Upgrade button in the alert sends users, such as your store. Leave empty to show no button.",
+                "default": "",
+                "maxLength": 500
+            },
+            "alertMessage": {
+                "type": "text",
+                "label": "Alert message",
+                "tab": "Resource alerts",
+                "help": "Replaces the default message of every alert. Leave empty for the default messages.",
+                "default": "",
+                "maxLength": 160
+            },
             "motion": {
                 "type": "select",
                 "label": "Animation",

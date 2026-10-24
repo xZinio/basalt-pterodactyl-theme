@@ -377,6 +377,72 @@
 }
 /* #endregion server pages */
 
+/* #region console: the statistics beside the terminal or below it, by the Console settings */
+@media (width >= 64rem) {
+    [data-basalt-console-layout='wide'][data-basalt-console-dock='right'] .basalt-console[data-stats] {
+        grid-template-columns: minmax(0, 1fr) 18rem;
+    }
+}
+
+[data-basalt-console-layout='stacked'] .basalt-console-terminal {
+    min-height: 32rem;
+}
+
+:is([data-basalt-console-layout='stacked'], [data-basalt-console-dock='bottom']) .basalt-console-stats > * {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
+    gap: 1rem;
+}
+/* #endregion console */
+
+/* #region notices: resource alerts, tinted by their tone (--notice-tone, the accent by default) */
+.basalt-notice {
+    position: relative;
+    border: var(--basalt-border-width, 1px) solid color-mix(in oklab, var(--notice-tone, var(--primary)) 35%, var(--border));
+    border-radius: var(--radius);
+    background-color: color-mix(in oklab, var(--notice-tone, var(--primary)) 10%, var(--card));
+    color: var(--foreground);
+    box-shadow: var(--shadow-card);
+}
+
+.basalt-notice-button {
+    flex: none;
+    padding: 0.375rem 0.75rem;
+    border: var(--basalt-border-width, 1px) solid color-mix(in oklab, var(--notice-tone, var(--primary)) 55%, transparent);
+    border-radius: var(--basalt-control-radius, 8px);
+    background-color: color-mix(in oklab, var(--notice-tone, var(--primary)) 20%, transparent);
+    color: var(--foreground);
+    font-size: 0.8125rem;
+    font-weight: 600;
+    line-height: 1.5;
+    text-decoration: none;
+    transition: background-color var(--basalt-speed) var(--basalt-ease);
+
+    &:hover {
+        background-color: color-mix(in oklab, var(--notice-tone, var(--primary)) 32%, transparent);
+    }
+}
+
+.basalt-notice-close {
+    display: inline-flex;
+    flex: none;
+    align-items: center;
+    justify-content: center;
+    width: 1.75rem;
+    height: 1.75rem;
+    border: 0;
+    border-radius: var(--basalt-control-radius, 8px);
+    background-color: transparent;
+    color: var(--muted-foreground);
+    cursor: pointer;
+
+    &:hover {
+        background-color: color-mix(in oklab, var(--foreground) 9%, transparent);
+        color: var(--foreground);
+    }
+}
+/* #endregion notices */
+
 /* #region menus */
 /* With glass on, menus and select lists float on the sidebar's frosted glass. */
 [data-basalt-glass='true'] :is([data-ui='dropdown-menu'][data-part='root'], [data-ui='select'][data-part='popup']) {

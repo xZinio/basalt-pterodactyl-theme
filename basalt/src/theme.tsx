@@ -52,6 +52,7 @@ export default defineTheme({
         'server.power': lazyView(() => import('./views/server/Power')),
         'server.stats': lazyView(() => import('./views/server/Stats')),
         'page.server.console': lazyView(() => import('./views/server/ConsolePage')),
+        'server.files.editor.canvas': lazyView(() => import('./views/server/EditorCanvas')),
     },
     setup({ screens, forms, slots }) {
         // Only while the server dashboard is on: it takes the server's first page, so the console moves here.

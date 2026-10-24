@@ -5,12 +5,13 @@ import { Segmented } from './Fields';
 import { devices, draftOf, previewPages, reloadsPreview, usePreviewServer, type Device, type PreviewPage, type Setting, type Values } from './model';
 
 /**
- * Where a page is previewed: undefined while it is not known yet, null when there is none. The
- * sign-in page is drawn by the studio's own screen, as a signed-in administrator cannot open it.
+ * Where a page is previewed: undefined while it is not known yet, null when there is none. A
+ * server's console has a page of its own while the server dashboard is on. The sign-in page is
+ * drawn by the studio's own screen, as a signed-in administrator cannot open it.
  */
-function frameSource(page: PreviewPage['id'], server: string | null | undefined): string | null | undefined {
+function frameSource(page: PreviewPage['id'], server: string | null | undefined, consoleScreen: boolean): string | null | undefined {
     if (page === 'overview') return resolvePanelDestination({ to: '/' }).pathname;
-    if (page === 'server') return server && resolvePanelDestination({ to: '/server/$id', params: { id: server } }).pathname;
+    if (page === 'server') return server && `${resolvePanelDestination({ to: '/server/$id', params: { id: server } }).pathname}${consoleScreen ? '/console' : ''}`;
     return `${resolvePanelDestination({ extension: 'basalt', screen: 'studio' }).pathname}?preview=sign-in`;
 }
 
@@ -23,6 +24,7 @@ export default function Stage({
     settings,
     values,
     page,
+    screen,
     device,
     onPage,
     onDevice,
@@ -30,12 +32,13 @@ export default function Stage({
     settings: readonly Setting[];
     values: Values;
     page: PreviewPage['id'];
+    screen?: 'console';
     device: Device['id'];
     onPage: (page: PreviewPage['id']) => void;
     onDevice: (device: Device['id']) => void;
 }) {
     const server = usePreviewServer();
-    const source = frameSource(page, server);
+    const source = frameSource(page, server, screen === 'console' && values.serverDashboard !== false);
     const draft = useMemo(() => draftOf(settings, values), [settings, values]);
     const width = devices.find((item) => item.id === device)?.width ?? 1440;
     const frame = useRef<HTMLIFrameElement>(null);

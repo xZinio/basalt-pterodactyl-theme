@@ -1,5 +1,6 @@
 import type { LucideIcon } from 'lucide-react';
 import {
+    BellRing,
     Brush,
     Gauge,
     Layers,
@@ -13,6 +14,7 @@ import {
     Settings2,
     SlidersHorizontal,
     Smartphone,
+    SquareTerminal,
     Stamp,
     Type,
 } from 'lucide-react';
@@ -118,6 +120,8 @@ export interface Category {
     readonly sections?: readonly Section[];
     /** The page the stage turns to when the category opens, for settings only one page shows. */
     readonly page?: PreviewPage['id'];
+    /** On the server page, the stage shows the server's console rather than its first page. */
+    readonly screen?: 'console';
 }
 
 /** The rail's categories. A setting without a tab, or with a tab none claims, is general. */
@@ -140,6 +144,8 @@ export const categories: readonly Category[] = [
     { id: 'controls', label: 'Controls', icon: SlidersHorizontal, tabs: ['Controls'] },
     { id: 'layout', label: 'Layout', icon: LayoutDashboard, tabs: ['Layout'] },
     { id: 'navigation', label: 'Navigation', icon: Navigation, tabs: ['Navigation'], page: 'server' },
+    { id: 'console', label: 'Console', icon: SquareTerminal, tabs: ['Console'], page: 'server', screen: 'console' },
+    { id: 'alerts', label: 'Resource alerts', icon: BellRing, tabs: ['Resource alerts'], page: 'server' },
     { id: 'motion', label: 'Motion', icon: Gauge, tabs: ['Motion'] },
     {
         id: 'overview',
