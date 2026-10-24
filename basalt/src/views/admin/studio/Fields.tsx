@@ -5,7 +5,7 @@ import { Button, Switch, cn, http, httpErrorToHuman, toast } from '@pterodactyl/
 import { SETTINGS_URL, fullHex, isHex, type Setting, type SettingList, type SettingValue } from './model';
 
 /** The studio's text controls: a compact field on the input surface. */
-const controlClass =
+export const controlClass =
     'w-full min-w-0 rounded-(--basalt-control-radius) border border-input-border bg-input px-3 py-2 text-sm leading-[1.5] font-normal tracking-normal text-foreground normal-case focus:outline-2 focus:outline-offset-1 focus:outline-ring aria-invalid:border-destructive';
 
 /** A few choices side by side in a well, the chosen one raised. */

@@ -1,7 +1,11 @@
-import { createContext, useContext, type ReactNode } from 'react';
+import { createContext, useContext, useEffect, useMemo, type ReactNode } from 'react';
 import { NamedIcon, PanelLink, Tooltip, cn, type PanelDestination, type TooltipProps } from '@pterodactyl/sdk';
-import { Navigation, NavigationLink, type NavItem } from '@pterodactyl/sdk/theme';
+import { Navigation, NavigationLink, useThemeSettings, type NavItem } from '@pterodactyl/sdk/theme';
 import { externalProps, type ConfiguredLink } from '../../lib/links';
+import { MENU_MESSAGE, applyMenu, menuKey, parseMenu, type KnownItem, type MenuArea, type MenuRow } from '../../lib/menu';
+import { inPreviewFrame } from '../../lib/preview';
+import { useServerDashboard } from '../../lib/server';
+import type { ThemeSettings } from '../../theme-types';
 
 /**
  * Navigation items: the sidebar's accent fill on hover. The stylesheet marks the active one, by the
@@ -95,29 +99,55 @@ export function SidebarLink({
     );
 }
 
-/** The key a bar matches an item by, between its row and its overflow menu. */
-export const navKey = (item: NavItem) => `${item.extensionId ?? 'panel'}:${item.id}`;
+/** An item's own label and icon: the theme's icons, and the server's first page named for what it shows. */
+const ownEntry = (area: MenuArea | 'admin', dashboard: boolean) => (item: NavItem) =>
+    area === 'server' && item.id === 'index' && !item.extensionId ? serverIndexEntry(dashboard) : { label: item.label, icon: iconFor(item, area) };
 
-/** An area's items, through the engine's <Navigation>, which keeps runtime-gated screens hidden. */
-export function AreaItems({
-    items,
-    area,
-    collapsed,
-    rename,
-}: {
-    items: readonly NavItem[];
-    area: 'server' | 'account' | 'admin';
-    collapsed: boolean;
-    rename?: (item: NavItem) => { label: string; icon: string } | undefined;
-}) {
+/**
+ * An area's items as the menu shows them: for the server's and the account's menus, the way the
+ * Menu items setting arranges them, the server's in the panel's order with the console screen after
+ * the first page; for the others, as the panel lists them.
+ */
+export function useMenuRows(area: MenuArea | 'admin', items: readonly NavItem[]): MenuRow[] {
+    const { menuItems } = useThemeSettings<ThemeSettings>();
+    const dashboard = useServerDashboard();
+
+    return useMemo(
+        () =>
+            area === 'admin'
+                ? applyMenu(items, [], false, ownEntry(area, dashboard))
+                : applyMenu(area === 'server' ? orderServerItems(items) : items, parseMenu(menuItems)[area], area === 'server', ownEntry(area, dashboard)),
+        [area, items, menuItems, dashboard]
+    );
+}
+
+/** In the studio's preview, tells the studio the menu's items as they are before any change, for its Menu items editor. */
+export function useAnnounceMenu(area: MenuArea | null, items: readonly NavItem[]): void {
+    const dashboard = useServerDashboard();
+
+    useEffect(() => {
+        if (!area || !inPreviewFrame()) return;
+
+        const known: KnownItem[] = applyMenu(area === 'server' ? orderServerItems(items) : items, [], area === 'server', ownEntry(area, dashboard)).map(
+            (row) => ({ key: row.key, ...row.original })
+        );
+        window.parent.postMessage({ type: MENU_MESSAGE, area, items: known }, window.location.origin);
+    }, [area, items, dashboard]);
+}
+
+/** Items through the engine's <Navigation>, which keeps runtime-gated screens hidden, as their rows name them; hidden rows are left out. */
+export function AreaItems({ rows, collapsed }: { rows: readonly MenuRow[]; collapsed: boolean }) {
+    const byKey = new Map(rows.map((row) => [row.key, row]));
+
     return (
-        <Navigation items={items}>
+        <Navigation items={rows.filter((row) => !row.hidden).map((row) => row.item)}>
             {(item, { badge }) => {
-                const entry = rename?.(item) ?? { label: item.label, icon: iconFor(item, area) };
+                const row = byKey.get(menuKey(item));
+                const label = row?.label ?? item.label;
                 return (
-                    <Tip collapsed={collapsed} label={entry.label}>
-                        <NavigationLink item={item} className={itemClass(collapsed)} data-nav-key={navKey(item)}>
-                            <Entry icon={entry.icon} label={entry.label} badge={badge} collapsed={collapsed} />
+                    <Tip collapsed={collapsed} label={label}>
+                        <NavigationLink item={item} className={itemClass(collapsed)} data-nav-key={menuKey(item)}>
+                            <Entry icon={row?.icon ?? item.icon ?? 'puzzle'} label={label} badge={badge} collapsed={collapsed} />
                         </NavigationLink>
                     </Tip>
                 );
@@ -155,9 +185,6 @@ export function Section({ title, collapsed, children, className }: { title?: str
     );
 }
 
-/** The panel's server items in two groups, the way they read: running the server, then its data. */
-const dataItems = new Set(['files', 'databases', 'schedules', 'backups']);
-
 /** This theme's console screen, which follows the server's first page, the dashboard. */
 const isConsoleScreen = (item: NavItem) => item.extensionId === 'basalt' && item.id === 'console';
 
@@ -167,11 +194,4 @@ export function orderServerItems(items: readonly NavItem[]): NavItem[] {
     const consoleItem = items.find(isConsoleScreen);
     if (consoleItem) ordered.splice(ordered.findIndex((item) => item.id === 'index' && item.extensionId === undefined) + 1, 0, consoleItem);
     return ordered;
-}
-
-export function groupServerItems(items: readonly NavItem[]): { general: NavItem[]; data: NavItem[] } {
-    const general: NavItem[] = [];
-    const data: NavItem[] = [];
-    for (const item of orderServerItems(items)) (item.extensionId === undefined && dataItems.has(item.id) ? data : general).push(item);
-    return { general, data };
 }

@@ -10,6 +10,7 @@ import {
     type AppArea,
     type AppLayoutModel,
     type LayoutBrand,
+    type NavItem,
     type ViewProps,
 } from '@pterodactyl/sdk/theme';
 import BrandMark from '../../components/BrandMark';
@@ -17,14 +18,16 @@ import { applyAccent } from '../../lib/accent';
 import { usePreferences } from '../../lib/api';
 import { useLocalState } from '../../lib/local';
 import { parseLinks } from '../../lib/links';
+import { groupRows, type MenuRow } from '../../lib/menu';
 import { motionSpeed, useMotion } from '../../lib/motion';
+import { inEmbedFrame, useSplit } from '../../lib/split';
 import { usePrivacy } from '../../lib/privacy';
 import type { ThemeSettings } from '../../theme-types';
 import { SidebarServerSlot } from './context';
-import { useServerDashboard } from '../../lib/server';
 import { HorizontalNav, SearchButton, iconButton } from './Bars';
-import { AreaItems, ExternalItem, Section, SidebarLink, groupServerItems, orderServerItems, serverIndexEntry } from './nav';
+import { AreaItems, ExternalItem, Section, SidebarLink, useAnnounceMenu, useMenuRows } from './nav';
 import Shortcuts from './Shortcuts';
+import { SplitMenu, SplitPane } from './Split';
 import UserMenu from './UserMenu';
 
 const DESKTOP = '(min-width: 64rem)';
@@ -101,67 +104,75 @@ function MainLinks({ model, collapsed }: { model: AppLayoutModel; collapsed: boo
     );
 }
 
+/** The area's menu: its rows, as the Menu items setting arranges them, and the server's admin link. */
+interface AreaMenu {
+    readonly rows: readonly MenuRow[];
+    readonly adminLink: readonly MenuRow[];
+}
+
+const noItems: readonly NavItem[] = [];
+
+/**
+ * The menu of the area the user is in: the server's, the admin area's, or the account's, which the
+ * overview shows as well. In the studio's preview, the studio learns the account's menu from every
+ * page, and the server's from a server's pages.
+ */
+function useAreaMenu({ area }: AppLayoutModel): AreaMenu {
+    const account = useNavigation('account');
+    const kind = area.kind === 'server' ? 'server' : area.kind === 'admin' ? 'admin' : 'account';
+    const rows = useMenuRows(kind, area.kind === 'dashboard' ? account.items : area.nav.items);
+    const adminLink = useMenuRows('admin', area.kind === 'server' && area.adminLink ? [area.adminLink] : noItems);
+    useAnnounceMenu('account', account.items);
+    useAnnounceMenu(area.kind === 'server' ? 'server' : null, area.kind === 'server' ? area.nav.items : noItems);
+
+    return { rows, adminLink };
+}
+
 /**
  * The area's navigation in one row, for a top or bottom bar: the overview's main links, or the
- * area's items in the panel's order, ungrouped; the bar's menu draws them without the slots.
+ * area's items in their order, ungrouped; the bar's menu draws them without the slots.
  */
-function BarItems({ model, collapsed, menu }: { model: AppLayoutModel; collapsed: boolean; menu: boolean }) {
+function BarItems({ model, menu, collapsed, inMenu }: { model: AppLayoutModel; menu: AreaMenu; collapsed: boolean; inMenu: boolean }) {
     const { area } = model;
-    const serverDashboard = useServerDashboard();
 
     if (area.kind === 'dashboard') {
         return (
             <>
-                {!menu && <Slot name='nav.items.before' compact={collapsed} />}
+                {!inMenu && <Slot name='nav.items.before' compact={collapsed} />}
                 <MainLinks model={model} collapsed={collapsed} />
-                {!menu && <Slot name='nav.items.after' compact={collapsed} />}
+                {!inMenu && <Slot name='nav.items.after' compact={collapsed} />}
             </>
         );
     }
 
     return (
         <>
-            {!menu && <AreaSlot area={area} at='before' />}
-            {area.kind === 'server' ? (
-                <AreaItems
-                    items={orderServerItems(area.nav.items)}
-                    area='server'
-                    collapsed={collapsed}
-                    rename={(item) => (item.id === 'index' && !item.extensionId ? serverIndexEntry(serverDashboard) : undefined)}
-                />
-            ) : (
-                <AreaItems items={area.nav.items} area={area.kind} collapsed={collapsed} />
-            )}
-            {area.kind === 'server' && area.adminLink && <AreaItems items={[area.adminLink]} area='server' collapsed={collapsed} />}
-            {!menu && <AreaSlot area={area} at='after' />}
+            {!inMenu && <AreaSlot area={area} at='before' />}
+            <AreaItems rows={menu.rows} collapsed={collapsed} />
+            <AreaItems rows={menu.adminLink} collapsed={collapsed} />
+            {!inMenu && <AreaSlot area={area} at='after' />}
         </>
     );
 }
 
 /** The navigation of the area the user is in. */
-function AreaNavigation({ model, rail }: { model: AppLayoutModel; rail: boolean }) {
+function AreaNavigation({ model, menu, rail }: { model: AppLayoutModel; menu: AreaMenu; rail: boolean }) {
     const { area } = model;
-    const account = useNavigation('account');
-    const serverDashboard = useServerDashboard();
 
     if (area.kind === 'server') {
-        const { general, data } = groupServerItems(area.nav.items);
         return (
             <>
-                <Section title='General' collapsed={rail} className='basalt-nav-group'>
-                    <AreaSlot area={area} at='before' />
-                    <AreaItems items={general} area='server' collapsed={rail} rename={(item) => (item.id === 'index' && !item.extensionId ? serverIndexEntry(serverDashboard) : undefined)} />
-                </Section>
-                {data.length > 0 && (
-                    <Section title='Files and data' collapsed={rail} className='basalt-nav-group mt-0.5'>
-                        <AreaItems items={data} area='server' collapsed={rail} />
+                <AreaSlot area={area} at='before' />
+                {groupRows(menu.rows.filter((row) => !row.hidden)).map((group, index) => (
+                    <Section key={group.title} title={group.title} collapsed={rail} className={cn('basalt-nav-group', index > 0 && 'mt-0.5')}>
+                        <AreaItems rows={group.rows} collapsed={rail} />
                     </Section>
-                )}
+                ))}
                 <AreaSlot area={area} at='after' />
-                {area.adminLink && (
+                {menu.adminLink.length > 0 && (
                     <>
                         <div className='mx-3 my-2.5 border-t border-border' role='presentation' />
-                        <AreaItems items={[area.adminLink]} area='server' collapsed={rail} />
+                        <AreaItems rows={menu.adminLink} collapsed={rail} />
                     </>
                 )}
                 <Links where='server' rail={rail} />
@@ -173,7 +184,7 @@ function AreaNavigation({ model, rail }: { model: AppLayoutModel; rail: boolean 
         return (
             <Section title='Administration' collapsed={rail}>
                 <AreaSlot area={area} at='before' />
-                <AreaItems items={area.nav.items} area='admin' collapsed={rail} />
+                <AreaItems rows={menu.rows} collapsed={rail} />
                 <AreaSlot area={area} at='after' />
             </Section>
         );
@@ -186,7 +197,7 @@ function AreaNavigation({ model, rail }: { model: AppLayoutModel; rail: boolean 
             </Section>
             <Section title='Account' collapsed={rail} className='mt-4'>
                 {area.kind === 'account' && <AreaSlot area={area} at='before' />}
-                <AreaItems items={area.kind === 'account' ? area.nav.items : account.items} area='account' collapsed={rail} />
+                <AreaItems rows={menu.rows} collapsed={rail} />
                 {area.kind === 'account' && <AreaSlot area={area} at='after' />}
             </Section>
             <Links where={area.kind === 'dashboard' ? 'dashboard' : 'account'} rail={rail} />
@@ -234,8 +245,10 @@ export default function AppShell({ model, className, children }: ViewProps<'layo
     const motion = useMotion();
     usePrivacy();
 
-    const { userAccent, pageTransition, navigation, menuStyle, searchButton } = useThemeSettings<ThemeSettings>();
+    const { userAccent, pageTransition, navigation, menuStyle, searchButton, splitView } = useThemeSettings<ThemeSettings>();
     const preferences = usePreferences();
+    const menu = useAreaMenu(model);
+    const split = useSplit();
 
     // The user's personal accent, while administrators allow them; the panel's own until their preferences arrive.
     useEffect(() => {
@@ -259,19 +272,39 @@ export default function AppShell({ model, className, children }: ViewProps<'layo
         if (motion && entrance) page.current?.animate?.(entrance, { duration: motionSpeed(), easing: 'cubic-bezier(0.2, 0, 0, 1)' });
     }, [pathname, motion, pageTransition]);
 
+    // A page in a split's frame is drawn alone.
+    if (inEmbedFrame()) {
+        return (
+            <div data-embed className={cn('basalt-shell min-h-dvh', className)}>
+                <Main className='min-w-0'>
+                    <div ref={page} className='basalt-page'>
+                        {children}
+                    </div>
+                </Main>
+            </div>
+        );
+    }
+
+    // Split view, on large screens of a page that is not itself in a frame.
+    const splitting = splitView && desktop && window.parent === window;
+
     const content = (
         <>
             <Backdrop area={model.area.kind} />
 
-            <Main className='min-w-0 flex-1'>
-                <div ref={page} className='basalt-page'>
-                    {children}
-                </div>
-            </Main>
+            <div className='flex min-w-0 flex-1'>
+                <Main className='min-w-0 flex-1'>
+                    <div ref={page} className='basalt-page'>
+                        {children}
+                    </div>
+                </Main>
+                {splitting && split && <SplitPane split={split} />}
+            </div>
 
             {/* The panel's server search: its shortcuts open it; the trigger stays out of sight. */}
             <View name='app.search' className='sr-only' />
             <Shortcuts open={shortcuts} setOpen={setShortcuts} />
+            <SplitMenu enabled={splitting} />
         </>
     );
 
@@ -281,7 +314,7 @@ export default function AppShell({ model, className, children }: ViewProps<'layo
                 position={bar}
                 collapsed={iconsOnly}
                 onCollapse={toggle}
-                items={(icons, menu) => <BarItems model={model} collapsed={icons} menu={menu} />}
+                items={(icons, inMenu) => <BarItems model={model} menu={menu} collapsed={icons} inMenu={inMenu} />}
             />
         );
 
@@ -367,7 +400,7 @@ export default function AppShell({ model, className, children }: ViewProps<'layo
                     {/* The whole sidebar scrolls when its items outgrow the window, the user menu last. */}
                     <nav aria-label='Main' className='mt-4 flex shrink-0 flex-col'>
                         <Slot name='nav.items.before' compact={rail} />
-                        <AreaNavigation model={model} rail={rail} />
+                        <AreaNavigation model={model} menu={menu} rail={rail} />
                         <Slot name='nav.items.after' compact={rail} />
                     </nav>
 

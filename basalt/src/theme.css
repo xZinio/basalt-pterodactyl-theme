@@ -663,6 +663,50 @@
     }
 }
 
+/* Split view: the pane's resizer is a line that thickens under the pointer; a drag keeps frames and text out of it. */
+.basalt-split-resizer {
+    position: relative;
+
+    &::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: 50%;
+        width: var(--basalt-border-width, 1px);
+        background-color: var(--border);
+        transition:
+            background-color var(--basalt-speed) var(--basalt-ease),
+            width var(--basalt-speed) var(--basalt-ease);
+    }
+
+    &:hover::after,
+    &:focus-visible::after,
+    [data-basalt-dragging] &::after {
+        width: 3px;
+        background-color: var(--primary);
+        transform: translateX(-1px);
+    }
+}
+
+.basalt-split-bar[data-movable] {
+    cursor: grab;
+    touch-action: none;
+    user-select: none;
+
+    [data-basalt-dragging] & {
+        cursor: grabbing;
+    }
+}
+
+[data-basalt-dragging] {
+    user-select: none;
+
+    & iframe {
+        pointer-events: none;
+    }
+}
+
 /* With the group headings off, a line parts the server's groups. */
 [data-basalt-nav-headings='false'] .basalt-sidebar .basalt-nav-group + .basalt-nav-group {
     margin-top: 0.5rem;
@@ -787,6 +831,11 @@ html {
 
 [data-basalt-content-width='w1920'] .basalt-page {
     max-width: 120rem;
+}
+
+/* A page in a split's frame fills it, whatever the width setting. */
+.basalt-shell[data-embed] .basalt-page {
+    max-width: none;
 }
 
 /* Background: a spotlight or a gradient of the accents behind every page. */

@@ -69,6 +69,8 @@ export interface ThemeSettings {
     readonly "sidebarWidth": number;
     readonly "activeItem": "soft" | "filled" | "bar" | "dot" | "outline" | "text";
     readonly "navHeadings": boolean;
+    readonly "menuItems": string;
+    readonly "splitView": boolean;
     readonly "searchButton": boolean;
     readonly "searchShortcut": boolean;
     readonly "searchKey": string;

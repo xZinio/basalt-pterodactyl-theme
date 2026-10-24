@@ -4,6 +4,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { Button, PanelLink, Portal, Spinner, Tooltip, cn, http, httpErrorToHuman } from '@pterodactyl/sdk';
 import { adoptSaved } from '../../../lib/preview';
 import { Field } from './Fields';
+import MenuItemsField, { useKnownMenus } from './MenuItems';
 import Presets from './Presets';
 import Stage from './Stage';
 import {
@@ -73,6 +74,7 @@ function Studio({ settings }: { settings: readonly Setting[] }) {
     const [device, setDevice] = useState<Device['id']>('desktop');
     const [message, setMessage] = useState<Message | null>(null);
     const [saving, setSaving] = useState(false);
+    const knownMenus = useKnownMenus();
     const importer = useRef<HTMLInputElement>(null);
 
     const values = useMemo<Values>(() => {
@@ -246,15 +248,25 @@ function Studio({ settings }: { settings: readonly Setting[] }) {
                     {sectionsOf(category, settings).map((section) => (
                         <Section key={section.title} title={section.title}>
                             <div className='grid gap-4 p-4'>
-                                {section.settings.map((setting) => (
-                                    <Field
-                                        key={setting.key}
-                                        setting={setting}
-                                        value={values[setting.key] ?? null}
-                                        onChange={(value) => edit({ [setting.key]: value })}
-                                        onSaved={stored}
-                                    />
-                                ))}
+                                {section.settings.map((setting) =>
+                                    setting.key === 'menuItems' ? (
+                                        <MenuItemsField
+                                            key={setting.key}
+                                            setting={setting}
+                                            value={values[setting.key] ?? null}
+                                            onChange={(value) => edit({ [setting.key]: value })}
+                                            known={knownMenus}
+                                        />
+                                    ) : (
+                                        <Field
+                                            key={setting.key}
+                                            setting={setting}
+                                            value={values[setting.key] ?? null}
+                                            onChange={(value) => edit({ [setting.key]: value })}
+                                            onSaved={stored}
+                                        />
+                                    )
+                                )}
                             </div>
                         </Section>
                     ))}

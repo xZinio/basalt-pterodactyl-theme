@@ -139,7 +139,7 @@ export const categories: readonly Category[] = [
     { id: 'surfaces', label: 'Surfaces', icon: Layers, tabs: ['Surfaces'] },
     { id: 'controls', label: 'Controls', icon: SlidersHorizontal, tabs: ['Controls'] },
     { id: 'layout', label: 'Layout', icon: LayoutDashboard, tabs: ['Layout'] },
-    { id: 'navigation', label: 'Navigation', icon: Navigation, tabs: ['Navigation'] },
+    { id: 'navigation', label: 'Navigation', icon: Navigation, tabs: ['Navigation'], page: 'server' },
     { id: 'motion', label: 'Motion', icon: Gauge, tabs: ['Motion'] },
     {
         id: 'overview',

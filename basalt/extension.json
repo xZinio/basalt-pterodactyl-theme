@@ -490,6 +490,21 @@
                 "default": true,
                 "attribute": "data-basalt-nav-headings"
             },
+            "menuItems": {
+                "type": "text",
+                "label": "Menu items",
+                "tab": "Navigation",
+                "help": "Drag items to reorder them or move them to another group. Open an item to rename it or change its icon, and use the eye to hide it.",
+                "default": "{}",
+                "maxLength": 8000
+            },
+            "splitView": {
+                "type": "toggle",
+                "label": "Split view and windows",
+                "tab": "Navigation",
+                "help": "Lets users right-click a server page link to open it beside the current page or in a floating window.",
+                "default": true
+            },
             "searchButton": {
                 "type": "toggle",
                 "label": "Search button",
