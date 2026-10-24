@@ -4,6 +4,7 @@ import { Button, Checkbox, Dialog, Input, Label, NamedIcon, cn } from '@pterodac
 import type { ServerListItem } from '@pterodactyl/sdk/theme';
 import type { Folder } from '../../lib/api';
 import { stateFill } from '../../lib/server';
+import { useServerDrop } from './drag';
 
 export const folderIcons = [
     'folder',
@@ -36,6 +37,7 @@ function FolderTile({
     onEdit,
     onManage,
     onDelete,
+    onDropServer,
 }: {
     folder: Folder;
     items: Map<string, ServerListItem>;
@@ -43,9 +45,17 @@ function FolderTile({
     onEdit: () => void;
     onManage: () => void;
     onDelete: () => void;
+    onDropServer: (uuid: string) => void;
 }) {
+    // A server dragged onto the folder joins it.
+    const target = useServerDrop(onDropServer, (uuid) => !folder.servers.includes(uuid));
+
     return (
-        <li className='group/folder surface basalt-lift basalt-folder relative flex h-[74px] min-w-0 items-center gap-3.5 p-4 transition-colors hover:border-primary/50'>
+        <li
+            {...target.props}
+            data-over={target.over || undefined}
+            className='group/folder surface basalt-lift basalt-folder relative flex h-[74px] min-w-0 items-center gap-3.5 p-4 transition-colors hover:border-primary/50'
+        >
             <button type='button' onClick={onOpen} aria-label={`Open ${folder.name}`} className='absolute inset-0 z-0 cursor-pointer rounded-[inherit] border-0 bg-transparent' />
             <span className='basalt-folder-icon pointer-events-none flex size-10 shrink-0 items-center justify-center rounded-md bg-primary/14 text-primary'>
                 <NamedIcon name={folder.icon ?? 'folder'} size={20} aria-hidden />
@@ -84,6 +94,7 @@ export function FolderRow({
     onEdit,
     onManage,
     onDelete,
+    onDropServer,
 }: {
     folders: readonly Folder[];
     items: Map<string, ServerListItem>;
@@ -92,6 +103,7 @@ export function FolderRow({
     onEdit: (folder: Folder) => void;
     onManage: (folder: Folder) => void;
     onDelete: (folder: Folder) => void;
+    onDropServer: (folder: Folder, uuid: string) => void;
 }) {
     return (
         <ul className='basalt-folder-grid grid grid-cols-[repeat(auto-fill,minmax(14rem,1fr))] gap-3'>
@@ -104,6 +116,7 @@ export function FolderRow({
                     onEdit={() => onEdit(folder)}
                     onManage={() => onManage(folder)}
                     onDelete={() => onDelete(folder)}
+                    onDropServer={(uuid) => onDropServer(folder, uuid)}
                 />
             ))}
             <li className='basalt-lift min-w-0'>
@@ -122,14 +135,18 @@ export function FolderRow({
     );
 }
 
-/** The heading over an open folder's servers, with the way back to all of them. */
-export function OpenFolderBar({ folder, onClose }: { folder: Folder; onClose: () => void }) {
+/** The heading over an open folder's servers, with the way back to all of them, where a server dragged leaves the folder. */
+export function OpenFolderBar({ folder, onClose, onDropOut }: { folder: Folder; onClose: () => void; onDropOut: (uuid: string) => void }) {
+    const target = useServerDrop(onDropOut, (uuid) => folder.servers.includes(uuid));
+
     return (
         <div className='flex items-center gap-3'>
             <button
                 type='button'
                 onClick={onClose}
-                className='inline-flex h-9 items-center gap-2 rounded-md border border-border bg-transparent px-3 text-sm text-muted-foreground transition-colors hover:bg-foreground/[0.06] hover:text-foreground'
+                {...target.props}
+                data-over={target.over || undefined}
+                className='basalt-folder-back inline-flex h-9 items-center gap-2 rounded-md border border-border bg-transparent px-3 text-sm text-muted-foreground transition-colors hover:bg-foreground/[0.06] hover:text-foreground'
             >
                 <ArrowLeft className='size-4' aria-hidden />
                 All servers

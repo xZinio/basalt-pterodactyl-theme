@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useRef, useState, type DragEvent } from 'react';
 import { Archive, Folder as FolderIcon, FolderInput, Server as ServerIcon, SquareTerminal, Star } from 'lucide-react';
 import {
     DropdownMenu,
@@ -17,11 +17,13 @@ import {
     useCurrentUser,
 } from '@pterodactyl/sdk';
 import { Slot, View, useThemeSettings, type ServerListItem, type ServerListModel, type ViewProps } from '@pterodactyl/sdk/theme';
-import { usePlayers, usePreferences, useServerMeta, useUpdatePreferences, type Folder } from '../../lib/api';
+import { usePlayers, usePreferences, useServerMeta, useUpdatePreferences, type Folder, type Preferences } from '../../lib/api';
 import { useLocalState } from '../../lib/local';
+import { useMotion } from '../../lib/motion';
 import { consoleDestination, serverDestination, useServerDashboard } from '../../lib/server';
 import type { ThemeSettings } from '../../theme-types';
 import { DashboardDataContext } from './data';
+import { SERVER_DRAG, carriesServer, setDraggedServer, useReflow } from './drag';
 import { FolderDialog, FolderRow, ManageDialog, OpenFolderBar } from './Folders';
 import { Announcement, Field, NativeSelect, SearchInput, Welcome } from './parts';
 
@@ -34,6 +36,23 @@ const statusRank = (item: ServerListItem) =>
 
 const cornerButton =
     'inline-flex size-8 cursor-pointer items-center justify-center rounded-(--basalt-control-radius) border-0 bg-transparent text-muted-foreground transition-[color,opacity,background-color] hover:bg-[color:color-mix(in_oklab,var(--foreground)_9%,transparent)] hover:text-foreground';
+
+/** A drag through the user's own order: the server, the gap it leaves, the order and folder it would land in. */
+interface Drag {
+    readonly uuid: string;
+    readonly height: number;
+    readonly order: readonly string[];
+    readonly folder: string | null;
+    /** The server it last moved past; held over the same one, it stays put. */
+    readonly last: string | null;
+}
+
+/** What a tile tells the list while it is dragged through the user's order. */
+interface Sorter {
+    readonly start: (uuid: string, height: number) => void;
+    readonly hover: (uuid: string) => void;
+    readonly end: () => void;
+}
 
 /** A server's power for its status rail: grey while it is loading or out of reach. */
 const powerOf = (item: ServerListItem) => (item.state.kind === 'ready' ? item.state.power : item.state.kind === 'loading' ? 'loading' : 'unavailable');
@@ -50,6 +69,8 @@ function ServerTile({
     favorite,
     folders,
     folderId,
+    sorter,
+    hidden,
     onFavorite,
     onMove,
     onNewFolder,
@@ -60,6 +81,10 @@ function ServerTile({
     favorite: boolean | null;
     folders: readonly Folder[] | null;
     folderId: string | null;
+    /** While the list is in the user's own order: dragging the server moves it there. */
+    sorter: Sorter | null;
+    /** The server being dragged keeps its element, out of sight, while a slot shows where it goes. */
+    hidden?: boolean;
     onFavorite: () => void;
     onMove: (folder: string | null) => void;
     onNewFolder: () => void;
@@ -67,14 +92,55 @@ function ServerTile({
     const { server } = item;
     const params = { id: item.identifier };
     const consoleLink = consoleDestination(item.identifier, useServerDashboard());
+    // Dragged into the user's order, or onto a folder.
+    const draggable = sorter !== null || folders !== null;
 
     return (
         <li
             className='basalt-server basalt-lift'
             style={{ animationDelay: `${Math.min(index, 10) * 40}ms` }}
+            draggable={draggable || undefined}
+            data-flip={item.uuid}
+            data-hidden={hidden || undefined}
+            data-sortable={sorter ? '' : undefined}
             data-movable={folders !== null || favorite !== null || undefined}
             data-favorite={favorite || undefined}
             data-art={art ? '' : undefined}
+            onDragStart={
+                draggable
+                    ? (event) => {
+                          event.dataTransfer.clearData();
+                          event.dataTransfer.setData(SERVER_DRAG, item.uuid);
+                          event.dataTransfer.effectAllowed = 'move';
+                          const tile = event.currentTarget;
+                          const box = tile.getBoundingClientRect();
+                          event.dataTransfer.setDragImage(tile, event.clientX - box.left, event.clientY - box.top);
+                          setDraggedServer(item.uuid);
+                          // After the browser has taken its picture of the tile.
+                          if (sorter) window.setTimeout(() => sorter.start(item.uuid, box.height), 0);
+                          else tile.setAttribute('data-dragging', '');
+                      }
+                    : undefined
+            }
+            onDragEnd={
+                draggable
+                    ? (event) => {
+                          event.currentTarget.removeAttribute('data-dragging');
+                          setDraggedServer(null);
+                          sorter?.end();
+                      }
+                    : undefined
+            }
+            onDragOver={
+                sorter
+                    ? (event) => {
+                          if (!carriesServer(event)) return;
+                          event.preventDefault();
+                          event.dataTransfer.dropEffect = 'move';
+                          sorter.hover(item.uuid);
+                      }
+                    : undefined
+            }
         >
             {art && <img src={art} alt='' aria-hidden loading={index < 2 ? 'eager' : 'lazy'} decoding='async' className='basalt-server-art' />}
             <div className='basalt-row-tools'>
@@ -110,7 +176,7 @@ function ServerTile({
                 )}
             </div>
             <Slot name='dashboard.serverRow.before' data={server} />
-            <PanelLink destination={serverDestination(item.identifier)} aria-label={item.name} className='basalt-server-link'>
+            <PanelLink destination={serverDestination(item.identifier)} aria-label={item.name} draggable={draggable ? false : undefined} className='basalt-server-link'>
                 <View name='dashboard.serverCard' server={server} />
             </PanelLink>
             <div className='basalt-quick'>
@@ -199,20 +265,28 @@ export default function ServerList({ model, className }: ViewProps<'dashboard.se
     const byUuid = useMemo(() => new Map(model.servers.map((item) => [item.uuid, item])), [model.servers]);
     const favorites = new Set(serverFavorites ? preferences.favorites : []);
     const opened = folders.find((folder) => folder.id === openFolder) ?? null;
+    const filtered = query.trim() !== '' || status !== 'all';
+
+    // Dragging a server through the user's own order, while the list shows it unfiltered.
+    const [drag, setDrag] = useState<Drag | null>(null);
+    const dragging = useRef<Drag | null>(null);
+    const lastMove = useRef(0);
+    const list = useReflow<HTMLUListElement>(drag !== null, useMotion());
+    const sortable = serverFavorites && preferences.loaded && sort === 'custom' && !filtered;
 
     const items = useMemo(() => {
         const term = query.trim().toLowerCase();
-        const order = new Map(preferences.order.map((uuid, index) => [uuid, index]));
+        const order = new Map((drag?.order ?? preferences.order).map((uuid, index) => [uuid, index]));
         const position = (item: ServerListItem) => order.get(item.uuid) ?? order.size + model.servers.indexOf(item);
+        // The server being dragged is where the drag would leave it.
+        const folderOfItem = (uuid: string) => (drag && uuid === drag.uuid ? drag.folder : (folderOf.get(uuid) ?? null));
 
         return model.servers
             .filter((item) => {
                 if (term) {
                     const node = item.server.attributes.node ?? '';
                     if (![item.name, item.identifier, item.uuid, node].some((value) => value.toLowerCase().includes(term))) return false;
-                } else if (opened) {
-                    if (!opened.servers.includes(item.uuid)) return false;
-                } else if (folderOf.has(item.uuid)) {
+                } else if (folderOfItem(item.uuid) !== (opened?.id ?? null)) {
                     return false;
                 }
                 if (status === 'online') return online(item);
@@ -226,16 +300,69 @@ export default function ServerList({ model, className }: ViewProps<'dashboard.se
                 return fav || position(a) - position(b);
             });
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [model.servers, query, status, sort, opened, folderOf, preferences.order, preferences.favorites]);
+    }, [model.servers, query, status, sort, opened, folderOf, preferences.order, preferences.favorites, drag]);
 
     const saveFolders = (next: Folder[]) => update.mutate({ folders: next });
-    const moveServer = (uuid: string, target: string | null) =>
-        saveFolders(
-            folders.map((folder) => ({
-                ...folder,
-                servers: folder.id === target ? [...folder.servers.filter((candidate) => candidate !== uuid), uuid] : folder.servers.filter((candidate) => candidate !== uuid),
-            }))
-        );
+    // The folders with a server moved into `target`, or out of every folder for null.
+    const foldersWith = (uuid: string, target: string | null): Folder[] =>
+        folders.map((folder) => ({
+            ...folder,
+            servers: folder.id === target ? [...folder.servers.filter((candidate) => candidate !== uuid), uuid] : folder.servers.filter((candidate) => candidate !== uuid),
+        }));
+    const moveServer = (uuid: string, target: string | null) => saveFolders(foldersWith(uuid, target));
+
+    // The user's own order of every server: as saved, then the rest as the panel lists them.
+    const ownOrder = () => {
+        const saved = new Map(preferences.order.map((uuid, index) => [uuid, index]));
+        return model.servers
+            .map((item, index) => ({ uuid: item.uuid, key: saved.get(item.uuid) ?? saved.size + index }))
+            .sort((a, b) => a.key - b.key)
+            .map((entry) => entry.uuid);
+    };
+    const track = (next: Drag | null) => {
+        dragging.current = next;
+        setDrag(next);
+    };
+    const sorter: Sorter | null = sortable
+        ? {
+              start: (uuid, height) => track({ uuid, height, order: ownOrder(), folder: folderOf.get(uuid) ?? null, last: null }),
+              hover: (target) => {
+                  const current = dragging.current;
+                  if (!current || target === current.uuid || target === current.last || Date.now() - lastMove.current < 140) return;
+                  // Starred servers stay above the rest.
+                  if (favorites.has(target) !== favorites.has(current.uuid)) return;
+
+                  const after = current.order.indexOf(current.uuid) < current.order.indexOf(target);
+                  const order = current.order.filter((uuid) => uuid !== current.uuid);
+                  const at = order.indexOf(target);
+                  if (at < 0) return;
+                  order.splice(after ? at + 1 : at, 0, current.uuid);
+                  lastMove.current = Date.now();
+                  track({ ...current, order, folder: foldersOn ? (folderOf.get(target) ?? null) : null, last: target });
+              },
+              end: () => track(null),
+          }
+        : null;
+
+    /** Lands a drag: the order it made, and the folder it ends in, or `folder` when it was dropped on one. */
+    const land = (folder?: string | null) => {
+        const current = dragging.current;
+        if (!current) return;
+        track(null);
+
+        const saved = preferences.order;
+        const order = [...current.order, ...saved.filter((uuid) => !current.order.includes(uuid))].slice(0, 1000);
+        const target = folder === undefined ? current.folder : folder;
+        const patch: { -readonly [K in keyof Preferences]?: Preferences[K] } = {};
+        if (order.join() !== saved.join()) patch.order = order;
+        if (foldersOn && target !== (folderOf.get(current.uuid) ?? null)) patch.folders = foldersWith(current.uuid, target);
+        if (patch.order || patch.folders) update.mutate(patch);
+    };
+    // A server dropped on a folder, or on the way out of one: moved there, in the order its drag made.
+    const dropInto = (target: string | null, uuid: string) => {
+        if (dragging.current) land(target);
+        else if ((folderOf.get(uuid) ?? null) !== target) moveServer(uuid, target);
+    };
     const toggleFavorite = (uuid: string) =>
         update.mutate({ favorites: favorites.has(uuid) ? preferences.favorites.filter((candidate) => candidate !== uuid) : [...preferences.favorites, uuid] });
 
@@ -266,7 +393,7 @@ export default function ServerList({ model, className }: ViewProps<'dashboard.se
         saveFolders(folders.filter((folder) => folder.id !== target.id));
     };
 
-    const filtered = query.trim() !== '' || status !== 'all';
+    const shown = drag ? items.find((item) => item.uuid === drag.uuid) : undefined;
 
     return (
         <DashboardDataContext.Provider value={{ meta, players }}>
@@ -304,7 +431,7 @@ export default function ServerList({ model, className }: ViewProps<'dashboard.se
 
                 {foldersOn && !query.trim() && (
                     opened ? (
-                        <OpenFolderBar folder={opened} onClose={() => setOpenFolder(null)} />
+                        <OpenFolderBar folder={opened} onClose={() => setOpenFolder(null)} onDropOut={(uuid) => dropInto(null, uuid)} />
                     ) : (
                         <FolderRow
                             folders={folders}
@@ -314,6 +441,7 @@ export default function ServerList({ model, className }: ViewProps<'dashboard.se
                             onEdit={(folder) => setEditing({ folder })}
                             onManage={setManaging}
                             onDelete={deleteFolder}
+                            onDropServer={(folder, uuid) => dropInto(folder.id, uuid)}
                         />
                     )
                 )}
@@ -323,21 +451,75 @@ export default function ServerList({ model, className }: ViewProps<'dashboard.se
                 ) : items.length === 0 ? (
                     <NoServers model={model} filtered={filtered || opened !== null} />
                 ) : (
-                    <ul className='basalt-servers'>
-                        {items.map((item, index) => (
+                    <ul
+                        ref={list}
+                        className='basalt-servers'
+                        onDragOver={
+                            sorter
+                                ? (event: DragEvent) => {
+                                      if (!dragging.current || !carriesServer(event)) return;
+                                      event.preventDefault();
+                                      event.dataTransfer.dropEffect = 'move';
+                                  }
+                                : undefined
+                        }
+                        onDrop={
+                            sorter
+                                ? (event: DragEvent) => {
+                                      if (!dragging.current) return;
+                                      event.preventDefault();
+                                      event.stopPropagation();
+                                      land();
+                                  }
+                                : undefined
+                        }
+                    >
+                        {items.map((item, index) =>
+                            drag && item.uuid === drag.uuid ? (
+                                <li
+                                    key='basalt-slot'
+                                    data-flip='basalt-slot'
+                                    className='basalt-server-slot'
+                                    style={{ height: drag.height }}
+                                    onDragOver={(event) => {
+                                        if (!carriesServer(event)) return;
+                                        event.preventDefault();
+                                        // Back over its own gap, it may pass the last server again.
+                                        if (dragging.current?.last) dragging.current = { ...dragging.current, last: null };
+                                    }}
+                                />
+                            ) : (
+                                <ServerTile
+                                    key={item.uuid}
+                                    item={item}
+                                    index={index}
+                                    art={serverArt ? (meta[item.uuid]?.banner ?? null) : null}
+                                    favorite={serverFavorites ? favorites.has(item.uuid) : null}
+                                    folders={foldersOn ? folders : null}
+                                    folderId={folderOf.get(item.uuid) ?? null}
+                                    sorter={sorter}
+                                    onFavorite={() => toggleFavorite(item.uuid)}
+                                    onMove={(target) => moveServer(item.uuid, target)}
+                                    onNewFolder={() => setEditing({ folder: null, moving: item.uuid })}
+                                />
+                            )
+                        )}
+                        {shown && (
                             <ServerTile
-                                key={item.uuid}
-                                item={item}
-                                index={index}
-                                art={serverArt ? (meta[item.uuid]?.banner ?? null) : null}
-                                favorite={serverFavorites ? favorites.has(item.uuid) : null}
+                                key={shown.uuid}
+                                item={shown}
+                                index={items.length}
+                                art={serverArt ? (meta[shown.uuid]?.banner ?? null) : null}
+                                favorite={serverFavorites ? favorites.has(shown.uuid) : null}
                                 folders={foldersOn ? folders : null}
-                                folderId={folderOf.get(item.uuid) ?? null}
-                                onFavorite={() => toggleFavorite(item.uuid)}
-                                onMove={(target) => moveServer(item.uuid, target)}
-                                onNewFolder={() => setEditing({ folder: null, moving: item.uuid })}
+                                folderId={folderOf.get(shown.uuid) ?? null}
+                                sorter={sorter}
+                                hidden
+                                onFavorite={() => toggleFavorite(shown.uuid)}
+                                onMove={(target) => moveServer(shown.uuid, target)}
+                                onNewFolder={() => setEditing({ folder: null, moving: shown.uuid })}
                             />
-                        ))}
+                        )}
                     </ul>
                 )}
 

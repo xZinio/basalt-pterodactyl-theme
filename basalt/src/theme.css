@@ -587,6 +587,34 @@
     padding-right: 4.5rem;
 }
 
+/* Dragging a server: the gap where it would land, and the places that would take it. */
+.basalt-server[data-dragging] {
+    opacity: 0.45;
+}
+
+.basalt-server[data-hidden] {
+    display: none;
+}
+
+.basalt-server-slot {
+    list-style: none;
+    border: 2px dashed color-mix(in oklab, var(--primary) 70%, transparent);
+    border-radius: var(--radius);
+    background-color: color-mix(in oklab, var(--primary) 8%, transparent);
+}
+
+.basalt-folder[data-over] {
+    border-color: var(--primary);
+    outline: 2px dashed var(--primary);
+    outline-offset: 4px;
+}
+
+.basalt-folder-back[data-over] {
+    outline: 2px dashed var(--primary);
+    outline-offset: 2px;
+    color: var(--foreground);
+}
+
 /* The egg's picture, fading in towards the right behind the card. */
 .basalt-server-art {
     position: absolute;
