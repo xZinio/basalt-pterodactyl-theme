@@ -64,6 +64,14 @@ export interface ThemeSettings {
     readonly "backgroundImage": boolean;
     readonly "backgroundFile": string | null;
     readonly "backgroundUrl": string;
+    readonly "navigation": "default" | "navbar" | "floating" | "bottom";
+    readonly "menuStyle": "expanded" | "collapsible" | "icon";
+    readonly "sidebarWidth": number;
+    readonly "activeItem": "soft" | "filled" | "bar" | "dot" | "outline" | "text";
+    readonly "navHeadings": boolean;
+    readonly "searchButton": boolean;
+    readonly "searchShortcut": boolean;
+    readonly "searchKey": string;
     readonly "motion": "full" | "reduced" | "none";
     readonly "pageTransition": "none" | "fade" | "lift";
     readonly "overviewReveal": "none" | "fade" | "lift";
@@ -79,7 +87,6 @@ export interface ThemeSettings {
     readonly "loginTagline": string;
     readonly "loginLinks": string;
     readonly "navLinks": string;
-    readonly "navHeadings": boolean;
     readonly "welcome": boolean;
     readonly "announcement": string;
     readonly "announcementTitle": string;

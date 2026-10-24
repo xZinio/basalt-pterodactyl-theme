@@ -445,6 +445,73 @@
                 "default": "",
                 "maxLength": 500
             },
+            "navigation": {
+                "type": "select",
+                "label": "Layout style",
+                "tab": "Navigation",
+                "help": "Controls the panel's main navigation layout.",
+                "default": "default",
+                "attribute": "data-basalt-navigation",
+                "options": { "default": "Default - Standard sidebar on the left", "navbar": "Navbar - Horizontal navigation at the top", "floating": "Floating Sidebar - Floating sidebar with rounded edges", "bottom": "Bottom Bar - Navigation pinned at the bottom" }
+            },
+            "menuStyle": {
+                "type": "select",
+                "label": "Menu style",
+                "tab": "Navigation",
+                "help": "Controls labels and icons in the sidebar, top bar and bottom bar. Collapsible adds a button and remembers each browser's choice.",
+                "default": "collapsible",
+                "options": { "expanded": "Expanded", "collapsible": "Collapsible", "icon": "Icons only" }
+            },
+            "sidebarWidth": {
+                "type": "number",
+                "label": "Sidebar width",
+                "tab": "Navigation",
+                "default": 16,
+                "min": 14,
+                "max": 22,
+                "step": 0.5,
+                "unit": "rem",
+                "token": "--layout-sidebar-width"
+            },
+            "activeItem": {
+                "type": "select",
+                "label": "Active item",
+                "tab": "Navigation",
+                "help": "How the page you are on is marked in the menu.",
+                "default": "bar",
+                "attribute": "data-basalt-active-item",
+                "options": { "soft": "Soft tint", "filled": "Filled", "bar": "Side bar", "dot": "Dot", "outline": "Outline", "text": "Colored text" }
+            },
+            "navHeadings": {
+                "type": "toggle",
+                "label": "Group headings",
+                "tab": "Navigation",
+                "help": "Shows the small headings above the groups of menu items.",
+                "default": true,
+                "attribute": "data-basalt-nav-headings"
+            },
+            "searchButton": {
+                "type": "toggle",
+                "label": "Search button",
+                "tab": "Navigation",
+                "help": "Shows the server search button in the top bar navigation.",
+                "default": false
+            },
+            "searchShortcut": {
+                "type": "toggle",
+                "label": "Search shortcut",
+                "tab": "Navigation",
+                "help": "Opens the search with Cmd or Ctrl and the key below, besides the panel's own Cmd or Ctrl + /.",
+                "default": true
+            },
+            "searchKey": {
+                "type": "text",
+                "label": "Search shortcut key",
+                "tab": "Navigation",
+                "help": "One letter or digit.",
+                "default": "k",
+                "maxLength": 1
+            },
             "motion": {
                 "type": "select",
                 "label": "Animation",
@@ -562,14 +629,6 @@
                 "help": "A Links section in the sidebar, as Label|URL|icon|where entries separated by commas. The icon is any lucide name, such as message-circle, book-open or shopping-cart; where is all (the default), dashboard (the server list only) or server.",
                 "default": "",
                 "maxLength": 1000
-            },
-            "navHeadings": {
-                "type": "toggle",
-                "label": "Section headings",
-                "tab": "Navigation",
-                "help": "Group sidebar items under small headings.",
-                "default": true,
-                "attribute": "data-basalt-nav-headings"
             },
             "welcome": {
                 "type": "toggle",

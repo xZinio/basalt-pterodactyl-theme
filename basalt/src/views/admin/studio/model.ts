@@ -251,7 +251,7 @@ export function draftOf(settings: readonly Setting[], values: Values): StudioDra
 }
 
 /** Settings with a token or an attribute that the page's code reads as well. */
-const readByCode = new Set(['motion', 'pageTransition', 'font']);
+const readByCode = new Set(['motion', 'pageTransition', 'font', 'navigation']);
 
 /**
  * Settings the page's code reads, not only the stylesheet, and images, which the sign-in preview

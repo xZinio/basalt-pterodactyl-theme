@@ -1,17 +1,24 @@
-import type { ReactNode } from 'react';
+import { createContext, useContext, type ReactNode } from 'react';
 import { NamedIcon, PanelLink, Tooltip, cn, type PanelDestination, type TooltipProps } from '@pterodactyl/sdk';
 import { Navigation, NavigationLink, type NavItem } from '@pterodactyl/sdk/theme';
 import { externalProps, type ConfiguredLink } from '../../lib/links';
 
-/** Sidebar items: the sidebar's accent fill on hover, a tinted fill and a short accent bar while active. */
+/**
+ * Navigation items: the sidebar's accent fill on hover. The stylesheet marks the active one, by the
+ * Active item setting.
+ */
 export const itemClass = (collapsed: boolean) =>
     cn(
-        'basalt-nav-item relative flex min-w-0 items-center gap-3 rounded-md px-3 py-2 text-sm leading-[1.5] font-medium no-underline',
+        'basalt-nav-item relative flex min-w-0 items-center gap-3 rounded-(--basalt-control-radius) px-3 py-2 text-sm leading-[1.5] font-medium no-underline',
         'text-muted-foreground transition-colors duration-(--basalt-speed) ease-(--basalt-ease) hover:bg-sidebar-accent hover:text-foreground',
-        'data-[status=active]:bg-primary/10 data-[status=active]:text-foreground',
-        'before:absolute before:inset-y-2 before:left-0 before:w-[3px] before:rounded-full before:bg-primary before:opacity-0 data-[status=active]:before:opacity-100',
         collapsed && 'justify-center'
     );
+
+/**
+ * Where the navigation is drawn: down the sidebar, in groups under headings, or across a top or
+ * bottom bar, in one row whose collapsed items show their label above or below them.
+ */
+export const NavLayout = createContext<'column' | 'top' | 'bottom'>('column');
 
 /** Icons for the panel's own items, by area and item id, where its names differ from the look. */
 const serverIcons: Record<string, string> = {
@@ -44,7 +51,7 @@ function Entry({ icon, label, badge, collapsed }: { icon: string; label: string;
                 <span className='sr-only'>{label}</span>
             ) : (
                 <>
-                    <span className='min-w-0 flex-1 truncate'>{label}</span>
+                    <span className='basalt-nav-label min-w-0 flex-1 truncate'>{label}</span>
                     {badge}
                 </>
             )}
@@ -53,8 +60,10 @@ function Entry({ icon, label, badge, collapsed }: { icon: string; label: string;
 }
 
 function Tip({ collapsed, label, children }: { collapsed: boolean; label: string; children: TooltipProps['children'] }) {
+    const layout = useContext(NavLayout);
+
     return collapsed ? (
-        <Tooltip placement='right' content={label}>
+        <Tooltip placement={layout === 'column' ? 'right' : layout === 'top' ? 'bottom' : 'top'} content={label}>
             {children}
         </Tooltip>
     ) : (
@@ -63,12 +72,14 @@ function Tip({ collapsed, label, children }: { collapsed: boolean; label: string
 }
 
 export function SidebarLink({
+    id,
     destination,
     exact,
     icon,
     label,
     collapsed,
 }: {
+    id: string;
     destination: PanelDestination;
     exact?: boolean;
     icon: string;
@@ -77,12 +88,15 @@ export function SidebarLink({
 }) {
     return (
         <Tip collapsed={collapsed} label={label}>
-            <PanelLink destination={destination} exact={exact} className={itemClass(collapsed)}>
+            <PanelLink destination={destination} exact={exact} className={itemClass(collapsed)} data-nav-key={`main:${id}`}>
                 <Entry icon={icon} label={label} collapsed={collapsed} />
             </PanelLink>
         </Tip>
     );
 }
+
+/** The key a bar matches an item by, between its row and its overflow menu. */
+export const navKey = (item: NavItem) => `${item.extensionId ?? 'panel'}:${item.id}`;
 
 /** An area's items, through the engine's <Navigation>, which keeps runtime-gated screens hidden. */
 export function AreaItems({
@@ -102,7 +116,7 @@ export function AreaItems({
                 const entry = rename?.(item) ?? { label: item.label, icon: iconFor(item, area) };
                 return (
                     <Tip collapsed={collapsed} label={entry.label}>
-                        <NavigationLink item={item} className={itemClass(collapsed)}>
+                        <NavigationLink item={item} className={itemClass(collapsed)} data-nav-key={navKey(item)}>
                             <Entry icon={entry.icon} label={entry.label} badge={badge} collapsed={collapsed} />
                         </NavigationLink>
                     </Tip>
@@ -122,8 +136,13 @@ export function ExternalItem({ link, collapsed }: { link: ConfiguredLink; collap
     );
 }
 
-/** A group of items under a small heading; the heading hides in the rail and when headings are off. */
+/**
+ * A group of items under a small heading; the heading hides in the rail and when headings are off.
+ * Across a bar, the groups run together in one row.
+ */
 export function Section({ title, collapsed, children, className }: { title?: string; collapsed: boolean; children: ReactNode; className?: string }) {
+    if (useContext(NavLayout) !== 'column') return <>{children}</>;
+
     return (
         <div className={cn('flex flex-col gap-0.5', className)}>
             {title && !collapsed && (
@@ -142,13 +161,17 @@ const dataItems = new Set(['files', 'databases', 'schedules', 'backups']);
 /** This theme's console screen, which follows the server's first page, the dashboard. */
 const isConsoleScreen = (item: NavItem) => item.extensionId === 'basalt' && item.id === 'console';
 
+/** The server's items in the panel's order, with this theme's console screen after the first page. */
+export function orderServerItems(items: readonly NavItem[]): NavItem[] {
+    const ordered = items.filter((item) => !isConsoleScreen(item));
+    const consoleItem = items.find(isConsoleScreen);
+    if (consoleItem) ordered.splice(ordered.findIndex((item) => item.id === 'index' && item.extensionId === undefined) + 1, 0, consoleItem);
+    return ordered;
+}
+
 export function groupServerItems(items: readonly NavItem[]): { general: NavItem[]; data: NavItem[] } {
     const general: NavItem[] = [];
     const data: NavItem[] = [];
-    for (const item of items) {
-        if (!isConsoleScreen(item)) (item.extensionId === undefined && dataItems.has(item.id) ? data : general).push(item);
-    }
-    const consoleItem = items.find(isConsoleScreen);
-    if (consoleItem) general.splice(general.findIndex((item) => item.id === 'index' && item.extensionId === undefined) + 1, 0, consoleItem);
+    for (const item of orderServerItems(items)) (item.extensionId === undefined && dataItems.has(item.id) ? data : general).push(item);
     return { general, data };
 }

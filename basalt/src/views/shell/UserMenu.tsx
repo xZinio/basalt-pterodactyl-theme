@@ -7,14 +7,20 @@ import { usePrivacy, usePrivacyAllowed } from '../../lib/privacy';
 import { useShortcutsAllowed } from '../../lib/shortcuts';
 import type { ThemeSettings } from '../../theme-types';
 
-/** The signed-in user at the foot of the sidebar; it opens the account menu. */
+/**
+ * The signed-in user at the foot of the sidebar or the end of a bar; it opens the account menu.
+ * In the rail it shows the avatar alone; in the bottom bar, the avatar and the menu's dots, and on
+ * a narrow screen the avatar alone again.
+ */
 export default function UserMenu({
     model,
     collapsed,
+    placement = 'sidebar',
     onShortcuts,
 }: {
     model: AppLayoutModel;
     collapsed: boolean;
+    placement?: 'sidebar' | 'top' | 'bottom';
     onShortcuts: () => void;
 }) {
     const { user, setScheme, scheme } = model;
@@ -25,16 +31,17 @@ export default function UserMenu({
 
     return (
         <DropdownMenu
-            className='basalt-user-menu'
+            className={cn('basalt-user-menu', placement === 'top' && 'basalt-user-menu-below')}
             triggerClassName={cn(
-                'flex w-full min-w-0 items-center gap-2.5 rounded-md border-0 bg-transparent p-2 text-left text-foreground transition-colors',
+                'flex w-full min-w-0 items-center gap-2.5 rounded-(--basalt-control-radius) border-0 bg-transparent p-2 text-left text-foreground transition-colors',
                 'hover:bg-sidebar-accent data-popup-open:bg-sidebar-accent',
-                collapsed && 'justify-center p-2'
+                collapsed && 'justify-center p-2',
+                placement === 'bottom' && 'w-auto max-[700px]:p-1.5'
             )}
             triggerContent={
                 <>
                     <UserAvatar user={user} size={32} />
-                    {!collapsed && (
+                    {!collapsed && placement !== 'bottom' && (
                         <span className='min-w-0 flex-1'>
                             <span className='block truncate text-base leading-[1.2]'>{user.username}</span>
                             <span className='block truncate text-xs leading-[1.2] text-muted-foreground' data-sensitive>
@@ -42,7 +49,9 @@ export default function UserMenu({
                             </span>
                         </span>
                     )}
-                    {!collapsed && <EllipsisVertical className='size-[18px] shrink-0 text-muted-foreground' aria-hidden />}
+                    {!collapsed && (
+                        <EllipsisVertical className={cn('size-[18px] shrink-0 text-muted-foreground', placement === 'bottom' && 'max-[700px]:hidden')} aria-hidden />
+                    )}
                     <span className='sr-only'>Account menu</span>
                 </>
             }
