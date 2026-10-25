@@ -82,6 +82,17 @@ services:
     volumes:
       - ./wings:/wings
 
+  # A stand-in for Paymenter and WHMCS on "localhost:8460", sharing the panel's network like Wings.
+  billing:
+    image: node:22-alpine
+    working_dir: /billing
+    command: ["node", "server.mjs"]
+    network_mode: "service:panel"
+    depends_on:
+      - panel
+    volumes:
+      - ./billing:/billing:ro
+
 volumes:
   database:
   panel-var:

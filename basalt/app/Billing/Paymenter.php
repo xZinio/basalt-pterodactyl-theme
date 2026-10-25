@@ -40,52 +40,21 @@ final readonly class Paymenter implements Provider
 
         $service = self::attributes($document['data']);
         $product = self::related($document, $document['data'], 'product')[0] ?? null;
-        $plan = $product === null ? null : $this->plan((string) ($product['id'] ?? ''), $service);
-        $period = (int) ($plan['billing_period'] ?? 1);
-        $unit = is_string($plan['billing_unit'] ?? null) ? $plan['billing_unit'] : null;
 
         return [
             'status' => strtolower((string) ($service['status'] ?? '')),
-            'plan' => self::text(self::attributes($product)['name'] ?? null) ?? self::text($plan['name'] ?? null),
-            'price' => ($plan['type'] ?? null) === 'free' ? '0' : self::text($service['price'] ?? null),
+            'plan' => self::text(self::attributes($product)['name'] ?? null),
+            'price' => self::text($service['price'] ?? null),
             'currency' => self::text($service['currency_code'] ?? null),
             'prefix' => null,
             'suffix' => null,
-            'cycle' => $unit === null || ($plan['type'] ?? null) !== 'recurring' ? null : ($period > 1 ? "{$period} {$unit}s" : $unit),
+            // The API does not say which of the product's plans the service is on, so not how often it bills.
+            'cycle' => null,
             'due_at' => self::date($service['expires_at'] ?? null),
             'url' => "{$this->url}/services/{$id}",
             'upgrade_url' => "{$this->url}/services/{$id}/upgrade",
             'unpaid' => $this->unpaid($document),
         ];
-    }
-
-    /**
-     * The plan of the product the service is on, which the API does not name: the product's only
-     * plan, or the one whose price in the service's currency is the service's price.
-     *
-     * @param  array<string, mixed>  $service
-     * @return array<string, mixed>|null
-     */
-    private function plan(string $product, array $service): ?array
-    {
-        $document = $product === '' ? null : $this->get("products/{$product}", ['include' => 'plans.prices'], allow: [400, 404]);
-        $plans = $document === null || ! is_array($document['data'] ?? null) ? [] : self::related($document, $document['data'], 'plans');
-        if (count($plans) === 1) {
-            return self::attributes($plans[0]);
-        }
-
-        $matching = array_values(array_filter($plans, function (array $plan) use ($document, $service): bool {
-            foreach (self::related($document, $plan, 'prices') as $price) {
-                $price = self::attributes($price);
-                if (($price['currency_code'] ?? null) === ($service['currency_code'] ?? null) && is_numeric($price['price'] ?? null) && is_numeric($service['price'] ?? null) && (float) $price['price'] === (float) $service['price']) {
-                    return true;
-                }
-            }
-
-            return false;
-        }));
-
-        return count($matching) === 1 ? self::attributes($matching[0]) : null;
     }
 
     /**

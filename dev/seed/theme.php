@@ -2,21 +2,23 @@
 
 /*
  * Configures Basalt on the development panel the way the demo shows it: a panel name,
- * announcements, sidebar links, the support and social links of the sign-in page, artwork for the
- * eggs, the location's country, and the demo user's folders and favourites. Run after the theme is
- * installed:
+ * announcements, sidebar links, quick actions, the support and social links of the sign-in page,
+ * artwork for the eggs, the location's country, billing through the Paymenter stand-in for one
+ * server, and the demo user's folders and favourites. Run after the theme is installed:
  *
  *   docker compose exec -T panel php /seed/theme.php
  */
 
 declare(strict_types=1);
 
+use Basalt\Billing\Billing;
 use Illuminate\Contracts\Console\Kernel;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
 use Pterodactyl\Facades\Extensions;
 use Pterodactyl\Models\Egg;
 use Pterodactyl\Models\Location;
+use Pterodactyl\Models\Server;
 use Pterodactyl\Models\User;
 
 chdir('/app');
@@ -48,11 +50,14 @@ $settings->setMany([
         $announcement([
             'id' => 'wipe',
             'title' => 'Wipe this Thursday',
-            'body' => 'The map and blueprints reset at 18:00 UTC.',
+            'body' => 'The map and blueprints wipe on **Thursday at 19:00 UTC**. Back up anything you want to keep.',
             'type' => 'warning',
             'style' => 'banner',
             'placement' => 'server',
             'eggs' => $rust === null ? [] : [(int) $rust],
+            'dismissible' => false,
+            'buttonLabel' => 'Wipe schedule',
+            'buttonUrl' => 'https://example.com/wipes',
         ]),
     ],
     'content.links' => [
@@ -61,7 +66,17 @@ $settings->setMany([
         $link('docs', 'Documentation', 'https://pterodactyl.io/project/introduction.html', 'book-open', 'everywhere'),
         $link('status', 'Server status', 'https://status.example.com', 'activity', 'server'),
     ],
+    'content.quickActions' => [
+        ['id' => 'console', 'label' => 'Console', 'icon' => 'square-terminal', 'action' => 'console', 'url' => null],
+        ['id' => 'files', 'label' => 'Files', 'icon' => 'folder', 'action' => 'files', 'url' => null],
+        ['id' => 'backups', 'label' => 'Backups', 'icon' => 'archive', 'action' => 'backups', 'url' => null],
+        ['id' => 'upgrade', 'label' => 'Upgrade', 'icon' => 'rocket', 'action' => 'upgrade', 'url' => null],
+    ],
 ]);
+
+// Billing through the Paymenter stand-in (dev/billing), whose service 8 is Survival SMP's.
+(new Billing())->update(['provider' => 'paymenter', 'url' => 'http://localhost:8460/paymenter', 'key' => 'dev', 'block' => true, 'alert' => true]);
+Server::query()->where('uuidShort', '93fccbf3')->update(['external_id' => '8']);
 
 // The eggs' card artwork (original drawings in ./art), served by the panel from public/dev-art.
 $art = '/app/public/dev-art';
