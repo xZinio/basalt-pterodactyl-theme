@@ -170,23 +170,19 @@ export default function BillingEditor({ onSaved, flash }: { onSaved: () => void;
                 <section className={sectionClass}>
                     <h3 className={headingClass}>Show billing</h3>
                     <div className='grid gap-4 p-4'>
-                        <Switch
-                            checked={form.block}
-                            onChange={() => set({ block: !form.block })}
-                            label='Billing block on the server dashboard'
-                            description='Add or move the Billing block in the Server dashboard tab.'
-                        />
-                        <Switch
-                            checked={form.alert}
-                            onChange={() => set({ alert: !form.alert })}
-                            label='Alert for unpaid invoices'
-                            description='Shown on every page of a server that has an unpaid invoice, with a button to pay it.'
-                        />
+                        <div className='grid gap-1.5'>
+                            <Switch checked={form.block} onChange={() => set({ block: !form.block })} label='Billing block on the server dashboard' />
+                            <p className={helpClass}>Add or move the Billing block in the Server dashboard tab.</p>
+                        </div>
+                        <div className='grid gap-1.5'>
+                            <Switch checked={form.alert} onChange={() => set({ alert: !form.alert })} label='Alert for unpaid invoices' />
+                            <p className={helpClass}>Shown on every page of a server that has an unpaid invoice, with a button to pay it.</p>
+                        </div>
                     </div>
                 </section>
             )}
             {test && (
-                <p role='status' className={test.ok ? 'mb-3 text-[13px] leading-[1.5] text-success' : 'mb-3 text-[13px] leading-[1.5] text-destructive'}>
+                <p role='status' className={test.ok ? 'mt-3 text-[13px] leading-[1.5] text-success' : 'mt-3 text-[13px] leading-[1.5] text-destructive'}>
                     {test.message}
                 </p>
             )}

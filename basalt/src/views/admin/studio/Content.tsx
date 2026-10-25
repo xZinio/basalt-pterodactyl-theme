@@ -616,12 +616,10 @@ function PlayerCount({ state, onSaved, flash }: { state: ContentState; onSaved: 
                 <h3 className={headingClass}>Show the player count</h3>
                 <div className='grid gap-4 p-4'>
                     <Switch checked={value.cards} onChange={() => setValue({ ...value, cards: !value.cards })} label='On server cards' />
-                    <Switch
-                        checked={value.dashboard}
-                        onChange={() => setValue({ ...value, dashboard: !value.dashboard })}
-                        label='On the server dashboard'
-                        description='In the banner, and as a Players tile you can add to the stat tiles in the Server dashboard tab.'
-                    />
+                    <div className='grid gap-1.5'>
+                        <Switch checked={value.dashboard} onChange={() => setValue({ ...value, dashboard: !value.dashboard })} label='On the server dashboard' />
+                        <p className={helpClass}>In the banner, and as a Players tile you can add to the stat tiles in the Server dashboard tab.</p>
+                    </div>
                 </div>
             </section>
             <section className={sectionClass}>
