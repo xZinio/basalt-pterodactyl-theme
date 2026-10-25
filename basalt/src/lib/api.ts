@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { http } from '@pterodactyl/sdk';
+import { emptyContent, type Content } from './content';
 
 const BASE = '/api/client/extensions/basalt';
 const ADMIN = '/api/admin/extensions/basalt';
@@ -18,13 +19,22 @@ export interface Preferences {
     readonly accent: string | null;
     /** The user's own note on each server, by its UUID. */
     readonly notes: Readonly<Record<string, string>>;
+    /** The announcements the user dismissed. */
+    readonly dismissed: readonly string[];
+    /** What the administrator wrote for every user's pages, which comes with the preferences. */
+    readonly content: Content;
 }
 
 export interface ServerMeta {
     readonly egg: string | null;
+    readonly eggId: number | null;
+    readonly nodeId: number;
     readonly banner: string | null;
     readonly location: string | null;
+    /** The name the administrator gave the location in place of its country's. */
+    readonly locationLabel: string | null;
     readonly flag: string | null;
+    /** Its egg is one the player count reads. */
     readonly minecraft: boolean;
 }
 
@@ -34,10 +44,10 @@ export interface Players {
     readonly version: string | null;
 }
 
-const empty: Preferences = { folders: [], favorites: [], order: [], accent: null, notes: {} };
+const empty: Preferences = { folders: [], favorites: [], order: [], accent: null, notes: {}, dismissed: [], content: emptyContent };
 export const preferencesKey = ['basalt', 'preferences'] as const;
 
-/** The signed-in user's folders, favourites, card order and accent; `loaded` once they have arrived. */
+/** The signed-in user's folders, favourites, card order, accent and the rest, with the content; `loaded` once they have arrived. */
 export function usePreferences(): Preferences & { readonly loaded: boolean } {
     const { data } = useQuery({
         queryKey: preferencesKey,

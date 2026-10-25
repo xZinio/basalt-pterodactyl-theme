@@ -1,7 +1,7 @@
 import { createContext, useContext, useEffect, useMemo, type ReactNode } from 'react';
 import { NamedIcon, PanelLink, Tooltip, cn, type PanelDestination, type TooltipProps } from '@pterodactyl/sdk';
 import { Navigation, NavigationLink, useThemeSettings, type NavItem } from '@pterodactyl/sdk/theme';
-import { externalProps, type ConfiguredLink } from '../../lib/links';
+import { useFollow } from '../../lib/links';
 import { MENU_MESSAGE, applyMenu, menuKey, parseMenu, type KnownItem, type MenuArea, type MenuRow } from '../../lib/menu';
 import { inPreviewFrame } from '../../lib/preview';
 import { useServerDashboard } from '../../lib/server';
@@ -156,11 +156,21 @@ export function AreaItems({ rows, collapsed }: { rows: readonly MenuRow[]; colla
     );
 }
 
-export function ExternalItem({ link, collapsed }: { link: ConfiguredLink; collapsed: boolean }) {
+/** A link of the administrator's: a page of the panel opens in place unless it is set to open in a new tab, like any other address. */
+export function ExternalItem({ label, href, icon, newTab, collapsed }: { label: string; href: string; icon: string | null; newTab: boolean; collapsed: boolean }) {
+    const follow = useFollow();
+    const blank = newTab || !href.startsWith('/');
+
     return (
-        <Tip collapsed={collapsed} label={link.label}>
-            <a href={link.url} className={itemClass(collapsed)} {...externalProps(link.url)}>
-                <Entry icon={link.icon ?? 'link'} label={link.label} collapsed={collapsed} />
+        <Tip collapsed={collapsed} label={label}>
+            <a
+                href={href}
+                target={blank ? '_blank' : undefined}
+                rel={blank ? 'noopener noreferrer' : undefined}
+                onClick={blank ? undefined : (event) => follow(event, href)}
+                className={itemClass(collapsed)}
+            >
+                <Entry icon={icon || 'link'} label={label} collapsed={collapsed} />
             </a>
         </Tip>
     );

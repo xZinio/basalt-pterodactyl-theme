@@ -27,6 +27,7 @@ export default function Stage({
     page,
     screen,
     focus,
+    reloads = 0,
     device,
     onPage,
     onDevice,
@@ -37,6 +38,8 @@ export default function Stage({
     screen?: 'console';
     /** While the Server dashboard settings show: the block open in them, which the preview marks. */
     focus?: string | null;
+    /** Each change of it loads the page again, as after content is saved. */
+    reloads?: number;
     device: Device['id'];
     onPage: (page: PreviewPage['id']) => void;
     onDevice: (device: Device['id']) => void;
@@ -112,6 +115,7 @@ export default function Stage({
                     )}
                     {source && box && (
                         <iframe
+                            key={reloads}
                             ref={frame}
                             name={PREVIEW_FRAME}
                             title='Preview'

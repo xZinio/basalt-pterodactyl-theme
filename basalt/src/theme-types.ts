@@ -113,7 +113,6 @@ export interface ThemeSettings {
     readonly "shareImage": string | null;
     readonly "twitterHandle": string;
     readonly "socialUrl": string;
-    readonly "navLinks": string;
     readonly "serverLayout": "default" | "floating" | "pill" | "slim" | "horizontal";
     readonly "serverCardStyle": "default" | "banner" | "flat" | "linear" | "minimal" | "compact";
     readonly "hideQuickActionsMobile": boolean;
@@ -125,9 +124,6 @@ export interface ThemeSettings {
     readonly "serverOpacity": number;
     readonly "serverStatus": "full" | "subtle" | "none";
     readonly "tableStyle": "comfortable" | "compact" | "lined";
-    readonly "announcement": string;
-    readonly "announcementTitle": string;
-    readonly "announcementButton": string;
     readonly "serverDashboard": boolean;
     readonly "serverBanner": string | null;
     readonly "dashboardLayout": string;

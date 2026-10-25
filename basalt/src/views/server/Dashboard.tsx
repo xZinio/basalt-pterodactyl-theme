@@ -1,12 +1,13 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, type RefObject } from 'react';
 import { useCurrentUser } from '@pterodactyl/sdk';
 import { View, useThemeSettings, type ServerConsoleModel } from '@pterodactyl/sdk/theme';
-import { usePlayers, useServerMeta } from '../../lib/api';
+import { usePlayers, usePreferences, useServerMeta } from '../../lib/api';
+import { useBilling } from '../../lib/billing';
 import { parseLayout, type Block } from '../../lib/blocks';
 import { SELECT_BLOCK_MESSAGE, usePreviewDraft } from '../../lib/preview';
 import type { ThemeSettings } from '../../theme-types';
 import { DashboardServer } from '../shell/context';
-import { Banner, Notes, Notice, QuickActions, ServerInfo, Sftp, Stats } from './overview/blocks';
+import { Banner, Billing, Notes, Notice, QuickActions, ServerInfo, Sftp, Stats } from './overview/blocks';
 import ServerHeader from './ServerHeader';
 
 /**
@@ -48,11 +49,17 @@ export default function Dashboard({ model }: { model: ServerConsoleModel }) {
     const { server } = model;
     const { attributes } = server;
     const meta = useServerMeta([attributes.uuid])[attributes.uuid];
-    const players = usePlayers(meta?.minecraft ? [attributes.uuid] : [])[attributes.uuid] ?? null;
+    const { content } = usePreferences();
+    const players = usePlayers(meta?.minecraft && content.players.dashboard ? [attributes.uuid] : [])[attributes.uuid] ?? null;
     const grid = useRef<HTMLDivElement>(null);
 
     const value = draft ? draft.settings.dashboardLayout : settings.dashboardLayout;
     const layout = useMemo(() => parseLayout(value), [value]);
+    // Only a dashboard with the Billing block, or with an upgrade among its quick actions, asks for the service.
+    const upgrades = content.quickActions.some((action) => action.action === 'upgrade') && layout.some((block) => block.type === 'actions' && block.items?.includes('custom'));
+    const billing = useBilling(upgrades || layout.some((block) => block.type === 'billing') ? [attributes.uuid] : []);
+    const service = billing.settings?.block ? (billing.servers[attributes.uuid] ?? null) : null;
+    const upgrade = billing.servers[attributes.uuid]?.upgrade_url ?? null;
     const editing = draft?.focus !== undefined;
     const focus = draft?.focus ?? null;
     useMasonry(grid, layout);
@@ -81,15 +88,17 @@ export default function Dashboard({ model }: { model: ServerConsoleModel }) {
             case 'graphs':
                 return <View name='server.graphs' />;
             case 'info':
-                return <ServerInfo items={block.items ?? []} server={attributes} meta={meta} />;
+                return <ServerInfo items={block.items ?? []} server={attributes} meta={meta} location={content.locations.dashboard} />;
             case 'actions':
-                return <QuickActions items={block.items ?? []} server={attributes} />;
+                return <QuickActions items={block.items ?? []} server={server} custom={content.quickActions} upgrade={upgrade} />;
             case 'sftp':
                 return sftp ? <Sftp server={attributes} username={user.username} /> : null;
             case 'notes':
                 return <Notes server={attributes.uuid} />;
             case 'notice':
                 return <Notice block={block} />;
+            case 'billing':
+                return service && <Billing service={service} />;
             default:
                 return null;
         }

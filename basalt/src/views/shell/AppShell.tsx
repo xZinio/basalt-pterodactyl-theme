@@ -17,12 +17,13 @@ import BrandMark from '../../components/BrandMark';
 import { applyAccent } from '../../lib/accent';
 import { usePreferences } from '../../lib/api';
 import { useLocalState } from '../../lib/local';
-import { parseLinks } from '../../lib/links';
+import { fillLink, linkValues } from '../../lib/content';
 import { groupRows, type MenuRow } from '../../lib/menu';
 import { motionSpeed, useMotion } from '../../lib/motion';
 import { inEmbedFrame, useSplit } from '../../lib/split';
 import { usePrivacy } from '../../lib/privacy';
 import type { ThemeSettings } from '../../theme-types';
+import Announcements from './Announcements';
 import { SidebarServerSlot } from './context';
 import { HorizontalNav, SearchButton, iconButton } from './Bars';
 import { AreaItems, ExternalItem, Section, SidebarLink, useAnnounceMenu, useMenuRows } from './nav';
@@ -77,15 +78,19 @@ function AreaSlot({ area, at }: { area: AppArea; at: 'before' | 'after' }) {
     return null;
 }
 
-/** The configured sidebar links for this place; account pages show only the ones meant for everywhere. */
-function Links({ where, rail }: { where: 'dashboard' | 'account' | 'server'; rail: boolean }) {
-    const { navLinks } = useThemeSettings<ThemeSettings>();
-    const links = parseLinks(navLinks).filter((link) => link.area === 'all' || link.area === where);
+/** The administrator's links for this area, with a server's values in them on its pages. */
+function Links({ area, rail }: { area: Exclude<AppArea, { kind: 'admin' }>; rail: boolean }) {
+    const { content } = usePreferences();
+    const values = area.kind === 'server' ? linkValues(area.server) : null;
+    const links = content.links.flatMap((link) => {
+        const href = link.area === 'everywhere' || link.area === area.kind ? fillLink(link.url, values) : null;
+        return href ? [{ ...link, href }] : [];
+    });
 
     return links.length > 0 ? (
         <Section title='Links' collapsed={rail} className='mt-4'>
             {links.map((link) => (
-                <ExternalItem key={link.url + link.label} link={link} collapsed={rail} />
+                <ExternalItem key={link.id} label={link.label} href={link.href} icon={link.icon} newTab={link.newTab} collapsed={rail} />
             ))}
         </Section>
     ) : null;
@@ -175,7 +180,7 @@ function AreaNavigation({ model, menu, rail }: { model: AppLayoutModel; menu: Ar
                         <AreaItems rows={menu.adminLink} collapsed={rail} />
                     </>
                 )}
-                <Links where='server' rail={rail} />
+                <Links area={area} rail={rail} />
             </>
         );
     }
@@ -200,7 +205,7 @@ function AreaNavigation({ model, menu, rail }: { model: AppLayoutModel; menu: Ar
                 <AreaItems rows={menu.rows} collapsed={rail} />
                 {area.kind === 'account' && <AreaSlot area={area} at='after' />}
             </Section>
-            <Links where={area.kind === 'dashboard' ? 'dashboard' : 'account'} rail={rail} />
+            <Links area={area} rail={rail} />
         </>
     );
 }
@@ -295,6 +300,7 @@ export default function AppShell({ model, className, children }: ViewProps<'layo
             <div className='flex min-w-0 flex-1'>
                 <Main className='min-w-0 flex-1'>
                     <div ref={page} className='basalt-page'>
+                        <Announcements area={model.area} />
                         {children}
                     </div>
                 </Main>

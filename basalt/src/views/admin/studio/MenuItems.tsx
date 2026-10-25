@@ -61,7 +61,7 @@ function rowsOf(known: readonly KnownItem[], entries: readonly MenuEntry[], grou
 }
 
 /** An icon by its Lucide name, beside a preview of it. */
-function IconInput({ id, value, placeholder, onChange }: { id: string; value: string; placeholder: string; onChange: (value: string) => void }) {
+export function IconInput({ id, value, placeholder, onChange }: { id: string; value: string; placeholder: string; onChange: (value: string) => void }) {
     return (
         <div className='grid grid-cols-[2.5rem_minmax(0,1fr)] gap-2'>
             <span className='inline-flex items-center justify-center rounded-(--basalt-control-radius) border border-input-border bg-input' aria-hidden>

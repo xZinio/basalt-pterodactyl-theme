@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Basalt\Http;
 
+use Basalt\Content;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Pterodactyl\Facades\Extensions;
@@ -11,12 +12,17 @@ use Pterodactyl\Models\User;
 
 /**
  * The signed-in user's dashboard preferences: server folders, favourites, the order of their
- * server cards and their own accent colour, with their notes on servers, which NotesController
- * writes. Stored as the theme's settings for that user.
+ * server cards, their own accent colour and the announcements they dismissed, with their notes on
+ * servers, which NotesController writes. Stored as the theme's settings for that user. The
+ * administrator's content for every user's pages comes with them.
  */
 final class PreferencesController
 {
-    private const array KEYS = ['folders', 'favorites', 'order', 'accent'];
+    private const array KEYS = ['folders', 'favorites', 'order', 'accent', 'dismissed'];
+
+    public function __construct(private readonly Content $content)
+    {
+    }
 
     public function show(Request $request): JsonResponse
     {
@@ -38,6 +44,8 @@ final class PreferencesController
             'order' => ['sometimes', 'array', 'max:1000'],
             'order.*' => ['string', 'uuid'],
             'accent' => ['sometimes', 'nullable', 'string', 'regex:/^#[0-9a-fA-F]{6}$/'],
+            'dismissed' => ['sometimes', 'array', 'max:200'],
+            'dismissed.*' => ['string', 'regex:/^[A-Za-z0-9_-]{1,40}$/'],
         ]);
 
         $values = array_intersect_key($data, array_flip(self::KEYS));
@@ -50,7 +58,7 @@ final class PreferencesController
                 'servers' => array_values(array_unique($folder['servers'])),
             ], $values['folders']));
         }
-        foreach (['favorites', 'order'] as $list) {
+        foreach (['favorites', 'order', 'dismissed'] as $list) {
             if (isset($values[$list])) {
                 $values[$list] = array_values(array_unique($values[$list]));
             }
@@ -72,6 +80,8 @@ final class PreferencesController
             'order' => $settings->get('order', []),
             'accent' => $settings->get('accent'),
             'notes' => (object) array_filter((array) $settings->get('notes', []), is_string(...)),
+            'dismissed' => array_values(array_filter((array) $settings->get('dismissed', []), is_string(...))),
+            'content' => $this->content->forUsers(),
         ];
     }
 }

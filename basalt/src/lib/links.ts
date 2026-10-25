@@ -1,25 +1,16 @@
 import { useCallback, type MouseEvent } from 'react';
 import { usePanelNavigate, type PanelDestination } from '@pterodactyl/sdk';
 
-export type LinkArea = 'all' | 'dashboard' | 'server';
-
+/** A link of a link list setting. */
 export interface ConfiguredLink {
     readonly label: string;
     readonly url: string;
-    readonly icon: string | null;
-    /** Where a sidebar link shows: everywhere, on the dashboard and account pages, or on server pages. */
-    readonly area: LinkArea;
 }
 
 /** Only absolute http(s) links and paths on the panel are followed. */
 export const safeUrl = (url: string): boolean => /^https?:\/\//i.test(url) || (url.startsWith('/') && !url.startsWith('//'));
 
-const areas: readonly LinkArea[] = ['all', 'dashboard', 'server'];
-
-/**
- * Reads a link list setting: entries separated by commas or new lines, each `Label|URL`, with an
- * optional `|icon` and `|where`. Malformed entries are skipped.
- */
+/** Reads a link list setting: `Label|URL` entries separated by commas or new lines. Malformed entries are skipped. */
 export function parseLinks(value: string | null | undefined): ConfiguredLink[] {
     if (!value) return [];
 
@@ -27,12 +18,7 @@ export function parseLinks(value: string | null | undefined): ConfiguredLink[] {
         .split(/[,\n]/)
         .map((entry) => entry.split('|').map((part) => part.trim()))
         .filter(([label, url]) => Boolean(label) && Boolean(url) && safeUrl(url))
-        .map(([label, url, icon, area]) => ({
-            label,
-            url,
-            icon: icon || null,
-            area: areas.includes(area as LinkArea) ? (area as LinkArea) : 'all',
-        }));
+        .map(([label, url]) => ({ label, url }));
 }
 
 export const isExternal = (url: string): boolean => /^https?:\/\//i.test(url);

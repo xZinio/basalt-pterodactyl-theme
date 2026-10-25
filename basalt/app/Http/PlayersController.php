@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Basalt\Http;
 
+use Basalt\Content;
 use Basalt\MinecraftStatus;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -12,18 +13,20 @@ use Pterodactyl\Contracts\Servers\ReadsServerState;
 use Throwable;
 
 /**
- * Players online on running Minecraft servers, from each server's status ping. Readings are
- * cached for thirty seconds, so the dashboard's polling never floods a game server.
+ * Players online on running Minecraft servers, the servers of the eggs the Player count content
+ * names, from each server's status ping. Readings are cached for thirty seconds, so the
+ * dashboard's polling never floods a game server.
  */
 final class PlayersController
 {
     private const int TTL = 30;
 
-    public function __invoke(Request $request, ReadsServerState $states): JsonResponse
+    public function __invoke(Request $request, ReadsServerState $states, Content $content): JsonResponse
     {
+        $eggs = $content->playerEggs();
         $players = [];
-        foreach (AccessibleServers::fromRequest($request, 24)->load(['allocation', 'node', 'egg.tags']) as $server) {
-            if (! $server->hasTag('minecraft')) {
+        foreach (AccessibleServers::fromRequest($request, 24)->load(['allocation', 'node']) as $server) {
+            if (! in_array((int) $server->egg_id, $eggs, true)) {
                 continue;
             }
 

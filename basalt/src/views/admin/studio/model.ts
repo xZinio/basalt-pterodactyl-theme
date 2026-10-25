@@ -2,12 +2,17 @@ import type { LucideIcon } from 'lucide-react';
 import {
     BellRing,
     Brush,
+    CreditCard,
     Gauge,
+    Image,
     Layers,
     LayoutDashboard,
     LayoutGrid,
     LayoutTemplate,
+    Link2,
     LogIn,
+    MapPin,
+    Megaphone,
     Monitor,
     Navigation,
     Palette,
@@ -18,11 +23,14 @@ import {
     SquareTerminal,
     Stamp,
     Type,
+    Users,
+    Zap,
 } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { http } from '@pterodactyl/sdk';
 import manifest from '../../../../extension.json';
 import type { StudioDraft } from '../../../lib/preview';
+import type { ContentKind } from './Content';
 
 export const SETTINGS_URL = '/api/admin/themes/basalt/settings';
 export const settingsKey = ['basalt', 'studio', 'settings'] as const;
@@ -123,6 +131,8 @@ export interface Category {
     readonly page?: PreviewPage['id'];
     /** On the server page, the stage shows the server's console rather than its first page. */
     readonly screen?: 'console';
+    /** Content rather than settings: an editor of its own, saved on its own. */
+    readonly content?: ContentKind;
 }
 
 /** The rail's categories. A setting without a tab, or with a tab none claims, is general. */
@@ -152,17 +162,20 @@ export const categories: readonly Category[] = [
         id: 'overview',
         label: 'Overview',
         icon: LayoutGrid,
-        tabs: ['Overview', 'Dashboard'],
+        tabs: ['Overview'],
         page: 'overview',
-        sections: [
-            { title: 'Overview', keys: [] },
-            { title: 'Announcement', keys: ['announcementTitle', 'announcement', 'announcementButton'] },
-        ],
     },
     { id: 'server', label: 'Server dashboard', icon: LayoutTemplate, tabs: ['Server'], page: 'server' },
     { id: 'branding', label: 'Branding', icon: Stamp, tabs: ['Branding'] },
     { id: 'sign-in', label: 'Sign-in page', icon: LogIn, tabs: ['Sign-in'], page: 'sign-in' },
     { id: 'seo', label: 'SEO and social', icon: Share2, tabs: ['SEO and social'], page: 'sign-in' },
+    { id: 'announcements', label: 'Announcements', icon: Megaphone, tabs: [], page: 'overview', content: 'announcements' },
+    { id: 'links', label: 'Links', icon: Link2, tabs: [], page: 'overview', content: 'links' },
+    { id: 'quick-actions', label: 'Quick actions', icon: Zap, tabs: [], page: 'overview', content: 'quickActions' },
+    { id: 'egg-images', label: 'Egg images', icon: Image, tabs: [], page: 'overview', content: 'eggImages' },
+    { id: 'locations', label: 'Locations', icon: MapPin, tabs: [], page: 'server', content: 'locations' },
+    { id: 'players', label: 'Player count', icon: Users, tabs: [], page: 'overview', content: 'players' },
+    { id: 'billing', label: 'Billing', icon: CreditCard, tabs: [], page: 'server', content: 'billing' },
 ];
 
 const general = categories.find((category) => category.tabs.includes('General'));

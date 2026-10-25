@@ -5,7 +5,9 @@ import {
     CalendarClock,
     CircleAlert,
     CircleCheck,
+    CreditCard,
     Database,
+    ExternalLink,
     Fingerprint,
     Folder,
     Hash,
@@ -15,6 +17,7 @@ import {
     Network,
     NotebookPen,
     Package,
+    Receipt,
     Rocket,
     Server as ServerIcon,
     Settings,
@@ -22,11 +25,14 @@ import {
     TriangleAlert,
     Zap,
 } from 'lucide-react';
-import { PanelLink, type PanelDestination, type SdkServer } from '@pterodactyl/sdk';
+import { Badge, NamedIcon, PanelLink, type PanelDestination, type SdkServer } from '@pterodactyl/sdk';
 import { View, useNavigation } from '@pterodactyl/sdk/theme';
 import Flag, { countryName } from '../../../components/Flag';
 import { usePreferences, useSaveNote, type ServerMeta } from '../../../lib/api';
+import { daysUntil, dueLabel, formatDay, formatPrice, isFree, statusLabel, statusTone, type Billing as Service } from '../../../lib/billing';
 import type { Block, NoticeTone } from '../../../lib/blocks';
+import { fillLink, linkValues, type QuickAction } from '../../../lib/content';
+import { useFollow } from '../../../lib/links';
 import { Markdown } from '../../../lib/markdown';
 import { consoleDestination } from '../../../lib/server';
 import { StatsItems, StatsPlacement } from '../../shell/context';
@@ -75,8 +81,11 @@ function LiveFact({ item }: { item: string }) {
 
 const plural = (count: number, one: string, many: string) => `${count} ${count === 1 ? one : many}`;
 
-/** The Server information block: the rows it lists, in their order. A row with nothing to show is left out. */
-export function ServerInfo({ items, server, meta }: { items: readonly string[]; server: Attributes; meta: ServerMeta | undefined }) {
+/**
+ * The Server information block: the rows it lists, in their order. A row with nothing to show is
+ * left out; the location shows while the Locations content shows it, for a location with a country.
+ */
+export function ServerInfo({ items, server, meta, location }: { items: readonly string[]; server: Attributes; meta: ServerMeta | undefined; location: boolean }) {
     const limits = server.feature_limits;
     const rows: Record<string, ReactNode> = {
         status: <LiveFact item='status' />,
@@ -87,14 +96,15 @@ export function ServerInfo({ items, server, meta }: { items: readonly string[]; 
                 <Chip>{server.node}</Chip>
             </FactRow>
         ),
-        ...(meta?.location && {
-            location: (
-                <FactRow icon={MapPin} label='Location'>
-                    {meta.flag && <Flag code={meta.flag} />}
-                    <span className='truncate'>{meta.flag ? countryName(meta.flag) : meta.location}</span>
-                </FactRow>
-            ),
-        }),
+        ...(location &&
+            meta?.flag && {
+                location: (
+                    <FactRow icon={MapPin} label='Location'>
+                        <Flag code={meta.flag} />
+                        <span className='truncate'>{meta.locationLabel ?? countryName(meta.flag)}</span>
+                    </FactRow>
+                ),
+            }),
         id: (
             <FactRow icon={Hash} label='Server ID'>
                 <Chip>{server.identifier}</Chip>
@@ -148,29 +158,57 @@ const actions: readonly [item: string, id: string, label: string, icon: LucideIc
     ['settings', 'settings', 'Settings', Settings, '/server/$id/settings'],
 ];
 
-/** The Quick actions block: the server's pages it lists that the user may open, in its order. */
-export function QuickActions({ items, server }: { items: readonly string[]; server: Attributes }) {
+const actionClass =
+    'flex min-w-0 items-center gap-2.5 rounded-md border border-border/80 bg-foreground/[0.03] px-3.5 py-3 text-sm leading-[1.5] font-semibold text-foreground no-underline transition-colors hover:border-primary/50 hover:bg-primary/10';
+
+/**
+ * The Quick actions block: the server's pages it lists that the user may open, in its order, and
+ * with "Your quick actions" the administrator's quick actions that are links or open the
+ * service's upgrade page.
+ */
+export function QuickActions({ items, server, custom, upgrade }: { items: readonly string[]; server: SdkServer; custom: readonly QuickAction[]; upgrade: string | null }) {
     const navigation = useNavigation('server');
+    const follow = useFollow();
+    const { identifier } = server.attributes;
     // The panel's own server pages the user may open: the navigation leaves out the others.
     const allowed = new Set(navigation.items.filter((item) => item.extensionId === undefined).map((item) => item.id));
-    const params = { id: server.identifier };
     const destination = (id: string, to: string): PanelDestination =>
-        id === 'index' ? consoleDestination(server.identifier, true) : ({ to, params } as PanelDestination);
-    const shown = items.flatMap((item) => actions.filter(([own, id]) => own === item && allowed.has(id)));
+        id === 'index' ? consoleDestination(identifier, true) : ({ to, params: { id: identifier } } as PanelDestination);
+    const values = linkValues(server);
 
     return (
         <Section icon={Zap} title='Quick actions'>
             <div className='grid grid-cols-[repeat(auto-fill,minmax(9.5rem,1fr))] gap-2.5 px-5 pt-4 pb-5'>
-                {shown.map(([item, id, label, Icon, to]) => (
-                    <PanelLink
-                        key={item}
-                        destination={destination(id, to)}
-                        className='flex min-w-0 items-center gap-2.5 rounded-md border border-border/80 bg-foreground/[0.03] px-3.5 py-3 text-sm leading-[1.5] font-semibold text-foreground no-underline transition-colors hover:border-primary/50 hover:bg-primary/10'
-                    >
-                        <Icon className='size-[18px] shrink-0 text-primary' aria-hidden />
-                        <span className='truncate'>{label}</span>
-                    </PanelLink>
-                ))}
+                {items.flatMap((item) => {
+                    if (item === 'custom') {
+                        return custom.flatMap((action) => {
+                            const href = action.action === 'upgrade' ? upgrade : action.action === 'url' && action.url ? fillLink(action.url, values) : null;
+                            if (!href) return [];
+                            const blank = !href.startsWith('/');
+                            return [
+                                <a
+                                    key={`custom-${action.id}`}
+                                    href={href}
+                                    target={blank ? '_blank' : undefined}
+                                    rel={blank ? 'noopener noreferrer' : undefined}
+                                    onClick={blank ? undefined : (event) => follow(event, href)}
+                                    className={actionClass}
+                                >
+                                    <NamedIcon name={action.icon || 'external-link'} size={18} className='shrink-0 text-primary' aria-hidden />
+                                    <span className='truncate'>{action.label}</span>
+                                </a>,
+                            ];
+                        });
+                    }
+                    return actions
+                        .filter(([own, id]) => own === item && allowed.has(id))
+                        .map(([, id, label, Icon, to]) => (
+                            <PanelLink key={item} destination={destination(id, to)} className={actionClass}>
+                                <Icon className='size-[18px] shrink-0 text-primary' aria-hidden />
+                                <span className='truncate'>{label}</span>
+                            </PanelLink>
+                        ));
+                })}
             </div>
         </Section>
     );
@@ -193,6 +231,57 @@ export function Sftp({ server, username }: { server: Attributes; username: strin
                     <CopyButton text={user} label='Copy the SFTP username' />
                 </FactRow>
             </Facts>
+        </Section>
+    );
+}
+
+/** The Billing block: the server's service in the billing system, for its owner. */
+export function Billing({ service }: { service: Service }) {
+    const price = formatPrice(service);
+    const due = formatDay(service.due_at);
+    const days = daysUntil(service.due_at);
+    const [first] = service.unpaid;
+
+    return (
+        <Section icon={CreditCard} title='Billing'>
+            <Facts>
+                <FactRow icon={Zap} label='Status'>
+                    <Badge tone={statusTone(service.status)} variant='soft'>
+                        {statusLabel(service.status)}
+                    </Badge>
+                </FactRow>
+                {service.plan && (
+                    <FactRow icon={Package} label='Plan'>
+                        <span className='truncate'>{service.plan}</span>
+                    </FactRow>
+                )}
+                {price && (
+                    <FactRow icon={CreditCard} label='Price'>
+                        <span>{isFree(service) ? 'Free' : service.cycle ? `${price} / ${service.cycle}` : price}</span>
+                    </FactRow>
+                )}
+                {due && (
+                    <FactRow icon={CalendarClock} label='Next due date'>
+                        <span className='basalt-billing-due' data-tone={days !== null && days < 0 ? 'danger' : days !== null && days <= 7 ? 'warning' : undefined}>
+                            {due}
+                            {days !== null && <span className='basalt-billing-relative'>{dueLabel(days)}</span>}
+                        </span>
+                    </FactRow>
+                )}
+                {first && (
+                    <FactRow icon={Receipt} label='Unpaid invoices'>
+                        <a href={first.url} target='_blank' rel='noopener noreferrer' className='basalt-billing-pay'>
+                            {service.unpaid.length === 1 ? `Pay invoice #${first.id}` : `${service.unpaid.length} unpaid`}
+                        </a>
+                    </FactRow>
+                )}
+            </Facts>
+            <div className='basalt-billing-footer'>
+                <a href={service.url} target='_blank' rel='noopener noreferrer' className='basalt-billing-manage'>
+                    Manage service
+                    <ExternalLink className='size-3.5' aria-hidden />
+                </a>
+            </div>
         </Section>
     );
 }

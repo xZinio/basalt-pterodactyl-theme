@@ -1,7 +1,8 @@
 import { useMemo, useRef, useState, type DragEvent } from 'react';
-import { Archive, Folder as FolderIcon, FolderInput, Server as ServerIcon, SquareTerminal, Star } from 'lucide-react';
+import { FolderInput, Server as ServerIcon, Star } from 'lucide-react';
 import {
     DropdownMenu,
+    NamedIcon,
     Empty,
     EmptyContent,
     EmptyDescription,
@@ -15,9 +16,13 @@ import {
     Switch,
     cn,
     useCurrentUser,
+    type PanelDestination,
 } from '@pterodactyl/sdk';
 import { Slot, View, useThemeSettings, type ServerListItem, type ServerListModel, type ViewProps } from '@pterodactyl/sdk/theme';
 import { usePlayers, usePreferences, useServerMeta, useUpdatePreferences, type Folder, type Preferences } from '../../lib/api';
+import { useBilling } from '../../lib/billing';
+import { fillLink, linkValues, type QuickAction } from '../../lib/content';
+import { useFollow } from '../../lib/links';
 import { useLocalState } from '../../lib/local';
 import { useMotion } from '../../lib/motion';
 import { consoleDestination, serverDestination, useServerDashboard } from '../../lib/server';
@@ -25,7 +30,7 @@ import type { ThemeSettings } from '../../theme-types';
 import { DashboardDataContext } from './data';
 import { SERVER_DRAG, carriesServer, setDraggedServer, useReflow } from './drag';
 import { FolderDialog, FolderRow, ManageDialog, OpenFolderBar } from './Folders';
-import { Announcement, Field, NativeSelect, SearchInput, Welcome } from './parts';
+import { Field, NativeSelect, SearchInput, Welcome } from './parts';
 
 type StatusFilter = 'all' | 'online' | 'offline';
 type SortOrder = 'custom' | 'name' | 'status';
@@ -33,6 +38,65 @@ type SortOrder = 'custom' | 'name' | 'status';
 const online = (item: ServerListItem) => item.state.kind === 'ready' && item.state.power !== 'offline';
 const statusRank = (item: ServerListItem) =>
     item.state.kind !== 'ready' ? 3 : item.state.power === 'running' ? 0 : item.state.power === 'offline' ? 2 : 1;
+
+/** The server pages quick actions open, besides the console, which follows the server dashboard setting. */
+const actionPages: Partial<Record<QuickAction['action'], string>> = {
+    files: '/server/$id/files',
+    backups: '/server/$id/backups',
+    databases: '/server/$id/databases',
+    schedules: '/server/$id/schedules',
+    network: '/server/$id/network',
+    startup: '/server/$id/startup',
+    settings: '/server/$id/settings',
+};
+
+/**
+ * The administrator's quick actions under a server card: its pages, links with the server's
+ * values in them, and the upgrade page of its service when it has one.
+ */
+function QuickActions({ item, actions, upgrade }: { item: ServerListItem; actions: readonly QuickAction[]; upgrade: string | null }) {
+    const follow = useFollow();
+    const dashboard = useServerDashboard();
+    if (actions.length === 0) return null;
+
+    return (
+        <div className='basalt-quick'>
+            {actions.map((action) => {
+                const content = (
+                    <>
+                        <NamedIcon name={action.icon || 'arrow-up-right'} size={14} aria-hidden />
+                        <span>{action.label}</span>
+                    </>
+                );
+                const page = action.action === 'console' ? null : actionPages[action.action];
+                if (action.action === 'console' || page) {
+                    const destination = page ? ({ to: page, params: { id: item.identifier } } as PanelDestination) : consoleDestination(item.identifier, dashboard);
+                    return (
+                        <PanelLink key={action.id} destination={destination} title={action.label} className='basalt-quick-action'>
+                            {content}
+                        </PanelLink>
+                    );
+                }
+                const href = action.action === 'upgrade' ? upgrade : action.action === 'url' && action.url ? fillLink(action.url, linkValues(item.server)) : null;
+                if (!href) return null;
+                const blank = !href.startsWith('/');
+                return (
+                    <a
+                        key={action.id}
+                        href={href}
+                        title={action.label}
+                        target={blank ? '_blank' : undefined}
+                        rel={blank ? 'noopener noreferrer' : undefined}
+                        onClick={blank ? undefined : (event) => follow(event, href)}
+                        className='basalt-quick-action'
+                    >
+                        {content}
+                    </a>
+                );
+            })}
+        </div>
+    );
+}
 
 const cornerButton =
     'inline-flex size-8 cursor-pointer items-center justify-center rounded-(--basalt-control-radius) border-0 bg-transparent text-muted-foreground transition-[color,opacity,background-color] hover:bg-[color:color-mix(in_oklab,var(--foreground)_9%,transparent)] hover:text-foreground';
@@ -66,6 +130,8 @@ function ServerTile({
     item,
     index,
     art,
+    actions,
+    upgrade,
     favorite,
     folders,
     folderId,
@@ -78,6 +144,9 @@ function ServerTile({
     item: ServerListItem;
     index: number;
     art: string | null;
+    actions: readonly QuickAction[];
+    /** Its service's upgrade page, for an Upgrade plan action. */
+    upgrade: string | null;
     favorite: boolean | null;
     folders: readonly Folder[] | null;
     folderId: string | null;
@@ -90,8 +159,6 @@ function ServerTile({
     onNewFolder: () => void;
 }) {
     const { server } = item;
-    const params = { id: item.identifier };
-    const consoleLink = consoleDestination(item.identifier, useServerDashboard());
     // Dragged into the user's order, or onto a folder.
     const draggable = sorter !== null || folders !== null;
 
@@ -179,20 +246,7 @@ function ServerTile({
             <PanelLink destination={serverDestination(item.identifier)} aria-label={item.name} draggable={draggable ? false : undefined} className='basalt-server-link'>
                 <View name='dashboard.serverCard' server={server} />
             </PanelLink>
-            <div className='basalt-quick'>
-                <PanelLink destination={consoleLink} className='basalt-quick-action'>
-                    <SquareTerminal className='size-3.5' aria-hidden />
-                    <span>Console</span>
-                </PanelLink>
-                <PanelLink destination={{ to: '/server/$id/files', params }} className='basalt-quick-action'>
-                    <FolderIcon className='size-3.5' aria-hidden />
-                    <span>Files</span>
-                </PanelLink>
-                <PanelLink destination={{ to: '/server/$id/backups', params }} className='basalt-quick-action'>
-                    <Archive className='size-3.5' aria-hidden />
-                    <span>Backups</span>
-                </PanelLink>
-            </div>
+            <QuickActions item={item} actions={actions} upgrade={upgrade} />
             <div className='basalt-server-extra'>
                 <Slot name='dashboard.serverRow.metrics.after' data={server} />
                 <Slot name='dashboard.serverRow.after' data={server} />
@@ -253,7 +307,9 @@ export default function ServerList({ model, className }: ViewProps<'dashboard.se
     const others = model.scope === 'others';
     const uuids = model.servers.map((item) => item.uuid);
     const meta = useServerMeta(uuids);
-    const players = usePlayers(uuids.filter((uuid) => meta[uuid]?.minecraft));
+    const players = usePlayers(preferences.content.players.cards ? uuids.filter((uuid) => meta[uuid]?.minecraft) : []);
+    // The services of the servers, only while a quick action opens their upgrade page.
+    const billing = useBilling(preferences.content.quickActions.some((action) => action.action === 'upgrade') ? uuids : []);
 
     const foldersOn = serverFolders && !others;
     const folders = foldersOn ? preferences.folders : [];
@@ -398,8 +454,7 @@ export default function ServerList({ model, className }: ViewProps<'dashboard.se
     return (
         <DashboardDataContext.Provider value={{ meta, players }}>
             <div className={cn('@container flex flex-col gap-4', className)}>
-                <Announcement />
-                <div className='flex flex-col gap-4 sm:mt-2 sm:flex-row sm:items-center sm:justify-between sm:first:mt-0'>
+                <div className='flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between'>
                     <h1 className='text-3xl leading-9 font-semibold text-foreground'>Servers</h1>
                     {model.canViewOthers && (
                         <Switch
@@ -494,6 +549,8 @@ export default function ServerList({ model, className }: ViewProps<'dashboard.se
                                     item={item}
                                     index={index}
                                     art={serverArt ? (meta[item.uuid]?.banner ?? null) : null}
+                                    actions={preferences.content.quickActions}
+                                    upgrade={billing.servers[item.uuid]?.upgrade_url ?? null}
                                     favorite={serverFavorites ? favorites.has(item.uuid) : null}
                                     folders={foldersOn ? folders : null}
                                     folderId={folderOf.get(item.uuid) ?? null}
@@ -510,6 +567,8 @@ export default function ServerList({ model, className }: ViewProps<'dashboard.se
                                 item={shown}
                                 index={items.length}
                                 art={serverArt ? (meta[shown.uuid]?.banner ?? null) : null}
+                                actions={preferences.content.quickActions}
+                                upgrade={billing.servers[shown.uuid]?.upgrade_url ?? null}
                                 favorite={serverFavorites ? favorites.has(shown.uuid) : null}
                                 folders={foldersOn ? folders : null}
                                 folderId={folderOf.get(shown.uuid) ?? null}

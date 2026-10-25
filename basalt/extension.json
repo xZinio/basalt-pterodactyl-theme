@@ -840,14 +840,6 @@
                 "default": "",
                 "maxLength": 500
             },
-            "navLinks": {
-                "type": "text",
-                "label": "Sidebar links",
-                "tab": "Navigation",
-                "help": "A Links section in the sidebar, as Label|URL|icon|where entries separated by commas. The icon is any lucide name, such as message-circle, book-open or shopping-cart; where is all (the default), dashboard (the server list only) or server.",
-                "default": "",
-                "maxLength": 1000
-            },
             "serverLayout": {
                 "type": "select",
                 "label": "Server layout",
@@ -934,29 +926,6 @@
                 "default": "comfortable",
                 "attribute": "data-basalt-tables",
                 "options": { "comfortable": "Comfortable", "compact": "Compact", "lined": "Lined" }
-            },
-            "announcement": {
-                "type": "text",
-                "label": "Announcement",
-                "tab": "Dashboard",
-                "help": "A notice at the top of the dashboard. Leave empty for none. **Double asterisks** make text bold.",
-                "default": "",
-                "maxLength": 500
-            },
-            "announcementTitle": {
-                "type": "text",
-                "label": "Announcement title",
-                "tab": "Dashboard",
-                "default": "",
-                "maxLength": 120
-            },
-            "announcementButton": {
-                "type": "text",
-                "label": "Announcement button",
-                "tab": "Dashboard",
-                "help": "An optional button on the announcement, as Label|URL.",
-                "default": "",
-                "maxLength": 300
             },
             "serverDashboard": {
                 "type": "toggle",

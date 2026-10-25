@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Basalt\Http\BillingController;
 use Basalt\Http\LanguageController;
 use Basalt\Http\NotesController;
 use Basalt\Http\PlayersController;
@@ -16,5 +17,6 @@ Route::put('/preferences', [PreferencesController::class, 'update']);
 Route::put('/notes/{uuid}', [NotesController::class, 'update']);
 Route::get('/servers', ServerMetaController::class);
 Route::get('/players', PlayersController::class);
+Route::get('/billing', [BillingController::class, 'servers']);
 Route::get('/language', [LanguageController::class, 'show']);
 Route::put('/language', [LanguageController::class, 'update']);

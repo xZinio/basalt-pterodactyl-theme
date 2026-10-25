@@ -1,9 +1,10 @@
 <?php
 
 /*
- * Configures Basalt on the development panel the way the demo shows it: a panel name, an
- * announcement, sidebar and sign-in links, artwork for the eggs, the location's country, and the
- * demo user's folders and favourites. Run after the theme is installed:
+ * Configures Basalt on the development panel the way the demo shows it: a panel name,
+ * announcements, sidebar links, the support and social links of the sign-in page, artwork for the
+ * eggs, the location's country, and the demo user's folders and favourites. Run after the theme is
+ * installed:
  *
  *   docker compose exec -T panel php /seed/theme.php
  */
@@ -26,13 +27,40 @@ $app->make(Kernel::class)->bootstrap();
 DB::table('settings')->updateOrInsert(['key' => 'settings::app:name'], ['value' => 'Basalt Demo']);
 
 $settings = Extensions::settings('basalt');
+$announcement = fn (array $fields): array => [
+    'enabled' => true, 'title' => null, 'body' => null, 'type' => 'info', 'style' => 'card', 'placement' => 'everywhere', 'nodes' => [], 'eggs' => [],
+    'startsAt' => null, 'endsAt' => null, 'dismissible' => true, 'buttonLabel' => null, 'buttonUrl' => null, ...$fields,
+];
+$link = fn (string $id, string $label, string $url, string $icon, string $area): array => ['id' => $id, 'label' => $label, 'url' => $url, 'icon' => $icon, 'area' => $area, 'newTab' => true];
+$rust = Egg::query()->where('name', 'Rust')->value('id');
 $settings->setMany([
-    'theme.announcementTitle' => 'Welcome to the Basalt demo',
-    'theme.announcement' => 'You are signed in as an administrator, so you can try everything. Open **Admin → Themes** to change any setting of the theme.',
-    'theme.announcementButton' => 'Open the settings|/panel/themes',
-    'theme.navLinks' => 'Discord|https://discord.gg/pterodactyl|message-circle, Store|https://example.com/store|shopping-cart|dashboard, Documentation|https://pterodactyl.io/project/introduction.html|book-open, Server status|https://status.example.com|activity|server',
-    'theme.loginLinks' => 'Support|https://discord.gg/pterodactyl, Follow us|https://example.com',
     'theme.supportUrl' => 'https://discord.gg/pterodactyl',
+    'theme.socialUrl' => 'https://example.com',
+    'content.announcements' => [
+        $announcement([
+            'id' => 'welcome',
+            'title' => 'Welcome to the Basalt demo',
+            'body' => 'You are signed in as an administrator, so you can try everything. Open **Admin → Basalt** to change any setting with the live preview.',
+            'placement' => 'dashboard',
+            'buttonLabel' => 'Open the editor',
+            'buttonUrl' => '/panel/basalt',
+        ]),
+        $announcement([
+            'id' => 'wipe',
+            'title' => 'Wipe this Thursday',
+            'body' => 'The map and blueprints reset at 18:00 UTC.',
+            'type' => 'warning',
+            'style' => 'banner',
+            'placement' => 'server',
+            'eggs' => $rust === null ? [] : [(int) $rust],
+        ]),
+    ],
+    'content.links' => [
+        $link('discord', 'Discord', 'https://discord.gg/pterodactyl', 'message-circle', 'everywhere'),
+        $link('store', 'Store', 'https://example.com/store', 'shopping-cart', 'dashboard'),
+        $link('docs', 'Documentation', 'https://pterodactyl.io/project/introduction.html', 'book-open', 'everywhere'),
+        $link('status', 'Server status', 'https://status.example.com', 'activity', 'server'),
+    ],
 ]);
 
 // The eggs' card artwork (original drawings in ./art), served by the panel from public/dev-art.

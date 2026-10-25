@@ -3,6 +3,7 @@ import { ArrowLeft, RotateCcw } from 'lucide-react';
 import { useQueryClient } from '@tanstack/react-query';
 import { Button, PanelLink, Portal, Spinner, Tooltip, cn, http, httpErrorToHuman } from '@pterodactyl/sdk';
 import { SELECT_BLOCK_MESSAGE, adoptSaved } from '../../../lib/preview';
+import ContentPanel from './Content';
 import { Field } from './Fields';
 import LayoutField from './Layout';
 import MenuItemsField, { useKnownMenus } from './MenuItems';
@@ -78,6 +79,8 @@ function Studio({ settings }: { settings: readonly Setting[] }) {
     const knownMenus = useKnownMenus();
     // The dashboard block open in the Layout setting, which the preview marks.
     const [block, setBlock] = useState<string | null>(null);
+    // Counts the saves of content, each of which reloads the preview.
+    const [contentSaves, setContentSaves] = useState(0);
     const importer = useRef<HTMLInputElement>(null);
 
     // A click on a block of the previewed dashboard opens it in the Server dashboard settings.
@@ -230,7 +233,7 @@ function Studio({ settings }: { settings: readonly Setting[] }) {
                 </header>
 
                 <nav aria-label='Settings' className='flex flex-col items-center gap-1 overflow-y-auto overscroll-contain border-r border-border py-3'>
-                    {categories.filter((item) => settings.some((setting) => categoryOf(setting) === item)).map((item) => (
+                    {categories.filter((item) => item.content || settings.some((setting) => categoryOf(setting) === item)).map((item) => (
                         <Tooltip key={item.id} content={item.label} placement='right'>
                             <button
                                 type='button'
@@ -251,11 +254,20 @@ function Studio({ settings }: { settings: readonly Setting[] }) {
                 <div className='overflow-y-auto overscroll-contain border-r border-border p-4 max-[1100px]:overflow-visible max-[1100px]:border-r-0'>
                     <div className='mb-4 flex items-center justify-between gap-3 border-b border-border pb-3'>
                         <h2 className='font-header text-lg leading-[1.5] font-semibold'>{category.label}</h2>
-                        <Button.Text size='xsmall' isSecondary onClick={reset}>
-                            <RotateCcw className='size-3.5' aria-hidden />
-                            Reset to default
-                        </Button.Text>
+                        {!category.content && (
+                            <Button.Text size='xsmall' isSecondary onClick={reset}>
+                                <RotateCcw className='size-3.5' aria-hidden />
+                                Reset to default
+                            </Button.Text>
+                        )}
                     </div>
+                    {category.content && (
+                        <ContentPanel
+                            kind={category.content}
+                            onSaved={() => setContentSaves((count) => count + 1)}
+                            flash={(tone, text) => setMessage({ tone, text })}
+                        />
+                    )}
                     {category.id === 'colors' && (
                         <Section title='Presets'>
                             <Presets values={values} onPick={(preset) => edit(preset.values)} />
@@ -303,6 +315,7 @@ function Studio({ settings }: { settings: readonly Setting[] }) {
                     page={page}
                     screen={category.screen}
                     focus={page === 'server' && category.id === 'server' ? block : undefined}
+                    reloads={contentSaves}
                     device={device}
                     onPage={setPage}
                     onDevice={setDevice}
