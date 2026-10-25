@@ -1,8 +1,8 @@
 import { Globe } from 'lucide-react';
 import { cn } from '@pterodactyl/sdk';
 
-// Flags of the countries hosting providers most often run nodes in (flag-icons, MIT; see flags/LICENSE.txt).
-const flags = import.meta.glob<string>('../flags/*.svg', { query: '?url', import: 'default', eager: true });
+// Every two-letter flag of flag-icons (MIT; see flags/LICENSE.txt), each its own file that loads only when shown.
+const flags = import.meta.glob<string>('../flags/*.svg', { query: '?no-inline', import: 'default', eager: true });
 
 /** The two-letter codes of the countries there is a flag for. */
 export const flagCodes: readonly string[] = Object.keys(flags).map((path) => path.slice(-6, -4));

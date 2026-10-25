@@ -268,7 +268,7 @@ function QuickActionFields({ item, set }: { item: QuickAction; set: (patch: Part
                 )}
             </Field>
             <Field label='Label'>{(id) => <input id={id} value={item.label} maxLength={30} onChange={(event) => set({ label: event.target.value })} className={controlClass} />}</Field>
-            <Field label='Icon'>{(id) => <IconInput id={id} value={item.icon ?? ''} placeholder='arrow-up-right' onChange={(icon) => set({ icon: icon || null })} />}</Field>
+            <Field label='Icon'>{(id) => <IconInput id={id} value={item.icon ?? ''} placeholder='link' onChange={(icon) => set({ icon: icon || null })} />}</Field>
             {item.action === 'upgrade' && (
                 <p className={helpClass}>
                     Opens the upgrade page of the server's service in Paymenter or WHMCS. Hidden on servers without billing, so connect your billing system in the Billing tab first.
