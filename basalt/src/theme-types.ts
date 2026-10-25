@@ -105,8 +105,6 @@ export interface ThemeSettings {
     readonly "loginCardBlur": number;
     readonly "logoPosition": "header" | "card";
     readonly "supportPosition": "below" | "card";
-    readonly "loginTagline": string;
-    readonly "loginLinks": string;
     readonly "seoTitle": string;
     readonly "metaDescription": string;
     readonly "canonicalUrl": string;

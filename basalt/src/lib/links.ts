@@ -1,25 +1,8 @@
 import { useCallback, type MouseEvent } from 'react';
 import { usePanelNavigate, type PanelDestination } from '@pterodactyl/sdk';
 
-/** A link of a link list setting. */
-export interface ConfiguredLink {
-    readonly label: string;
-    readonly url: string;
-}
-
 /** Only absolute http(s) links and paths on the panel are followed. */
 export const safeUrl = (url: string): boolean => /^https?:\/\//i.test(url) || (url.startsWith('/') && !url.startsWith('//'));
-
-/** Reads a link list setting: `Label|URL` entries separated by commas or new lines. Malformed entries are skipped. */
-export function parseLinks(value: string | null | undefined): ConfiguredLink[] {
-    if (!value) return [];
-
-    return value
-        .split(/[,\n]/)
-        .map((entry) => entry.split('|').map((part) => part.trim()))
-        .filter(([label, url]) => Boolean(label) && Boolean(url) && safeUrl(url))
-        .map(([label, url]) => ({ label, url }));
-}
 
 export const isExternal = (url: string): boolean => /^https?:\/\//i.test(url);
 

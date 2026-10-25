@@ -2,7 +2,7 @@ import { useId, type ReactNode } from 'react';
 import { Form, Input, Label, useSiteSettings, type FieldModel } from '@pterodactyl/sdk';
 import { useThemeSettings } from '@pterodactyl/sdk/theme';
 import BrandMark from '../../components/BrandMark';
-import { externalProps, parseLinks, safeUrl } from '../../lib/links';
+import { safeUrl } from '../../lib/links';
 import type { ThemeSettings } from '../../theme-types';
 import { AuthLogo } from './AuthLayout';
 
@@ -16,13 +16,13 @@ function httpsUrl(value: string): string | null {
     }
 }
 
-/** The banner of the banner layouts: the logo, the panel's name and the tagline over the background image. */
-function Banner({ name, logo, tagline }: { name: string; logo: string | null; tagline: string }) {
+/** The banner of the banner layouts: the logo, the panel's name and a line under it over the background image. */
+function Banner({ name, logo }: { name: string; logo: string | null }) {
     return (
         <div className='basalt-auth-banner'>
             {logo ? <img src={logo} alt='' className='mb-auto h-10 w-auto self-start object-contain' /> : <BrandMark className='mb-auto size-10' />}
             <strong>{name}</strong>
-            {tagline && <span className='text-sm opacity-85'>{tagline}</span>}
+            <span className='text-sm opacity-85'>Sign in to manage your servers.</span>
         </div>
     );
 }
@@ -63,11 +63,6 @@ export function AuthForm({ title, submit, links, children }: { title: string; su
                         Follow us
                     </a>
                 )}
-                {parseLinks(settings.loginLinks).map((link) => (
-                    <a key={link.url + link.label} href={link.url} {...externalProps(link.url)} className='basalt-auth-link'>
-                        {link.label}
-                    </a>
-                ))}
             </div>
         </div>
     );
@@ -81,7 +76,7 @@ export function AuthForm({ title, submit, links, children }: { title: string; su
         </p>
     );
 
-    const banner = <Banner name={brand.name} logo={settings.loginLogo ?? settings.logo} tagline={settings.loginTagline} />;
+    const banner = <Banner name={brand.name} logo={settings.loginLogo ?? settings.logo} />;
 
     if (layout === 'panels') {
         return (

@@ -1942,7 +1942,7 @@
     }
 }
 
-/* The banner: the panel's name and tagline over the background image, or the built-in artwork, under a dark fade. */
+/* The banner: the panel's name and a line under it over the background image, or the built-in artwork, under a dark fade. */
 .basalt-auth-banner {
     display: flex;
     flex-direction: column;

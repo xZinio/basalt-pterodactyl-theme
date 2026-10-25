@@ -780,22 +780,6 @@
                 "options": { "below": "Below the card", "card": "Inside the card" },
                 "default": "below"
             },
-            "loginTagline": {
-                "type": "text",
-                "label": "Tagline",
-                "tab": "Sign-in",
-                "help": "The line under the panel name in the banner.",
-                "default": "Sign in to manage your servers.",
-                "maxLength": 120
-            },
-            "loginLinks": {
-                "type": "text",
-                "label": "More links",
-                "tab": "Sign-in",
-                "help": "Links under the sign-in form after Support, as Label|URL pairs separated by commas, such as: Status|https://status.example.com",
-                "default": "",
-                "maxLength": 600
-            },
             "seoTitle": {
                 "type": "text",
                 "label": "Title for search results and shares",
