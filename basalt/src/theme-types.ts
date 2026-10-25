@@ -117,4 +117,6 @@ export interface ThemeSettings {
     readonly "announcementTitle": string;
     readonly "announcementButton": string;
     readonly "serverDashboard": boolean;
+    readonly "serverBanner": string | null;
+    readonly "dashboardLayout": string;
 }

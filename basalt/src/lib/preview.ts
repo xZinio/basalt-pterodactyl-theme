@@ -1,5 +1,13 @@
+import { useEffect, useState } from 'react';
+
 /** The name the studio gives its preview frames. */
 export const PREVIEW_FRAME = 'basalt-studio-preview';
+
+/** The studio's word to its preview frame that the draft changed, for what the frame follows without reloading. */
+export const DRAFT_MESSAGE = 'basalt-draft';
+
+/** A preview frame's word to the studio that a block of the server dashboard was clicked. */
+export const SELECT_BLOCK_MESSAGE = 'basalt-select-block';
 
 /** What the studio shares with its preview frames: the draft settings and what they write. */
 export interface StudioDraft {
@@ -9,6 +17,11 @@ export interface StudioDraft {
     readonly tokens: Readonly<Record<string, string>>;
     /** `<html>` attribute => value. */
     readonly attributes: Readonly<Record<string, string>>;
+    /**
+     * While the studio shows the Server dashboard settings, the block open in them, or null for
+     * none: the dashboard in the frame marks it, and a click on a block opens that one.
+     */
+    readonly focus?: string | null;
 }
 
 declare global {
@@ -22,6 +35,33 @@ type Bootstrap = { SiteConfiguration?: { theme?: { settings?: Record<string, unk
 
 /** Whether this page is the studio's preview of another page. */
 export const inPreviewFrame = (): boolean => typeof window !== 'undefined' && window.name === PREVIEW_FRAME && window.parent !== window;
+
+function studioDraft(): StudioDraft | null {
+    if (!inPreviewFrame()) return null;
+    try {
+        return window.parent.basaltStudio ?? null;
+    } catch {
+        return null;
+    }
+}
+
+/** In a preview frame, the studio's draft, again each time the studio says it changed; null on any other page. */
+export function usePreviewDraft(): StudioDraft | null {
+    const [draft, setDraft] = useState(studioDraft);
+
+    useEffect(() => {
+        if (!inPreviewFrame()) return;
+
+        const receive = (event: MessageEvent) => {
+            if (event.origin !== window.location.origin || event.source !== window.parent) return;
+            if ((event.data as { type?: unknown } | null)?.type === DRAFT_MESSAGE) setDraft(studioDraft());
+        };
+        window.addEventListener('message', receive);
+        return () => window.removeEventListener('message', receive);
+    }, []);
+
+    return draft;
+}
 
 /** Gives a page's React the settings: `useThemeSettings` reads them as it renders. */
 function provideSettings(settings: Readonly<Record<string, unknown>>): void {
@@ -61,12 +101,7 @@ export function applyDraft(doc: Document, draft: StudioDraft): void {
 export function adoptDraft(): boolean {
     if (!inPreviewFrame()) return false;
 
-    let draft: StudioDraft | undefined;
-    try {
-        draft = window.parent.basaltStudio;
-    } catch {
-        return false;
-    }
+    const draft = studioDraft();
     if (!draft) return false;
 
     provideSettings({ ...draft.settings, userAccent: false });

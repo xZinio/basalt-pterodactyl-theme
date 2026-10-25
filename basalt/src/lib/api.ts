@@ -16,6 +16,8 @@ export interface Preferences {
     readonly favorites: readonly string[];
     readonly order: readonly string[];
     readonly accent: string | null;
+    /** The user's own note on each server, by its UUID. */
+    readonly notes: Readonly<Record<string, string>>;
 }
 
 export interface ServerMeta {
@@ -32,7 +34,7 @@ export interface Players {
     readonly version: string | null;
 }
 
-const empty: Preferences = { folders: [], favorites: [], order: [], accent: null };
+const empty: Preferences = { folders: [], favorites: [], order: [], accent: null, notes: {} };
 export const preferencesKey = ['basalt', 'preferences'] as const;
 
 /** The signed-in user's folders, favourites, card order and accent; `loaded` once they have arrived. */
@@ -61,6 +63,20 @@ export function useUpdatePreferences() {
             if (context?.previous) client.setQueryData(preferencesKey, context.previous);
         },
         onSuccess: (data) => client.setQueryData(preferencesKey, data),
+    });
+}
+
+/** Saves the user's note on a server; an empty note is removed. */
+export function useSaveNote() {
+    const client = useQueryClient();
+
+    return useMutation({
+        mutationFn: async ({ server, text }: { server: string; text: string }) =>
+            (await http.put<{ notes: Record<string, string> }>(`${BASE}/notes/${server}`, { text })).data.notes,
+        onSuccess: (notes) => {
+            const previous = client.getQueryData<Preferences>(preferencesKey);
+            if (previous) client.setQueryData<Preferences>(preferencesKey, { ...previous, notes });
+        },
     });
 }
 

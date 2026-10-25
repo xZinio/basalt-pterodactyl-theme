@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState, type KeyboardEvent as ReactKeyboardEvent, type PointerEvent as ReactPointerEvent } from 'react';
 import { createPortal } from 'react-dom';
 import { AppWindow, Columns2, ExternalLink, Maximize2, X } from 'lucide-react';
-import { cn, usePanelNavigate, type PanelDestination } from '@pterodactyl/sdk';
+import { cn, usePanelNavigate } from '@pterodactyl/sdk';
+import { destinationOf } from '../../lib/links';
 import { writeLocal } from '../../lib/local';
 import {
     EMBED_FRAME,
@@ -143,13 +144,6 @@ export function SplitMenu({ enabled }: { enabled: boolean }) {
         </div>,
         document.body
     );
-}
-
-/** A split's address as the panel's router takes it. */
-function destinationOf(href: string): PanelDestination {
-    const url = new URL(href, window.location.origin);
-    // A concrete path: the router takes it as it is, without parameters to fill in.
-    return { to: url.pathname, search: Object.fromEntries(url.searchParams), hash: url.hash.slice(1) || undefined } as unknown as PanelDestination;
 }
 
 /** The split's title and its tools: open the page here, swap between pane and window, close. */

@@ -1,10 +1,10 @@
-import { useContext, type ReactNode } from 'react';
+import { Fragment, useContext, useEffect, useState, type CSSProperties, type ReactNode } from 'react';
 import type { LucideIcon } from 'lucide-react';
-import { Copy, Cpu, HardDrive, MemoryStick, Network, Timer, Zap } from 'lucide-react';
+import { ArrowDownUp, Copy, Cpu, HardDrive, MemoryStick, Network, Timer, Users, Zap } from 'lucide-react';
 import { CopyOnClick, bytesToString, cn } from '@pterodactyl/sdk';
-import type { ServerRunState, ServerStatMetric, ServerStatsModel, ViewProps } from '@pterodactyl/sdk/theme';
-import { StatsPlacement } from '../shell/context';
-import { FactRow } from './overview/parts';
+import type { ServerRunState, ServerStatsModel, ViewProps } from '@pterodactyl/sdk/theme';
+import { DashboardServer, StatsItems, StatsPlacement } from '../shell/context';
+import { Chip, CopyButton, FactRow } from './overview/parts';
 
 /** "1d 2h 3m", or "2h 3m 4s" under a day. */
 export function duration(milliseconds: number): string {
@@ -15,10 +15,25 @@ export function duration(milliseconds: number): string {
     return days > 0 ? `${days}d ${hours}h ${minutes}m` : `${hours}h ${minutes}m ${seconds % 60}s`;
 }
 
-const stateLabel = (state: ServerRunState | null) =>
-    state === null ? 'Unknown' : state === 'running' ? 'Online' : state.charAt(0).toUpperCase() + state.slice(1);
+const labels: Record<ServerRunState, string> = { running: 'Online', starting: 'Starting', stopping: 'Stopping', offline: 'Offline' };
 
-const percent = ({ value, limit }: ServerStatMetric) => (limit > 0 ? Math.min(100, (value / limit) * 100) : 0);
+/** How long the server has run, counted on each second between the reports of its usage; 0 while it is not running. */
+function useUptime(uptime: number, running: boolean): number {
+    const [base, setBase] = useState(() => ({ uptime, at: Date.now() }));
+    const [, setTick] = useState(0);
+    if (base.uptime !== uptime) setBase({ uptime, at: Date.now() });
+
+    useEffect(() => {
+        if (!running) return;
+        const timer = window.setInterval(() => setTick((tick) => tick + 1), 1000);
+        return () => window.clearInterval(timer);
+    }, [running]);
+
+    return running ? uptime + Date.now() - base.at : 0;
+}
+
+/** A value's share of its limit, or null without a limit. */
+const share = (value: number, limit: number): number | null => (limit > 0 ? Math.max(0, Math.min(100, (value / limit) * 100)) : null);
 
 function UsageCard({
     icon: Icon,
@@ -26,34 +41,38 @@ function UsageCard({
     value,
     limit,
     meter,
+    alarm,
     action,
 }: {
     icon: LucideIcon;
     label: string;
     value: ReactNode;
     limit?: string | null;
-    meter?: ServerStatMetric;
+    /** The share of the limit used, drawn as a bar: amber from 75%, red from 90%. */
+    meter?: number | null;
+    /** Past its limit: the icon turns red. */
+    alarm?: boolean;
     action?: ReactNode;
 }) {
-    const tone = meter?.alarm === 'danger' ? 'bg-destructive' : meter?.alarm === 'warning' ? 'bg-warning' : 'bg-primary';
+    const tone = meter == null ? null : meter >= 90 ? 'bg-destructive' : meter >= 75 ? 'bg-warning' : 'bg-primary';
 
     return (
         <div className='surface flex min-w-0 overflow-hidden'>
-            <span className='flex w-16 shrink-0 items-center justify-center bg-primary/12 text-primary'>
+            <span className={cn('flex w-16 shrink-0 items-center justify-center', alarm ? 'bg-destructive text-white' : 'bg-primary/12 text-primary')}>
                 <Icon className='size-5' aria-hidden />
             </span>
             <div className='grid min-w-0 flex-1 gap-0.5 px-4 py-3.5'>
                 <p className='flex min-w-0 items-baseline gap-1.5'>
-                    <span className='truncate text-[17px] leading-[1.375] font-bold text-foreground' data-sensitive={action ? '' : undefined}>
+                    <span className='truncate text-[17px] leading-[1.375] font-bold text-foreground tabular-nums' data-sensitive={action ? '' : undefined}>
                         {value}
                     </span>
                     {limit && <small className='shrink-0 text-xs leading-[1.375] font-semibold text-muted-foreground'>/ {limit}</small>}
                     {action}
                 </p>
                 <p className='caption leading-[1.375]'>{label}</p>
-                {meter && (
+                {tone && (
                     <span className='mt-1.5 block h-1 overflow-hidden rounded-full bg-foreground/10'>
-                        <span className={cn('block h-full rounded-full transition-[width] duration-500', tone)} style={{ width: `${percent(meter)}%` }} />
+                        <span className={cn('block h-full rounded-full transition-[width] duration-600 ease-(--basalt-ease)', tone)} style={{ width: `${meter}%` }} />
                     </span>
                 )}
             </div>
@@ -61,37 +80,51 @@ function UsageCard({
     );
 }
 
-function Cards({ model, className }: { model: ServerStatsModel; className?: string }) {
-    const offline = model.state === 'offline';
-    const address = model.address ?? 'n/a';
+/** The dashboard's stat tiles, the ones its block lists, in their order. */
+function Tiles({ model, className }: { model: ServerStatsModel; className?: string }) {
+    const items = useContext(StatsItems);
+    const { players, suspended } = useContext(DashboardServer);
+    const running = !suspended && model.state === 'running';
+    const uptime = useUptime(model.uptime, running);
+    // Before the first report, nothing is known yet.
+    const unknown = model.state === null;
+    const offline = unknown || model.state === 'offline';
+    const { cpu, memory, disk } = model;
 
-    return (
-        <div className={cn('grid grid-cols-1 gap-4 @min-[461px]:grid-cols-2 @min-[821px]:grid-cols-4', className)}>
+    const tiles: Record<string, ReactNode> = {
+        cpu: (
             <UsageCard
                 icon={Cpu}
                 label='CPU'
-                value={offline ? '0%' : `${model.cpu.value.toFixed(1)}%`}
-                limit={model.cpu.limit ? `${model.cpu.limit}%` : null}
-                meter={model.cpu}
+                value={offline ? 'Offline' : `${cpu.value.toFixed(1)}%`}
+                limit={cpu.limit > 0 && !offline ? `${cpu.limit}%` : null}
+                meter={offline ? null : share(cpu.value, cpu.limit)}
             />
+        ),
+        memory: (
             <UsageCard
                 icon={MemoryStick}
                 label='Memory'
-                value={offline ? '0 Bytes' : bytesToString(model.memory.value)}
-                limit={model.memory.limit ? bytesToString(model.memory.limit) : null}
-                meter={model.memory}
+                value={offline ? 'Offline' : bytesToString(memory.value)}
+                limit={memory.limit > 0 && !offline ? bytesToString(memory.limit) : null}
+                meter={offline ? null : share(memory.value, memory.limit)}
             />
+        ),
+        disk: (
             <UsageCard
                 icon={HardDrive}
                 label='Disk'
-                value={bytesToString(model.disk.value)}
-                limit={model.disk.limit ? bytesToString(model.disk.limit) : null}
-                meter={model.disk}
+                value={unknown ? '...' : bytesToString(disk.value)}
+                limit={disk.limit > 0 ? bytesToString(disk.limit) : null}
+                meter={unknown ? null : share(disk.value, disk.limit)}
+                alarm={!unknown && disk.limit > 0 && disk.value > disk.limit}
             />
+        ),
+        address: (
             <UsageCard
                 icon={Network}
                 label='Address'
-                value={address}
+                value={model.address ?? 'None'}
                 action={
                     model.address && (
                         <CopyOnClick text={model.address}>
@@ -106,37 +139,82 @@ function Cards({ model, className }: { model: ServerStatsModel; className?: stri
                     )
                 }
             />
+        ),
+        uptime: <UsageCard icon={Timer} label='Uptime' value={running ? duration(uptime) : 'Offline'} />,
+        network: (
+            <UsageCard icon={ArrowDownUp} label='Network (in / out)' value={unknown ? '...' : `${bytesToString(model.network.rx)} / ${bytesToString(model.network.tx)}`} />
+        ),
+        ...(players && {
+            players: <UsageCard icon={Users} label='Players' value={String(players.online)} limit={String(players.max)} meter={share(players.online, players.max)} />,
+        }),
+    };
+    const shown = items.filter((item) => item in tiles);
+
+    return (
+        <div className={cn('basalt-sd-tiles', className)} style={{ '--basalt-tiles': Math.max(1, shown.length) } as CSSProperties}>
+            {shown.map((item) => (
+                <Fragment key={item}>{tiles[item]}</Fragment>
+            ))}
         </div>
     );
 }
 
+/** One row of the dashboard's server information that the live model knows: its status, uptime or address. */
+function Fact({ model }: { model: ServerStatsModel }) {
+    const [item] = useContext(StatsItems);
+    const { suspended } = useContext(DashboardServer);
+    const running = !suspended && model.state === 'running';
+    const uptime = useUptime(model.uptime, running && item === 'uptime');
+
+    if (item === 'status') {
+        return (
+            <FactRow icon={Zap} label='Status'>
+                {suspended ? 'Suspended' : labels[model.state ?? 'offline']}
+            </FactRow>
+        );
+    }
+    if (item === 'uptime') {
+        return (
+            <FactRow icon={Timer} label='Uptime'>
+                {running ? duration(uptime) : 'Offline'}
+            </FactRow>
+        );
+    }
+    if (item === 'address') {
+        return (
+            <FactRow icon={Network} label='Address'>
+                <Chip sensitive>{model.address ?? 'None'}</Chip>
+                {model.address && <CopyButton text={model.address} label='Copy the address' />}
+            </FactRow>
+        );
+    }
+    return null;
+}
+
+/** The banner's line under the name: how long it has run and its players, or its node while it is stopped. */
+function Summary({ model, className }: { model: ServerStatsModel; className?: string }) {
+    const { node, players, suspended } = useContext(DashboardServer);
+    const running = !suspended && model.state === 'running';
+    const uptime = useUptime(model.uptime, running);
+
+    return (
+        <span className={className}>
+            {running ? `Online for ${duration(uptime)}` : node}
+            {running && players && ` · ${players.online} of ${players.max} players online`}
+        </span>
+    );
+}
+
 /**
- * The console's stat tiles stay classic's; on the server overview the same live model draws the
- * usage cards, the banner's summary line and the status rows.
+ * The console's stat tiles stay classic's; on the server's dashboard the same live model draws its
+ * stat tiles, the banner's summary line and rows of its information.
  */
 export default function Stats({ model, Default, className }: ViewProps<'server.stats'>) {
     const placement = useContext(StatsPlacement);
 
-    if (placement === 'cards') return <Cards model={model} className={className} />;
-    if (placement === 'summary') {
-        return (
-            <span className={className}>
-                {model.state === 'running' ? `Online for ${duration(model.uptime)}` : stateLabel(model.state)}
-            </span>
-        );
-    }
-    if (placement === 'facts') {
-        return (
-            <>
-                <FactRow icon={Zap} label='Status'>
-                    {stateLabel(model.state)}
-                </FactRow>
-                <FactRow icon={Timer} label='Uptime'>
-                    {model.state === 'running' && model.uptime > 0 ? duration(model.uptime) : 'Offline'}
-                </FactRow>
-            </>
-        );
-    }
+    if (placement === 'cards') return <Tiles model={model} className={className} />;
+    if (placement === 'summary') return <Summary model={model} className={className} />;
+    if (placement === 'facts') return <Fact model={model} />;
 
     return <Default className={className} />;
 }

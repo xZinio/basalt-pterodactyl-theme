@@ -865,10 +865,24 @@
             },
             "serverDashboard": {
                 "type": "toggle",
-                "label": "Server dashboard",
+                "label": "Server dashboard page",
                 "tab": "Server",
-                "help": "Open a server on a dashboard of its usage, details and shortcuts, with the console on a page of its own. Off, a server opens on its console.",
+                "help": "Makes a dashboard the first page of every server and moves the console to its own page. Build the dashboard below by dragging blocks.",
                 "default": true
+            },
+            "serverBanner": {
+                "type": "image",
+                "label": "Banner image",
+                "tab": "Server",
+                "help": "Shown in the banner block when the egg has no image of its own."
+            },
+            "dashboardLayout": {
+                "type": "text",
+                "label": "Layout",
+                "tab": "Server",
+                "help": "Drag the blocks into the order you want. Open a block to set its width and what it shows.",
+                "default": "[{\"id\":\"header\",\"type\":\"header\",\"width\":\"full\"},{\"id\":\"banner\",\"type\":\"banner\",\"width\":\"full\",\"height\":\"medium\"},{\"id\":\"stats\",\"type\":\"stats\",\"width\":\"full\",\"items\":[\"cpu\",\"memory\",\"disk\",\"address\"]},{\"id\":\"graphs\",\"type\":\"graphs\",\"width\":\"full\"},{\"id\":\"info\",\"type\":\"info\",\"width\":\"half\",\"items\":[\"status\",\"uptime\",\"node\",\"location\",\"id\",\"uuid\",\"image\",\"limits\"]},{\"id\":\"actions\",\"type\":\"actions\",\"width\":\"half\",\"items\":[\"console\",\"files\",\"databases\",\"backups\",\"schedules\",\"network\",\"startup\",\"settings\",\"custom\"]},{\"id\":\"sftp\",\"type\":\"sftp\",\"width\":\"half\"},{\"id\":\"billing\",\"type\":\"billing\",\"width\":\"half\"}]",
+                "maxLength": 8000
             }
         }
     }

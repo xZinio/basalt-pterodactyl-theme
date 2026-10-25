@@ -1,3 +1,6 @@
+import { useCallback, type MouseEvent } from 'react';
+import { usePanelNavigate, type PanelDestination } from '@pterodactyl/sdk';
+
 export type LinkArea = 'all' | 'dashboard' | 'server';
 
 export interface ConfiguredLink {
@@ -9,7 +12,7 @@ export interface ConfiguredLink {
 }
 
 /** Only absolute http(s) links and paths on the panel are followed. */
-const safeUrl = (url: string): boolean => /^https?:\/\//i.test(url) || (url.startsWith('/') && !url.startsWith('//'));
+export const safeUrl = (url: string): boolean => /^https?:\/\//i.test(url) || (url.startsWith('/') && !url.startsWith('//'));
 
 const areas: readonly LinkArea[] = ['all', 'dashboard', 'server'];
 
@@ -36,3 +39,27 @@ export const isExternal = (url: string): boolean => /^https?:\/\//i.test(url);
 
 /** Attributes that open external links in a new tab. */
 export const externalProps = (url: string) => (isExternal(url) ? { target: '_blank', rel: 'noopener noreferrer' } : {});
+
+/** A path on the panel, with its query and hash, as the panel's router takes it. */
+export function destinationOf(href: string): PanelDestination {
+    const url = new URL(href, window.location.origin);
+    // A concrete path: the router takes it as it is, without parameters to fill in.
+    return { to: url.pathname, search: Object.fromEntries(url.searchParams), hash: url.hash.slice(1) || undefined } as unknown as PanelDestination;
+}
+
+/**
+ * A link's click handler for an address an administrator wrote: a path on the panel opens like the
+ * panel's own links, without reloading the page, unless a modifier key asks for a new tab.
+ */
+export function useFollow(): (event: MouseEvent<HTMLAnchorElement>, href: string) => void {
+    const navigate = usePanelNavigate();
+
+    return useCallback(
+        (event, href) => {
+            if (isExternal(href) || event.metaKey || event.ctrlKey || event.shiftKey || event.button !== 0) return;
+            event.preventDefault();
+            void navigate(destinationOf(href));
+        },
+        [navigate]
+    );
+}

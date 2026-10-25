@@ -11,7 +11,8 @@ use Pterodactyl\Models\User;
 
 /**
  * The signed-in user's dashboard preferences: server folders, favourites, the order of their
- * server cards and their own accent colour. Stored as the theme's settings for that user.
+ * server cards and their own accent colour, with their notes on servers, which NotesController
+ * writes. Stored as the theme's settings for that user.
  */
 final class PreferencesController
 {
@@ -70,6 +71,7 @@ final class PreferencesController
             'favorites' => $settings->get('favorites', []),
             'order' => $settings->get('order', []),
             'accent' => $settings->get('accent'),
+            'notes' => (object) array_filter((array) $settings->get('notes', []), is_string(...)),
         ];
     }
 }

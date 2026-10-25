@@ -1,6 +1,6 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { cn, resolvePanelDestination } from '@pterodactyl/sdk';
-import { PREVIEW_FRAME, applyDraft } from '../../../lib/preview';
+import { DRAFT_MESSAGE, PREVIEW_FRAME, applyDraft } from '../../../lib/preview';
 import { Segmented } from './Fields';
 import { devices, draftOf, previewPages, reloadsPreview, usePreviewServer, type Device, type PreviewPage, type Setting, type Values } from './model';
 
@@ -18,13 +18,15 @@ function frameSource(page: PreviewPage['id'], server: string | null | undefined,
 /**
  * The live preview: a page of this panel in a frame at a device's width, scaled to fit the stage.
  * The frame takes the draft as it loads; after that a change to the stylesheet's settings is
- * written into it, and a change React reads reloads it.
+ * written into it, a change React reads reloads it, and the frame is told of every change, for
+ * what it follows as it changes.
  */
 export default function Stage({
     settings,
     values,
     page,
     screen,
+    focus,
     device,
     onPage,
     onDevice,
@@ -33,13 +35,15 @@ export default function Stage({
     values: Values;
     page: PreviewPage['id'];
     screen?: 'console';
+    /** While the Server dashboard settings show: the block open in them, which the preview marks. */
+    focus?: string | null;
     device: Device['id'];
     onPage: (page: PreviewPage['id']) => void;
     onDevice: (device: Device['id']) => void;
 }) {
     const server = usePreviewServer();
     const source = frameSource(page, server, screen === 'console' && values.serverDashboard !== false);
-    const draft = useMemo(() => draftOf(settings, values), [settings, values]);
+    const draft = useMemo(() => ({ ...draftOf(settings, values), focus }), [settings, values, focus]);
     const width = devices.find((item) => item.id === device)?.width ?? 1440;
     const frame = useRef<HTMLIFrameElement>(null);
     const scaler = useRef<HTMLDivElement>(null);
@@ -57,8 +61,9 @@ export default function Stage({
             // Typing in a text setting reloads once it pauses.
             clearTimeout(reload.current);
             reload.current = setTimeout(() => frame.current?.contentWindow?.location.reload(), 400);
-        } else if (changed.length > 0 && frame.current?.contentDocument) {
-            applyDraft(frame.current.contentDocument, draft);
+        } else if (frame.current?.contentDocument) {
+            if (changed.length > 0) applyDraft(frame.current.contentDocument, draft);
+            frame.current.contentWindow?.postMessage({ type: DRAFT_MESSAGE }, window.location.origin);
         }
     }, [draft, values]);
 

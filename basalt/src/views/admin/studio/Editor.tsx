@@ -2,8 +2,9 @@ import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { ArrowLeft, RotateCcw } from 'lucide-react';
 import { useQueryClient } from '@tanstack/react-query';
 import { Button, PanelLink, Portal, Spinner, Tooltip, cn, http, httpErrorToHuman } from '@pterodactyl/sdk';
-import { adoptSaved } from '../../../lib/preview';
+import { SELECT_BLOCK_MESSAGE, adoptSaved } from '../../../lib/preview';
 import { Field } from './Fields';
+import LayoutField from './Layout';
 import MenuItemsField, { useKnownMenus } from './MenuItems';
 import Presets from './Presets';
 import Stage from './Stage';
@@ -75,7 +76,22 @@ function Studio({ settings }: { settings: readonly Setting[] }) {
     const [message, setMessage] = useState<Message | null>(null);
     const [saving, setSaving] = useState(false);
     const knownMenus = useKnownMenus();
+    // The dashboard block open in the Layout setting, which the preview marks.
+    const [block, setBlock] = useState<string | null>(null);
     const importer = useRef<HTMLInputElement>(null);
+
+    // A click on a block of the previewed dashboard opens it in the Server dashboard settings.
+    useEffect(() => {
+        const receive = (event: MessageEvent) => {
+            const data = event.data as { type?: unknown; id?: unknown } | null;
+            if (event.origin !== window.location.origin || data?.type !== SELECT_BLOCK_MESSAGE || typeof data.id !== 'string') return;
+            const dashboard = categories.find((item) => item.id === 'server');
+            if (dashboard) setCategory(dashboard);
+            setBlock(data.id);
+        };
+        window.addEventListener('message', receive);
+        return () => window.removeEventListener('message', receive);
+    }, []);
 
     const values = useMemo<Values>(() => {
         if (!draft) return saved;
@@ -257,6 +273,15 @@ function Studio({ settings }: { settings: readonly Setting[] }) {
                                             onChange={(value) => edit({ [setting.key]: value })}
                                             known={knownMenus}
                                         />
+                                    ) : setting.key === 'dashboardLayout' ? (
+                                        <LayoutField
+                                            key={setting.key}
+                                            setting={setting}
+                                            value={values[setting.key] ?? null}
+                                            onChange={(value) => edit({ [setting.key]: value })}
+                                            selected={block}
+                                            onSelect={setBlock}
+                                        />
                                     ) : (
                                         <Field
                                             key={setting.key}
@@ -272,7 +297,16 @@ function Studio({ settings }: { settings: readonly Setting[] }) {
                     ))}
                 </div>
 
-                <Stage settings={settings} values={values} page={page} screen={category.screen} device={device} onPage={setPage} onDevice={setDevice} />
+                <Stage
+                    settings={settings}
+                    values={values}
+                    page={page}
+                    screen={category.screen}
+                    focus={page === 'server' && category.id === 'server' ? block : undefined}
+                    device={device}
+                    onPage={setPage}
+                    onDevice={setDevice}
+                />
             </div>
         </Screen>
     );

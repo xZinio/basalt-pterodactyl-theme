@@ -955,7 +955,214 @@
 }
 /* #endregion console */
 
-/* #region notices: resource alerts, tinted by their tone (--notice-tone, the accent by default) */
+/* #region server dashboard: the Layout setting's blocks on twelve columns, packed by height */
+.basalt-sd {
+    display: grid;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    gap: 1rem;
+    container: basalt-sd / inline-size;
+
+    /* Once measured, each block spans as many 1px rows as it is tall, its padding standing in for the gap. */
+    &[data-masonry] {
+        grid-auto-rows: 1px;
+        grid-auto-flow: dense;
+        row-gap: 0;
+        margin-bottom: -1rem;
+
+        & > .basalt-sd-block {
+            padding-bottom: 1rem;
+        }
+    }
+}
+
+.basalt-sd-block {
+    grid-column: span 12;
+    min-width: 0;
+
+    &[data-width='twothirds'] {
+        grid-column: span 8;
+    }
+
+    &[data-width='half'] {
+        grid-column: span 6;
+    }
+
+    &[data-width='third'] {
+        grid-column: span 4;
+    }
+
+    /* A block with nothing to show, such as the SFTP details without the permission, takes no room. */
+    &:not(:has(> .basalt-sd-inner > *)) {
+        display: none;
+    }
+}
+
+@container basalt-sd (width <= 700px) {
+    .basalt-sd-block[data-width] {
+        grid-column: span 12;
+    }
+}
+
+/* The banner: the server's name over its image under a dark veil, or beside a bar of the accent. */
+.basalt-sd-banner {
+    position: relative;
+    display: flex;
+    align-items: flex-end;
+    min-height: 12rem;
+    overflow: hidden;
+    border: var(--basalt-border-width, 1px) solid color-mix(in oklab, var(--border) 70%, transparent);
+    border-radius: var(--radius);
+    background-color: var(--card);
+    box-shadow: var(--shadow-card);
+
+    &:not([data-image]) {
+        min-height: 0;
+    }
+
+    &[data-height='small'] {
+        min-height: 8rem;
+    }
+
+    &[data-height='large'] {
+        min-height: 17rem;
+    }
+
+    &[data-image]::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background-color: rgb(0 0 0 / 0.5);
+    }
+
+    &:not([data-image])::before {
+        content: '';
+        position: absolute;
+        top: 1.5rem;
+        bottom: 1.5rem;
+        left: 1.5rem;
+        width: 0.25rem;
+        border-radius: 9999px;
+        background-color: var(--primary);
+    }
+
+    & h2 {
+        font-family: var(--font-header, inherit);
+        font-size: 2rem;
+        font-weight: 700;
+        line-height: 1.1;
+    }
+
+    & p {
+        font-size: 0.9375rem;
+        line-height: 1.375;
+        opacity: 0.8;
+    }
+}
+
+[data-basalt-box-edges='flat'] .basalt-sd-banner {
+    border-radius: 0;
+}
+
+.basalt-sd-banner-art {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+}
+
+.basalt-sd-banner-text {
+    position: relative;
+    display: grid;
+    gap: 0.25rem;
+    padding: 1.5rem 1.75rem;
+
+    .basalt-sd-banner:not([data-image]) & {
+        padding-left: 2.75rem;
+    }
+
+    .basalt-sd-banner[data-image] & {
+        color: #fff;
+    }
+}
+
+/* The stat tiles: up to four in a row across the full width, two in a narrower block, one in a third. */
+.basalt-sd-tiles {
+    display: grid;
+    grid-template-columns: repeat(min(var(--basalt-tiles, 4), 4), minmax(0, 1fr));
+    gap: 1rem;
+
+    .basalt-sd-block:not([data-width='full']) & {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .basalt-sd-block[data-width='third'] & {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
+@container basalt-sd (width <= 820px) {
+    .basalt-sd-block .basalt-sd-tiles {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@container basalt-sd (width <= 700px) {
+    .basalt-sd-block[data-width] .basalt-sd-tiles {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@container basalt-sd (width <= 460px) {
+    .basalt-sd-block[data-width] .basalt-sd-tiles {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
+.basalt-notes-input {
+    display: block;
+    width: 100%;
+    min-height: 9rem;
+    padding: 1rem 1.25rem;
+    border: 0;
+    outline: none;
+    background: transparent;
+    color: var(--foreground);
+    font-size: 0.875rem;
+    line-height: 1.6;
+    resize: vertical;
+}
+
+/* In the studio's preview of its settings: a click on a block opens it there, and the open one is outlined. */
+.basalt-sd[data-editing] {
+    & .basalt-sd-block {
+        position: relative;
+        cursor: pointer;
+
+        & > * {
+            pointer-events: none;
+        }
+
+        &:hover > .basalt-sd-inner {
+            outline-color: color-mix(in oklab, var(--primary) 50%, transparent);
+        }
+
+        &[data-focus] > .basalt-sd-inner {
+            outline: 2px solid var(--primary);
+        }
+    }
+
+    & .basalt-sd-inner {
+        border-radius: var(--radius);
+        outline: 2px dashed transparent;
+        outline-offset: 4px;
+        transition: outline-color var(--basalt-speed) var(--basalt-ease);
+    }
+}
+/* #endregion server dashboard */
+
+/* #region notices: resource alerts and announcements, tinted by their tone (--notice-tone, the accent by default) */
 .basalt-notice {
     position: relative;
     border: var(--basalt-border-width, 1px) solid color-mix(in oklab, var(--notice-tone, var(--primary)) 35%, var(--border));
@@ -1001,7 +1208,147 @@
         color: var(--foreground);
     }
 }
+/*
+ * Notices an administrator writes, tinted by their type: on their tone like the alerts, as a card
+ * with a bar of their tone down its left, or as a bare line.
+ */
+.basalt-announcement {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    padding: 0.875rem 1rem;
+
+    &[data-type='success'] {
+        --notice-tone: var(--success);
+    }
+
+    &[data-type='warning'] {
+        --notice-tone: var(--warning);
+    }
+
+    &[data-type='danger'] {
+        --notice-tone: var(--destructive);
+    }
+
+    &[data-style='card'] {
+        padding: 1.25rem 1.25rem 1.25rem 2rem;
+        border-color: color-mix(in oklab, var(--border) 70%, transparent);
+        background-color: var(--card);
+
+        &::before {
+            content: '';
+            position: absolute;
+            top: 1rem;
+            bottom: 1rem;
+            left: 1rem;
+            width: 0.25rem;
+            border-radius: 9999px;
+            background-color: var(--notice-tone, var(--primary));
+        }
+    }
+
+    &[data-style='minimal'] {
+        align-items: center;
+        padding: 0.25rem 0;
+        border-color: transparent;
+        background-color: transparent;
+        box-shadow: none;
+        font-size: 0.875rem;
+    }
+}
+
+.basalt-announcement-icon {
+    flex: none;
+    margin-top: 0.125rem;
+    color: var(--notice-tone, var(--primary));
+
+    [data-style='card'] > & {
+        display: none;
+    }
+}
+
+.basalt-announcement-title {
+    font-size: 0.9375rem;
+    font-weight: 600;
+    line-height: 1.5;
+
+    [data-style='minimal'] & {
+        font-size: 0.875rem;
+    }
+}
+
+.basalt-announcement-body {
+    margin-top: 0.125rem;
+    color: var(--muted-foreground);
+    font-size: 0.875rem;
+    line-height: 1.5;
+
+    [data-style='minimal'] & {
+        margin-top: 0;
+    }
+}
+
+@media (max-width: 900px) {
+    .basalt-announcement:not([data-style='minimal']) {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr);
+        padding-right: 3.25rem;
+    }
+
+    .basalt-announcement[data-style='card'] {
+        padding: 1rem 3.25rem 1rem 1.75rem;
+
+        &::before {
+            top: 0.875rem;
+            bottom: 0.875rem;
+            left: 0.875rem;
+        }
+    }
+}
 /* #endregion notices */
+
+/* #region markdown: an administrator's text with a little Markdown */
+.basalt-md {
+    white-space: normal;
+
+    & > * + * {
+        margin-top: 0.5rem;
+    }
+
+    & ul {
+        padding-left: 1.25rem;
+        list-style: disc outside;
+    }
+
+    & ol {
+        padding-left: 1.25rem;
+        list-style: decimal outside;
+    }
+
+    & li + li {
+        margin-top: 0.125rem;
+    }
+
+    & strong {
+        color: var(--foreground);
+        font-weight: 600;
+    }
+
+    & code {
+        padding: 0.0625rem 0.3125rem;
+        border-radius: 4px;
+        background-color: color-mix(in oklab, var(--foreground) 9%, transparent);
+        font-family: var(--font-mono, ui-monospace, monospace);
+        font-size: 0.8125em;
+    }
+
+    & a {
+        color: var(--primary);
+        text-decoration: underline;
+        text-underline-offset: 2px;
+    }
+}
+/* #endregion markdown */
 
 /* #region menus */
 /* With glass on, menus and select lists float on the sidebar's frosted glass. */

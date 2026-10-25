@@ -262,12 +262,15 @@ export function draftOf(settings: readonly Setting[], values: Values): StudioDra
 /** Settings with a token or an attribute that the page's code reads as well. */
 const readByCode = new Set(['motion', 'pageTransition', 'font', 'navigation']);
 
+/** Settings the preview reads from the draft as it changes, without reloading. */
+const followedLive = new Set(['dashboardLayout']);
+
 /**
  * Settings the page's code reads, not only the stylesheet, and images, which the sign-in preview
  * draws from its settings: the preview reloads when one changes.
  */
 export const reloadsPreview = (key: string): boolean =>
-    readByCode.has(key) || declared[key]?.type === 'image' || (!declared[key]?.token && !declared[key]?.attribute);
+    !followedLive.has(key) && (readByCode.has(key) || declared[key]?.type === 'image' || (!declared[key]?.token && !declared[key]?.attribute));
 
 export const isHex = (value: string): boolean => /^#(?:[0-9a-f]{3}|[0-9a-f]{6})$/i.test(value);
 

@@ -1,161 +1,125 @@
-import type { LucideIcon } from 'lucide-react';
-import {
-    Archive,
-    CalendarClock,
-    Database,
-    Fingerprint,
-    Folder,
-    Hash,
-    Info,
-    KeyRound,
-    MapPin,
-    Network,
-    Package,
-    Rocket,
-    Server as ServerIcon,
-    Settings,
-    SquareTerminal,
-    Zap,
-} from 'lucide-react';
-import { PanelLink, cn, useCurrentUser, type PanelDestination } from '@pterodactyl/sdk';
-import { View, useNavigation, type ServerConsoleModel } from '@pterodactyl/sdk/theme';
-import Flag, { countryName } from '../../components/Flag';
+import { useEffect, useLayoutEffect, useMemo, useRef, type RefObject } from 'react';
+import { useCurrentUser } from '@pterodactyl/sdk';
+import { View, useThemeSettings, type ServerConsoleModel } from '@pterodactyl/sdk/theme';
 import { usePlayers, useServerMeta } from '../../lib/api';
-import { consoleDestination } from '../../lib/server';
-import { StatsPlacement } from '../shell/context';
-import { Chip, CopyButton, FactRow, Facts, Pill, Section } from './overview/parts';
+import { parseLayout, type Block } from '../../lib/blocks';
+import { SELECT_BLOCK_MESSAGE, usePreviewDraft } from '../../lib/preview';
+import type { ThemeSettings } from '../../theme-types';
+import { DashboardServer } from '../shell/context';
+import { Banner, Notes, Notice, QuickActions, ServerInfo, Sftp, Stats } from './overview/blocks';
 import ServerHeader from './ServerHeader';
 
-/** The server's pages the dashboard links to, by the id of their navigation item. */
-const actions: readonly [id: string, label: string, icon: LucideIcon, to: string][] = [
-    ['index', 'Console', SquareTerminal, '/server/$id'],
-    ['files', 'Files', Folder, '/server/$id/files'],
-    ['databases', 'Databases', Database, '/server/$id/databases'],
-    ['backups', 'Backups', Archive, '/server/$id/backups'],
-    ['schedules', 'Schedules', CalendarClock, '/server/$id/schedules'],
-    ['network', 'Network', Network, '/server/$id/network'],
-    ['startup', 'Startup', Rocket, '/server/$id/startup'],
-    ['settings', 'Settings', Settings, '/server/$id/settings'],
-];
+/**
+ * Packs the blocks by height: once measured, each spans as many of the grid's 1px rows as it is
+ * tall, with the gap below it, so a short block fills the space beside a taller one.
+ */
+function useMasonry(grid: RefObject<HTMLDivElement | null>, layout: readonly Block[]): void {
+    useLayoutEffect(() => {
+        const element = grid.current;
+        if (!element) return;
 
-const plural = (count: number, one: string, many: string) => `${count} ${count === 1 ? one : many}`;
+        const measure = () => {
+            const gap = parseFloat(getComputedStyle(element).columnGap) || 0;
+            for (const block of element.querySelectorAll<HTMLElement>(':scope > .basalt-sd-block')) {
+                const inner = block.firstElementChild;
+                if (inner instanceof HTMLElement) block.style.gridRowEnd = `span ${Math.max(1, Math.ceil(inner.getBoundingClientRect().height + gap))}`;
+            }
+            element.dataset.masonry = '';
+        };
+
+        measure();
+        const observer = new ResizeObserver(measure);
+        observer.observe(element);
+        element.querySelectorAll(':scope > .basalt-sd-block > .basalt-sd-inner').forEach((inner) => observer.observe(inner));
+        return () => observer.disconnect();
+    }, [grid, layout]);
+}
 
 /**
- * The server's dashboard: a banner, its live usage and graphs, its details and shortcuts to its
- * pages. The console page places it on the server's first page while the dashboard setting is on.
+ * The server's dashboard: the blocks of the Layout setting on a twelve-column grid, each as wide
+ * as it is set to, packed by height. The console page places it on the server's first page while
+ * the dashboard setting is on. In the studio's preview it follows the draft as it changes, and
+ * while the studio shows its settings a click on a block opens that block there.
  */
 export default function Dashboard({ model }: { model: ServerConsoleModel }) {
     const user = useCurrentUser();
-    const navigation = useNavigation('server');
-    const { attributes } = model.server;
+    const settings = useThemeSettings<ThemeSettings>();
+    const draft = usePreviewDraft();
+    const { server } = model;
+    const { attributes } = server;
     const meta = useServerMeta([attributes.uuid])[attributes.uuid];
-    const players = usePlayers(meta?.minecraft ? [attributes.uuid] : [])[attributes.uuid];
+    const players = usePlayers(meta?.minecraft ? [attributes.uuid] : [])[attributes.uuid] ?? null;
+    const grid = useRef<HTMLDivElement>(null);
 
-    const allowed = new Set(navigation.items.filter((item) => item.extensionId === undefined).map((item) => item.id));
-    const params = { id: attributes.identifier };
-    const sftp = `sftp://${attributes.sftp_details.ip}:${attributes.sftp_details.port}`;
-    const sftpUser = `${user.username}.${attributes.identifier}`;
-    const limits = attributes.feature_limits;
-    const destination = (id: string, to: string): PanelDestination =>
-        id === 'index' ? consoleDestination(attributes.identifier, true) : ({ to, params } as PanelDestination);
+    const value = draft ? draft.settings.dashboardLayout : settings.dashboardLayout;
+    const layout = useMemo(() => parseLayout(value), [value]);
+    const editing = draft?.focus !== undefined;
+    const focus = draft?.focus ?? null;
+    useMasonry(grid, layout);
 
-    // Its grids follow its own width: the stat tiles and the two columns of sections fold as it narrows.
+    useEffect(() => {
+        if (focus) grid.current?.querySelector(`[data-block="${CSS.escape(focus)}"]`)?.scrollIntoView({ block: 'center', behavior: 'smooth' });
+    }, [focus]);
+
+    // Who may use SFTP: the owner, or a subuser given it. A server without the meta is the user's own.
+    const permissions = server.meta?.user_permissions ?? [];
+    const sftp = server.meta?.is_server_owner !== false || permissions.includes('*') || permissions.includes('file.sftp');
+    const banner = meta?.banner ?? (typeof settings.serverBanner === 'string' ? settings.serverBanner : null);
+    const context = useMemo(
+        () => ({ node: attributes.node, players, suspended: attributes.is_suspended }),
+        [attributes.node, attributes.is_suspended, players]
+    );
+
+    const render = (block: Block) => {
+        switch (block.type) {
+            case 'header':
+                return <ServerHeader name={model.name} description={model.description} className='mb-0' />;
+            case 'banner':
+                return <Banner name={model.name} image={banner} height={block.height} />;
+            case 'stats':
+                return <Stats items={block.items ?? []} />;
+            case 'graphs':
+                return <View name='server.graphs' />;
+            case 'info':
+                return <ServerInfo items={block.items ?? []} server={attributes} meta={meta} />;
+            case 'actions':
+                return <QuickActions items={block.items ?? []} server={attributes} />;
+            case 'sftp':
+                return sftp ? <Sftp server={attributes} username={user.username} /> : null;
+            case 'notes':
+                return <Notes server={attributes.uuid} />;
+            case 'notice':
+                return <Notice block={block} />;
+            default:
+                return null;
+        }
+    };
+
     return (
-        <div className='@container'>
-            <ServerHeader name={model.name} description={model.description} />
-
-            <section
-                className={cn(
-                    'surface relative flex min-h-48 items-end overflow-hidden',
-                    !meta?.banner && 'bg-[radial-gradient(120%_140%_at_100%_0%,color-mix(in_oklab,var(--primary)_32%,transparent),transparent_60%),linear-gradient(135deg,var(--card),var(--popover))]'
-                )}
-            >
-                {meta?.banner && <img src={meta.banner} alt='' className='absolute inset-0 size-full object-cover' />}
-                <div className='relative grid min-w-0 gap-1 px-7 py-6'>
-                    <h2 className='truncate text-[32px] leading-[1.1] font-bold text-white'>{model.name}</h2>
-                    <p className='text-[15px] leading-[1.375] text-white opacity-80'>
-                        <StatsPlacement.Provider value='summary'>
-                            <View name='server.stats' />
-                        </StatsPlacement.Provider>
-                        {players && ` · ${players.online} of ${players.max} players online`}
-                    </p>
-                </div>
-            </section>
-
-            <StatsPlacement.Provider value='cards'>
-                <View name='server.stats' className='mt-4' />
-            </StatsPlacement.Provider>
-
-            <View name='server.graphs' className='mt-4' />
-
-            <div className='mt-4 grid grid-cols-1 items-start gap-4 @min-[701px]:grid-cols-2'>
-                <Section icon={Info} title='Server information'>
-                    <Facts>
-                        <StatsPlacement.Provider value='facts'>
-                            <View name='server.stats' />
-                        </StatsPlacement.Provider>
-                        <FactRow icon={ServerIcon} label='Node'>
-                            <Chip>{attributes.node}</Chip>
-                        </FactRow>
-                        {meta?.location && (
-                            <FactRow icon={MapPin} label='Location'>
-                                {meta.flag && <Flag code={meta.flag} />}
-                                <span className='truncate'>{meta.flag ? countryName(meta.flag) : meta.location}</span>
-                            </FactRow>
-                        )}
-                        <FactRow icon={Hash} label='Server ID'>
-                            <Chip>{attributes.identifier}</Chip>
-                            <CopyButton text={attributes.identifier} label='Copy the server ID' />
-                        </FactRow>
-                        <FactRow icon={Fingerprint} label='Server UUID'>
-                            <Chip>{attributes.uuid}</Chip>
-                            <CopyButton text={attributes.uuid} label='Copy the server UUID' />
-                        </FactRow>
-                        <FactRow icon={Package} label='Docker image'>
-                            <Chip>{attributes.docker_image}</Chip>
-                        </FactRow>
-                        <FactRow icon={Database} label='Limits'>
-                            <span className='flex flex-wrap justify-end gap-1.5'>
-                                <Pill>{plural(limits.databases ?? 0, 'database', 'databases')}</Pill>
-                                <Pill>{plural(limits.backups ?? 0, 'backup', 'backups')}</Pill>
-                                <Pill>{plural(limits.allocations ?? 0, 'port', 'ports')}</Pill>
-                            </span>
-                        </FactRow>
-                    </Facts>
-                </Section>
-
-                <div className='flex min-w-0 flex-col gap-4'>
-                    <Section icon={Zap} title='Quick actions'>
-                        <div className='grid grid-cols-[repeat(auto-fill,minmax(9.5rem,1fr))] gap-2.5 px-5 pt-4 pb-5'>
-                            {actions
-                                .filter(([id]) => allowed.has(id))
-                                .map(([id, label, Icon, to]) => (
-                                    <PanelLink
-                                        key={id}
-                                        destination={destination(id, to)}
-                                        className='flex min-w-0 items-center gap-2.5 rounded-md border border-border/80 bg-foreground/[0.03] px-3.5 py-3 text-sm leading-[1.5] font-semibold text-foreground no-underline transition-colors hover:border-primary/50 hover:bg-primary/10'
-                                    >
-                                        <Icon className='size-[18px] shrink-0 text-primary' aria-hidden />
-                                        <span className='truncate'>{label}</span>
-                                    </PanelLink>
-                                ))}
-                        </div>
-                    </Section>
-
-                    <Section icon={KeyRound} title='SFTP details'>
-                        <Facts>
-                            <FactRow icon={Network} label='Server Address'>
-                                <Chip sensitive>{sftp}</Chip>
-                                <CopyButton text={sftp} label='Copy the SFTP address' />
-                            </FactRow>
-                            <FactRow icon={Hash} label='Username'>
-                                <Chip>{sftpUser}</Chip>
-                                <CopyButton text={sftpUser} label='Copy the SFTP username' />
-                            </FactRow>
-                        </Facts>
-                    </Section>
-                </div>
+        <DashboardServer.Provider value={context}>
+            <div ref={grid} className='basalt-sd' data-editing={editing ? '' : undefined}>
+                {layout.map((block) => (
+                    <div
+                        key={block.id}
+                        className='basalt-sd-block'
+                        data-block={block.id}
+                        data-width={block.width}
+                        data-type={block.type}
+                        data-focus={focus === block.id ? '' : undefined}
+                        onClickCapture={
+                            editing
+                                ? (event) => {
+                                      event.preventDefault();
+                                      event.stopPropagation();
+                                      window.parent.postMessage({ type: SELECT_BLOCK_MESSAGE, id: block.id }, window.location.origin);
+                                  }
+                                : undefined
+                        }
+                    >
+                        <div className='basalt-sd-inner'>{render(block)}</div>
+                    </div>
+                ))}
             </div>
-        </div>
+        </DashboardServer.Provider>
     );
 }

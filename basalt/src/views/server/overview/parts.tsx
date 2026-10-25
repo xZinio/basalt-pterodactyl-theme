@@ -3,13 +3,26 @@ import type { LucideIcon } from 'lucide-react';
 import { Copy } from 'lucide-react';
 import { CopyOnClick, cn } from '@pterodactyl/sdk';
 
-/** A titled card of the server overview. */
-export function Section({ icon: Icon, title, children, className }: { icon: LucideIcon; title: string; children: ReactNode; className?: string }) {
+/** A titled card of the server dashboard, with anything `aside` at the end of its header. */
+export function Section({
+    icon: Icon,
+    title,
+    aside,
+    children,
+    className,
+}: {
+    icon: LucideIcon;
+    title: string;
+    aside?: ReactNode;
+    children: ReactNode;
+    className?: string;
+}) {
     return (
         <section className={cn('surface min-w-0 overflow-hidden', className)}>
             <header className='flex items-center gap-2.5 border-b border-border px-5 py-3.5'>
                 <Icon className='size-[18px] shrink-0 text-primary' aria-hidden />
                 <h2 className='text-base leading-6 font-semibold text-foreground'>{title}</h2>
+                {aside}
             </header>
             {children}
         </section>
