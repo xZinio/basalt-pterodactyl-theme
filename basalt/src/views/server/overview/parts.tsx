@@ -36,7 +36,7 @@ export function Facts({ children }: { children: ReactNode }) {
 
 export function FactRow({ icon: Icon, label, children }: { icon: LucideIcon; label: string; children: ReactNode }) {
     return (
-        <div className='flex min-h-[42px] items-center justify-between gap-4 py-2.5'>
+        <div className='flex items-center justify-between gap-4 py-2.5'>
             <span className='flex shrink-0 items-center gap-2 text-sm leading-[1.5] text-muted-foreground'>
                 <Icon className='size-[15px] shrink-0' aria-hidden />
                 {label}
