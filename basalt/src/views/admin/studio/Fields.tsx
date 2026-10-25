@@ -203,25 +203,15 @@ export function Field({
                         className={controlClass}
                     />
                 ))}
-            {setting.type === 'text' &&
-                ((setting.max_length ?? 0) > 200 ? (
-                    <textarea
-                        id={id}
-                        rows={3}
-                        value={String(value ?? '')}
-                        maxLength={setting.max_length ?? undefined}
-                        onChange={(event) => onChange(event.target.value)}
-                        className={cn(controlClass, 'resize-y')}
-                    />
-                ) : (
-                    <input
-                        id={id}
-                        value={String(value ?? '')}
-                        maxLength={setting.max_length ?? undefined}
-                        onChange={(event) => onChange(event.target.value)}
-                        className={controlClass}
-                    />
-                ))}
+            {setting.type === 'text' && (
+                <input
+                    id={id}
+                    value={String(value ?? '')}
+                    maxLength={setting.max_length ?? undefined}
+                    onChange={(event) => onChange(event.target.value)}
+                    className={controlClass}
+                />
+            )}
             {help && <p className='text-xs leading-[1.5] text-muted-foreground'>{help}</p>}
         </div>
     );

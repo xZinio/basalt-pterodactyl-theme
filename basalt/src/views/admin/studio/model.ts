@@ -12,6 +12,7 @@ import {
     Navigation,
     Palette,
     Settings2,
+    Share2,
     SlidersHorizontal,
     Smartphone,
     SquareTerminal,
@@ -161,6 +162,7 @@ export const categories: readonly Category[] = [
     { id: 'server', label: 'Server dashboard', icon: LayoutTemplate, tabs: ['Server'], page: 'server' },
     { id: 'branding', label: 'Branding', icon: Stamp, tabs: ['Branding'] },
     { id: 'sign-in', label: 'Sign-in page', icon: LogIn, tabs: ['Sign-in'], page: 'sign-in' },
+    { id: 'seo', label: 'SEO and social', icon: Share2, tabs: ['SEO and social'], page: 'sign-in' },
 ];
 
 const general = categories.find((category) => category.tabs.includes('General'));
@@ -260,7 +262,7 @@ export function draftOf(settings: readonly Setting[], values: Values): StudioDra
 }
 
 /** Settings with a token or an attribute that the page's code reads as well. */
-const readByCode = new Set(['motion', 'pageTransition', 'font', 'navigation']);
+const readByCode = new Set(['motion', 'pageTransition', 'font', 'navigation', 'loginLayout']);
 
 /** Settings the preview reads from the draft as it changes, without reloading. */
 const followedLive = new Set(['dashboardLayout']);

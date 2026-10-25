@@ -1,6 +1,6 @@
-import { Button, Input, Label, PanelLink } from '@pterodactyl/sdk';
+import { Button, PanelLink } from '@pterodactyl/sdk';
 import { Slot, type ViewProps } from '@pterodactyl/sdk/theme';
-import { AuthForm, TextField, authLinkClass } from './parts';
+import { AuthForm, TextField } from './parts';
 
 export function LoginPage({ model }: ViewProps<'page.auth.login'>) {
     const { fields, Captcha } = model;
@@ -10,18 +10,18 @@ export function LoginPage({ model }: ViewProps<'page.auth.login'>) {
             title='Sign in to continue'
             submit={model.submit}
             links={
-                <PanelLink destination={model.forgotPassword} className={authLinkClass}>
+                <PanelLink destination={model.forgotPassword} className='basalt-auth-link'>
                     Forgot password?
                 </PanelLink>
             }
         >
             <TextField field={fields.username} label='Username or email' autoFocus />
             <TextField field={fields.password} label='Password' />
-            {Captcha && <Captcha />}
             <Button type='submit' size='xlarge' disabled={!model.canSubmit} isLoading={model.submitting}>
                 Sign in
             </Button>
             <Slot name='auth.login.form.after' data={model.route} />
+            {Captcha && <Captcha />}
         </AuthForm>
     );
 }
@@ -34,19 +34,17 @@ export function ForgotPasswordPage({ model }: ViewProps<'page.auth.password'>) {
             title='Reset password'
             submit={model.submit}
             links={
-                <PanelLink destination={model.login} className={authLinkClass}>
+                <PanelLink destination={model.login} className='basalt-auth-link'>
                     Back to sign in
                 </PanelLink>
             }
         >
             <TextField field={model.fields.email} label='Email' autoFocus />
-            <p className='text-sm leading-snug text-muted-foreground'>
-                Enter your account email to receive a link to reset your password.
-            </p>
-            {Captcha && <Captcha />}
+            <p className='text-sm text-muted-foreground'>Enter your account email to receive a link to reset your password.</p>
             <Button type='submit' size='xlarge' disabled={!model.canSubmit} isLoading={model.submitting}>
                 Send reset link
             </Button>
+            {Captcha && <Captcha />}
         </AuthForm>
     );
 }
@@ -59,25 +57,18 @@ export function ResetPasswordPage({ model }: ViewProps<'page.auth.passwordReset'
             title='Choose a new password'
             submit={model.submit}
             links={
-                <PanelLink destination={model.login} className={authLinkClass}>
+                <PanelLink destination={model.login} className='basalt-auth-link'>
                     Back to sign in
                 </PanelLink>
             }
         >
-            <div>
-                <Label htmlFor='password-reset-email'>Email</Label>
-                <Input id='password-reset-email' value={model.email} disabled readOnly />
-            </div>
-            <TextField
-                field={fields.password}
-                label='New password'
-                description='Passwords must be at least 8 characters in length.'
-            />
+            <p className='text-sm text-muted-foreground'>{model.email}</p>
+            <TextField field={fields.password} label='New password' autoFocus />
             <TextField field={fields.passwordConfirmation} label='Confirm new password' />
-            {Captcha && <Captcha />}
             <Button type='submit' size='xlarge' disabled={!model.canSubmit} isLoading={model.submitting}>
                 Reset password
             </Button>
+            {Captcha && <Captcha />}
         </AuthForm>
     );
 }
@@ -87,33 +78,20 @@ export function CheckpointPage({ model }: ViewProps<'page.auth.checkpoint'>) {
 
     return (
         <AuthForm
-            title='Two-step verification'
+            title='Two-factor authentication'
             submit={model.submit}
             links={
                 <>
-                    <button
-                        type='button'
-                        onClick={model.toggleRecovery}
-                        className={`cursor-pointer appearance-none border-0 bg-transparent p-0 ${authLinkClass}`}
-                    >
-                        {recovery ? 'I have my device' : "I've lost my device"}
+                    <button type='button' onClick={model.toggleRecovery} className='basalt-auth-link'>
+                        {recovery ? 'Use an authentication code' : 'Use a recovery code'}
                     </button>
-                    <PanelLink destination={model.login} className={authLinkClass}>
+                    <PanelLink destination={model.login} className='basalt-auth-link'>
                         Back to sign in
                     </PanelLink>
                 </>
             }
         >
-            <TextField
-                field={model.fields.code}
-                label={recovery ? 'Recovery code' : 'Authentication code'}
-                description={
-                    recovery
-                        ? 'Enter one of the recovery codes you saved when you set up two-step verification.'
-                        : 'Enter the code your authenticator app shows for this account.'
-                }
-                autoFocus
-            />
+            <TextField field={model.fields.code} label={recovery ? 'Recovery code' : 'Authentication code'} autoFocus />
             <Button type='submit' size='xlarge' disabled={!model.canSubmit} isLoading={model.submitting}>
                 Continue
             </Button>

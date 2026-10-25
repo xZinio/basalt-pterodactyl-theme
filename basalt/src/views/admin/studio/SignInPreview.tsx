@@ -1,8 +1,8 @@
 import { Button, Input, Label, Portal, useSiteSettings } from '@pterodactyl/sdk';
 import { useThemeSettings } from '@pterodactyl/sdk/theme';
 import type { ThemeSettings } from '../../../theme-types';
-import { AuthFrame } from '../../auth/AuthLayout';
-import { AuthForm, authLinkClass } from '../../auth/parts';
+import { AuthPage } from '../../auth/AuthLayout';
+import { AuthForm } from '../../auth/parts';
 
 /**
  * The sign-in page as a visitor sees it, drawn over the studio's own screen in its preview frame.
@@ -10,17 +10,17 @@ import { AuthForm, authLinkClass } from '../../auth/parts';
  */
 export default function SignInPreview() {
     const { name } = useSiteSettings();
-    const { logo, loginTagline } = useThemeSettings<ThemeSettings>();
+    const { logo } = useThemeSettings<ThemeSettings>();
 
     return (
         <Portal>
             <div className='fixed inset-0 z-50 overflow-y-auto bg-background'>
-                <AuthFrame brand={{ name, logoUrl: logo }} tagline={loginTagline}>
+                <AuthPage brand={{ name, logoUrl: logo }}>
                     <AuthForm
                         title='Sign in to continue'
                         submit={() => undefined}
                         links={
-                            <a href='#' onClick={(event) => event.preventDefault()} className={authLinkClass}>
+                            <a href='#' onClick={(event) => event.preventDefault()} className='basalt-auth-link'>
                                 Forgot password?
                             </a>
                         }
@@ -37,7 +37,7 @@ export default function SignInPreview() {
                             Sign in
                         </Button>
                     </AuthForm>
-                </AuthFrame>
+                </AuthPage>
             </div>
         </Portal>
     );

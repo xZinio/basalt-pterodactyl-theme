@@ -95,7 +95,6 @@
 :root {
     /* Settings write --basalt-* tokens; every role below falls back to the built-in palette. */
     --radius: 10px;
-    --layout-auth-width: 60rem;
     --layout-sidebar-width: 16rem;
     --basalt-logo-height: 28px;
     --basalt-glass-blur: 14px;
@@ -288,16 +287,6 @@
 @utility glass {
     background-color: var(--basalt-bar-fill);
     backdrop-filter: var(--basalt-bar-blur);
-}
-
-/* The picture half of the sign-in card: the uploaded image, or the built-in artwork, under a dark fade. */
-@utility auth-banner {
-    background-color: var(--primary);
-    background-image:
-        linear-gradient(0deg, rgb(0 0 0 / 0.55), rgb(0 0 0 / 0) 60%),
-        var(--basalt-login-image, url('./images/sign-in.svg'));
-    background-size: cover;
-    background-position: center;
 }
 
 /* Small uppercase captions: section headings, field captions. */
@@ -1707,6 +1696,240 @@
 }
 /* #endregion admin */
 
+/* #region sign-in: the card by the Layout, Card style, Card opacity and Card blur settings */
+.basalt-auth {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100dvh;
+    padding: 2rem 1rem;
+
+    /* The background image, in the layouts without a banner to hold it. */
+    &[data-background] {
+        background-image: var(--basalt-login-image);
+        background-position: 50%;
+        background-size: cover;
+    }
+}
+
+[data-basalt-login-layout='panels'] .basalt-auth {
+    padding: 0;
+}
+
+.basalt-auth-logo {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 1.5rem;
+
+    & img {
+        max-width: 16rem;
+        max-height: calc(var(--basalt-logo-height, 28px) * 2.2);
+        object-fit: contain;
+    }
+
+    & span {
+        color: var(--foreground);
+        font-family: var(--font-header);
+        font-size: 1.75rem;
+        font-weight: 600;
+    }
+}
+
+.basalt-auth-card {
+    width: 100%;
+    max-width: var(--layout-auth-width, 28rem);
+    padding: 2rem;
+    border: var(--basalt-border-width, 1px) solid color-mix(in oklab, var(--border) 70%, transparent);
+    border-radius: calc(var(--radius) * 1.5);
+    background-color: color-mix(in oklab, var(--card-solid) var(--basalt-login-opacity, 100%), transparent);
+    box-shadow: var(--shadow-overlay);
+    backdrop-filter: blur(var(--basalt-login-blur, 0px));
+}
+
+[data-basalt-login-card-style='glass'] .basalt-auth-card {
+    background-color: color-mix(in oklab, var(--card-solid) calc(var(--basalt-login-opacity, 100%) * 0.6), transparent);
+    backdrop-filter: blur(max(var(--basalt-login-blur, 0px), 12px)) saturate(1.2);
+    box-shadow:
+        inset 0 1px rgb(255 255 255 / 0.12),
+        0 20px 50px rgb(0 0 0 / 0.35);
+}
+
+[data-basalt-login-card-style='outline'] .basalt-auth-card {
+    border-color: var(--border);
+    background-color: transparent;
+    box-shadow: none;
+}
+
+.basalt-auth-title {
+    margin-bottom: 1.5rem;
+    color: var(--foreground);
+    font-family: var(--font-header);
+    font-size: 1.5rem;
+    font-weight: 600;
+    line-height: 1.5;
+    text-align: center;
+}
+
+.basalt-auth-form {
+    display: grid;
+    gap: 1.25rem;
+}
+
+.basalt-auth-links {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 1rem;
+    margin-top: 1.25rem;
+}
+
+.basalt-auth-link {
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--muted-foreground);
+    font-size: 0.75rem;
+    line-height: 1.5;
+    letter-spacing: 0.06em;
+    text-decoration: none;
+    text-transform: uppercase;
+    cursor: pointer;
+
+    &:hover {
+        color: var(--foreground);
+    }
+}
+
+.basalt-auth-copy {
+    margin-top: 1.5rem;
+    color: var(--muted-foreground);
+    font-size: 0.75rem;
+    line-height: 1.5;
+    text-align: center;
+
+    & a {
+        color: inherit;
+        text-decoration: none;
+    }
+}
+
+[data-basalt-login-layout='flat'] .basalt-auth-card {
+    max-width: 34rem;
+    border-width: 0 0 var(--basalt-border-width, 1px);
+    border-radius: 0;
+    background-color: transparent;
+    box-shadow: none;
+    backdrop-filter: none;
+}
+
+/* The banner layouts: the banner and the card side by side, on one surface or, floating, as two. */
+.basalt-auth-split {
+    display: grid;
+    width: 100%;
+    max-width: 60rem;
+    overflow: hidden;
+    border: var(--basalt-border-width, 1px) solid color-mix(in oklab, var(--border) 70%, transparent);
+    border-radius: calc(var(--radius) * 1.5);
+    background-color: color-mix(in oklab, var(--card-solid) var(--basalt-login-opacity, 100%), transparent);
+    box-shadow: var(--shadow-overlay);
+    backdrop-filter: blur(var(--basalt-login-blur, 0px));
+
+    @media (min-width: 768px) {
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    }
+
+    & .basalt-auth-card {
+        max-width: none;
+        border: 0;
+        border-radius: 0;
+        background: none;
+        box-shadow: none;
+        backdrop-filter: none;
+    }
+}
+
+/* The banner: the panel's name and tagline over the background image, or the built-in artwork, under a dark fade. */
+.basalt-auth-banner {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    gap: 0.5rem;
+    min-height: 12rem;
+    padding: 2rem;
+    background-color: var(--primary);
+    background-image:
+        linear-gradient(0deg, rgb(0 0 0 / 0.55), rgb(0 0 0 / 0) 60%),
+        var(--basalt-login-image, url('./images/sign-in.svg'));
+    background-position: 50%;
+    background-size: cover;
+    color: var(--primary-foreground);
+
+    & strong {
+        font-family: var(--font-header);
+        font-size: 1.75rem;
+        font-weight: 600;
+        line-height: 1.2;
+    }
+}
+
+[data-basalt-login-layout='floating'] {
+    & .basalt-auth-split {
+        gap: 1rem;
+        overflow: visible;
+        border: 0;
+        background: none;
+        box-shadow: none;
+        backdrop-filter: none;
+    }
+
+    & .basalt-auth-banner {
+        border-radius: calc(var(--radius) * 1.5);
+        box-shadow: var(--shadow-overlay);
+    }
+
+    & .basalt-auth-split .basalt-auth-card {
+        border: var(--basalt-border-width, 1px) solid color-mix(in oklab, var(--border) 70%, transparent);
+        border-radius: calc(var(--radius) * 1.5);
+        background-color: color-mix(in oklab, var(--card-solid) var(--basalt-login-opacity, 100%), transparent);
+        backdrop-filter: blur(var(--basalt-login-blur, 0px));
+    }
+}
+
+/* Panels: the banner fills one side of the page, the card the other. */
+.basalt-auth-panels {
+    display: grid;
+    width: 100%;
+    min-height: 100dvh;
+
+    @media (min-width: 1024px) {
+        grid-template-columns: minmax(0, 1.2fr) minmax(24rem, 1fr);
+    }
+
+    & .basalt-auth-banner {
+        min-height: 16rem;
+        padding: 3rem;
+    }
+
+    & > div:last-child {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 2rem 1rem;
+        background-color: var(--background);
+    }
+
+    & .basalt-auth-card {
+        border: 0;
+        background: none;
+        box-shadow: none;
+        backdrop-filter: none;
+    }
+}
+/* #endregion sign-in */
+
 /* #region privacy: emails, addresses and IPs blur until hovered while the user's privacy mode is on */
 [data-basalt-privacy] [data-sensitive]:not(:hover, :focus-within) {
     filter: blur(5px);
@@ -1715,11 +1938,6 @@
 /* #endregion privacy */
 
 /* #region settings */
-/* "Card only" sign-in: no banner, so a narrower card. */
-[data-basalt-login-layout='simple'] {
-    --layout-auth-width: 30rem;
-}
-
 /* Glass: see-through, blurred bars and menus; off, they are solid. */
 :root {
     --basalt-bar-fill: color-mix(in oklab, var(--sidebar) 70%, transparent);

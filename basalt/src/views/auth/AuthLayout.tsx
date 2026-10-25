@@ -1,63 +1,42 @@
 import type { ReactNode } from 'react';
 import { Main, cn, useThemeSettings, type ViewProps } from '@pterodactyl/sdk/theme';
-import BrandMark from '../../components/BrandMark';
 import type { ThemeSettings } from '../../theme-types';
 
+/** The sign-in layouts with a banner, which holds the background image and the logo. */
+export const bannerLayouts: readonly string[] = ['banner', 'floating', 'panels'];
+
+type Brand = { readonly name: string; readonly logoUrl: string | null };
+
+/** The sign-in logo: the Logo setting of the sign-in page, then the panel's, or else the panel's name. */
+export function AuthLogo({ brand }: { brand: Brand }) {
+    const { loginLogo } = useThemeSettings<ThemeSettings>();
+    const logo = loginLogo ?? brand.logoUrl;
+
+    return <div className='basalt-auth-logo'>{logo ? <img src={logo} alt={brand.name} /> : <span>{brand.name}</span>}</div>;
+}
+
 /**
- * The sign-in screens: one card, a picture banner on the left (on top on phones) and the page's
- * form on the right, centred with the copyright line under it. It renders before any lazy chunk,
- * so it imports nothing from the full SDK.
+ * The page around the sign-in card, for the layout and for the studio's preview of it: the
+ * background image where no banner holds it, and the logo above the card where the Logo position
+ * setting puts it. The card, its banner and the copyright line are the page's own.
  */
-export default function AuthLayout({ model, className, children }: ViewProps<'layout.auth'>) {
-    const { loginTagline } = useThemeSettings<ThemeSettings>();
+export function AuthPage({ brand, className, children }: { brand: Brand; className?: string; children: ReactNode }) {
+    const { loginLayout, loginImage, logoPosition } = useThemeSettings<ThemeSettings>();
+    const banner = bannerLayouts.includes(loginLayout);
 
     return (
-        <AuthFrame brand={model.brand} tagline={loginTagline} className={className}>
-            {children}
-        </AuthFrame>
+        <div className={cn('basalt-auth', className)} data-background={!banner && loginImage ? '' : undefined}>
+            {!banner && logoPosition === 'header' && <AuthLogo brand={brand} />}
+            <Main className='flex w-full flex-col items-center'>{children}</Main>
+        </div>
     );
 }
 
-/** The sign-in card around a form, for the layout and for the studio's preview of it. */
-export function AuthFrame({
-    brand,
-    tagline,
-    className,
-    children,
-}: {
-    brand: { readonly name: string; readonly logoUrl: string | null };
-    tagline: string;
-    className?: string;
-    children: ReactNode;
-}) {
+/** The sign-in screens. It renders before any lazy chunk, so it imports nothing from the full SDK. */
+export default function AuthLayout({ model, className, children }: ViewProps<'layout.auth'>) {
     return (
-        <div className={cn('flex min-h-dvh flex-col justify-center px-4 py-8', className)}>
-            <Main className='mx-auto w-full max-w-auth'>
-                {/* The card fill by its token: theme.css gives `.bg-card` the lighter card shadow. */}
-                <div className='flex flex-col overflow-hidden rounded-[15px] border border-border/70 bg-(--card) shadow-overlay md:flex-row'>
-                    <div className='auth-banner flex min-h-48 flex-col gap-2 p-8 text-white md:w-1/2 in-data-[basalt-login-layout=simple]:hidden'>
-                        {brand.logoUrl ? (
-                            <img src={brand.logoUrl} alt='' className='mb-auto size-10 object-contain' />
-                        ) : (
-                            <BrandMark className='mb-auto size-10' />
-                        )}
-                        <strong className='block text-[28px] leading-[1.2] font-semibold text-white'>{brand.name}</strong>
-                        {tagline && <span className='block text-sm text-white opacity-85'>{tagline}</span>}
-                    </div>
-                    <div className='min-w-0 flex-1 p-8'>{children}</div>
-                </div>
-                <p className='mt-6 text-center text-xs text-muted-foreground'>
-                    &copy; 2015 - <span suppressHydrationWarning>{new Date().getFullYear()}</span>{' '}
-                    <a
-                        href='https://pterodactyl.io'
-                        target='_blank'
-                        rel='noopener nofollow noreferrer'
-                        className='text-muted-foreground no-underline hover:text-foreground'
-                    >
-                        Pterodactyl Software
-                    </a>
-                </p>
-            </Main>
-        </div>
+        <AuthPage brand={model.brand} className={className}>
+            {children}
+        </AuthPage>
     );
 }

@@ -714,36 +714,131 @@
                 "default": "",
                 "maxLength": 500
             },
-            "loginLayout": {
-                "type": "select",
-                "label": "Sign-in layout",
+            "loginLogo": {
+                "type": "image",
+                "label": "Logo",
                 "tab": "Sign-in",
-                "options": { "banner": "Card with image banner", "simple": "Card only" },
-                "default": "banner",
-                "attribute": "data-basalt-login-layout"
+                "help": "Replaces the logo on the sign-in page."
             },
             "loginImage": {
                 "type": "image",
-                "label": "Sign-in image",
+                "label": "Background",
                 "tab": "Sign-in",
-                "help": "The picture beside the sign-in form. Without one, the banner uses the built-in artwork.",
+                "help": "Behind the card, or in the banner of the banner layouts, which show built-in artwork without one.",
                 "token": "--basalt-login-image"
+            },
+            "loginLayout": {
+                "type": "select",
+                "label": "Layout",
+                "tab": "Sign-in",
+                "options": { "centered": "Centered", "flat": "Flat", "banner": "Side banner", "floating": "Floating banner", "panels": "Panels" },
+                "default": "banner",
+                "attribute": "data-basalt-login-layout"
+            },
+            "loginCardStyle": {
+                "type": "select",
+                "label": "Card style",
+                "tab": "Sign-in",
+                "options": { "solid": "Solid", "glass": "Glass", "outline": "Outlined" },
+                "default": "solid",
+                "attribute": "data-basalt-login-card-style"
+            },
+            "loginCardOpacity": {
+                "type": "number",
+                "label": "Card opacity",
+                "tab": "Sign-in",
+                "default": 100,
+                "min": 0,
+                "max": 100,
+                "step": 1,
+                "unit": "%",
+                "token": "--basalt-login-opacity"
+            },
+            "loginCardBlur": {
+                "type": "number",
+                "label": "Card blur",
+                "tab": "Sign-in",
+                "help": "Blurs the background behind the card; visible with a background image.",
+                "default": 0,
+                "min": 0,
+                "max": 24,
+                "step": 1,
+                "unit": "px",
+                "token": "--basalt-login-blur"
+            },
+            "logoPosition": {
+                "type": "select",
+                "label": "Logo position",
+                "tab": "Sign-in",
+                "options": { "header": "Above the card", "card": "Inside the card" },
+                "default": "header"
+            },
+            "supportPosition": {
+                "type": "select",
+                "label": "Support link position",
+                "tab": "Sign-in",
+                "options": { "below": "Below the card", "card": "Inside the card" },
+                "default": "below"
             },
             "loginTagline": {
                 "type": "text",
-                "label": "Sign-in tagline",
+                "label": "Tagline",
                 "tab": "Sign-in",
-                "help": "The line under the panel name on the sign-in banner.",
+                "help": "The line under the panel name in the banner.",
                 "default": "Sign in to manage your servers.",
                 "maxLength": 120
             },
             "loginLinks": {
                 "type": "text",
-                "label": "Sign-in links",
+                "label": "More links",
                 "tab": "Sign-in",
-                "help": "Extra links under the sign-in form, as Label|URL pairs separated by commas, such as: Support|https://discord.gg/example, Status|https://status.example.com",
+                "help": "Links under the sign-in form after Support, as Label|URL pairs separated by commas, such as: Status|https://status.example.com",
                 "default": "",
                 "maxLength": 600
+            },
+            "seoTitle": {
+                "type": "text",
+                "label": "Title for search results and shares",
+                "tab": "SEO and social",
+                "default": "",
+                "maxLength": 70
+            },
+            "metaDescription": {
+                "type": "text",
+                "label": "Description",
+                "tab": "SEO and social",
+                "default": "",
+                "maxLength": 320
+            },
+            "canonicalUrl": {
+                "type": "text",
+                "label": "Canonical sign-in URL",
+                "tab": "SEO and social",
+                "help": "The public https:// address of the sign-in page, such as https://panel.example.com/auth/login.",
+                "default": "",
+                "maxLength": 500
+            },
+            "shareImage": {
+                "type": "image",
+                "label": "Share image",
+                "tab": "SEO and social",
+                "help": "Shown when a link to the panel is shared."
+            },
+            "twitterHandle": {
+                "type": "text",
+                "label": "X / Twitter handle",
+                "tab": "SEO and social",
+                "help": "Such as @yourhost.",
+                "default": "",
+                "maxLength": 16
+            },
+            "socialUrl": {
+                "type": "text",
+                "label": "Social profile URL",
+                "tab": "SEO and social",
+                "help": "An https:// URL, linked from the sign-in page.",
+                "default": "",
+                "maxLength": 500
             },
             "navLinks": {
                 "type": "text",
