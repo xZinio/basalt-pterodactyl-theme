@@ -44,17 +44,17 @@ final readonly class Whmcs implements Provider
         }
 
         $client = (string) ($service['clientid'] ?? '');
-        $details = $this->call('GetClientsDetails', ['clientid' => $client, 'stats' => 'false']);
-        $currency = is_array($details['client'] ?? null) ? $details['client'] : $details;
+        $details = $this->call('GetClientsDetails', ['clientid' => $client]);
+        $currency = $this->currency(is_array($details['client'] ?? null) ? $details['client'] : $details);
         $cycle = strtolower((string) ($service['billingcycle'] ?? ''));
 
         return [
             'status' => strtolower((string) ($service['status'] ?? '')),
             'plan' => self::text($service['name'] ?? null) ?? self::text($service['groupname'] ?? null),
             'price' => $cycle === 'free account' ? '0' : self::text($service['recurringamount'] ?? null),
-            'currency' => self::text($currency['currency_code'] ?? null),
-            'prefix' => self::affix($currency['currency_prefix'] ?? null),
-            'suffix' => self::affix($currency['currency_suffix'] ?? null),
+            'currency' => self::text($currency['code'] ?? null),
+            'prefix' => self::affix($currency['prefix'] ?? null),
+            'suffix' => self::affix($currency['suffix'] ?? null),
             'cycle' => self::CYCLES[$cycle] ?? null,
             'due_at' => self::date($service['nextduedate'] ?? null),
             'url' => "{$this->url}/clientarea.php?action=productdetails&id={$id}",
@@ -63,10 +63,29 @@ final readonly class Whmcs implements Provider
         ];
     }
 
+    /**
+     * The client's currency as WHMCS writes amounts in it: the client details name it by ID and
+     * code, and the currencies list has its prefix and suffix.
+     *
+     * @param  array<string, mixed>  $client
+     * @return array{code: mixed, prefix: mixed, suffix: mixed}
+     */
+    private function currency(array $client): array
+    {
+        $currencies = $this->call('GetCurrencies')['currencies']['currency'] ?? [];
+        foreach (is_array($currencies) ? $currencies : [] as $currency) {
+            if (is_array($currency) && ((isset($client['currency']) && (string) ($currency['id'] ?? '') === (string) $client['currency']) || (isset($client['currency_code']) && ($currency['code'] ?? null) === $client['currency_code']))) {
+                return ['code' => $currency['code'] ?? null, 'prefix' => $currency['prefix'] ?? null, 'suffix' => $currency['suffix'] ?? null];
+            }
+        }
+
+        return ['code' => $client['currency_code'] ?? null, 'prefix' => $client['currency_prefix'] ?? null, 'suffix' => $client['currency_suffix'] ?? null];
+    }
+
     /** @return list<array{id: string, url: string, due_at: ?string}> */
     private function unpaid(string $client, string $id): array
     {
-        $invoices = $this->call('GetInvoices', ['userid' => $client, 'status' => 'Unpaid', 'limitnum' => 25])['invoices']['invoice'] ?? [];
+        $invoices = $this->call('GetInvoices', ['userid' => $client, 'status' => 'Unpaid', 'orderby' => 'duedate', 'order' => 'asc', 'limitnum' => 25])['invoices']['invoice'] ?? [];
         $unpaid = [];
         foreach (array_slice(is_array($invoices) ? $invoices : [], 0, self::INVOICES) as $invoice) {
             $number = (string) ($invoice['id'] ?? '');

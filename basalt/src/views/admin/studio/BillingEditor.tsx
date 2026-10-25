@@ -136,7 +136,7 @@ export default function BillingEditor({ onSaved, flash }: { onSaved: () => void;
                     {form.provider === 'paymenter' && (
                         <Text
                             label='API key'
-                            help={`${saved.has_key ? 'Saved. Leave empty to keep it. ' : ''}Create one under Admin, API keys. It needs view access to services, products and invoices.`}
+                            help={`${saved.has_key ? 'Saved. Leave empty to keep it. ' : ''}Create one in Paymenter's admin area under Other, API Keys, with the View Services, View Products and View Invoices permissions.`}
                             type='password'
                             value={form.key}
                             maxLength={500}
